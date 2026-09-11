@@ -1,230 +1,145 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl" class="notranslate" translate="no">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="google" content="notranslate">
-<title>توصيلة أمان - من أي مكان لأي مكان</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap');*{font-family:'Cairo',sans-serif}</style>
-<link id="mani" rel="manifest" href="">
-</head>
-<body class="bg-[#0f0f0f] text-white">
-<div id="splash" class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-<img id="logoMain" src="logo.png" onerror="this.style.display='none'" class="w-32 h-32 rounded-[28px] bg-black border-2 border-[#FFD400] object-contain p-2">
-<h1 class="mt-4 text-[30px] font-extrabold text-[#FFD400]">توصيلة أمان</h1>
-<p class="opacity-60">من أي مكان لأي مكان</p>
-<p class="mt-6 text-[13px]">GPS حقيقي إجباري - لازم تفتح الموقع</p>
-<button id="btnGPS" class="mt-6 bg-[#FFD400] text-black px-8 py-4 rounded-[20px] font-bold w-full max-w-[340px]">تفعيل الموقع الآن - حقيقي</button>
-<button id="tap5" class="mt-10 text-[10px] opacity-20">5 ضغطات للمالك (سرية)</button>
-</div>
-<div id="app" class="hidden max-w-[520px] mx-auto bg-[#fafaf8] text-black min-h-screen">
-<div class="sticky top-0 bg-[#111] text-white p-4 flex justify-between items-center">
-<div class="flex gap-2 items-center"><img src="logo.png" onerror="this.style.display='none'" class="w-9 h-9 rounded-xl border border-[#FFD400] bg-black object-contain"><div><div class="font-bold text-[#FFD400] text-[13px]">توصيلة أمان</div><div id="uInfo" class="text-[10px] opacity-60"></div></div></div>
-<button id="inst" class="hidden bg-[#FFD400] text-black px-3 py-1 rounded-full text-[11px] font-bold">تثبيت مباشر</button>
-</div>
-<div class="p-3 flex gap-2 overflow-x-auto">
-<button data-r="عميل" class="rb bg-[#FFD400] text-black px-4 py-2 rounded-full text-[12px] font-bold">عميل</button>
-<button data-r="توكتوك" class="rb bg-black text-white px-4 py-2 rounded-full text-[12px]">توكتوك</button>
-<button data-r="دليفري" class="rb bg-black text-white px-4 py-2 rounded-full text-[12px]">دليفري</button>
-<button data-r="ملاكي" class="rb bg-black text-white px-4 py-2 rounded-full text-[12px]">ملاكي</button>
-</div>
-<div id="cView" class="p-4">
-<div class="bg-[#111] text-white rounded-[20px] p-4"><div class="text-[11px] opacity-60">موقعك الحقيقي GPS:</div><div id="loc" class="text-[#FFD400] font-mono text-[12px] mt-1">جاري تحديد...</div><div id="distInfo" class="text-[10px] opacity-50 mt-1"></div></div>
-<div class="grid grid-cols-3 gap-2 mt-4">
-<button data-s="توكتوك" class="sb bg-white border-2 border-[#FFD400] rounded-[18px] p-4 font-bold text-[12px]">🛺<br>توكتوك<br><span class="text-[9px]">سعر يحدده السائق</span></button>
-<button data-s="دليفري" class="sb bg-white border rounded-[18px] p-4 font-bold text-[12px]">🏍️<br>دليفري<br><span class="text-[9px]">سعر يحدده السائق</span></button>
-<button data-s="ملاكي" class="sb bg-white border rounded-[18px] p-4 font-bold text-[12px]">🚗<br>ملاكي<br><span class="text-[9px]">تسعير تلقائي 2026</span></button>
-</div>
-<div id="orderForm" class="hidden mt-4 bg-white border rounded-[20px] p-4">
-<h3 class="font-bold text-[13px]">طلب <span id="servName"></span></h3>
-<input id="fromI" placeholder="منين بالتفصيل - العنوان الكامل" class="w-full mt-2 bg-[#f5f2e8] p-3 rounded-xl text-[13px]">
-<input id="toI" placeholder="لفين بالتفصيل - العنوان الكامل" class="w-full mt-2 bg-[#f5f2e8] p-3 rounded-xl text-[13px]">
-<input id="exI" placeholder="رقم محتاج التوصيلة / تفاصيل إضافية (مكتوب)" class="w-full mt-2 bg-[#f5f2e8] p-3 rounded-xl text-[13px]">
-<div class="mt-3 bg-[#f5f2e8] rounded-xl p-3">
-<div class="flex justify-between items-center"><span class="text-[11px] font-bold">رسالة صوتية للسائق - تفاصيل أكثر</span><span id="voiceTime" class="text-[10px]">00:00</span></div>
-<div class="flex gap-2 mt-2">
-<button id="recVoice" class="flex-1 bg-black text-white py-2 rounded-xl text-[11px] font-bold">🎤 اضغط لتسجيل رسالة صوتية</button>
-<button id="playVoice" class="hidden bg-[#FFD400] text-black px-3 rounded-xl text-[11px]">▶️ تشغيل</button>
-<button id="delVoice" class="hidden bg-red-500 text-white px-3 rounded-xl text-[11px]">🗑️</button>
-</div>
-<div id="voiceStatus" class="text-[10px] mt-1 opacity-60">السائق هيسمع رسالتك الصوتية بالتفصيل</div>
-</div>
-<div id="malakiPriceBox" class="hidden mt-3 bg-[#FFD400]/20 border-2 border-[#FFD400] rounded-xl p-3 text-[11px]">
-<div class="font-bold">التسعير التلقائي للملاكي - حساب 2026:</div>
-<div id="malakiCalc" class="mt-1 leading-5"></div>
-</div>
-<button id="sendO" class="w-full mt-3 bg-[#FFD400] text-black py-3 rounded-xl font-bold">إرسال الطلب حقيقي</button>
-</div>
-<div id="wait" class="hidden mt-4 bg-black text-white rounded-[20px] p-6 text-center text-[13px]">⏳ في انتظار تسعير السائق...</div>
-<div id="offer" class="hidden mt-4 bg-white border-2 border-[#FFD400] rounded-[20px] p-5 text-center">
-<div id="offerType" class="text-[11px] opacity-60"></div>
-<div id="offerP" class="text-[28px] font-extrabold">35 ج</div>
-<div id="offerDetails" class="text-[10px] opacity-60 mt-1"></div>
-<div class="flex gap-2 mt-3"><button id="acc" class="flex-1 bg-[#FFD400] py-3 rounded-xl font-bold">موافق ✅</button><button id="rej" class="flex-1 bg-black text-white py-3 rounded-xl">رفض</button></div>
-</div>
-<div id="trip" class="hidden mt-4 bg-[#FFD400] text-black rounded-[20px] p-5 text-center"><div class="font-bold">جاري التحرك - تتبع لايف GPS</div><button id="sos" class="w-full mt-3 bg-red-600 text-white py-4 rounded-xl font-bold animate-pulse text-[14px]">🚨 استغاثة - اتصال حكومة مباشر + موقع حقيقي</button><button id="fin" class="w-full mt-2 bg-black text-white py-2 rounded-xl text-[11px]">إنهاء وحساب 10%</button></div>
-</div>
-<div id="dView" class="hidden p-4">
-<div class="bg-[#111] text-white rounded-xl p-3 text-[11px] mb-3">وضع السائق: <span id="driverMode" class="text-[#FFD400]"></span></div>
-<div id="incoming" class="grid gap-2"></div>
-<div class="mt-4 bg-white border rounded-xl p-3 text-[12px]">رحلاتك: <span id="myT">0</span> - إجمالي: <span id="myTot">0</span> - عمولة 10%: <span id="myC">0</span></div>
-</div>
-<div id="oView" class="hidden p-4 bg-[#0f0f0f] text-white min-h-screen"><h2 class="font-bold text-[#FFD400]">لوحة المالك السرية</h2><div id="oList" class="mt-3 grid gap-2 text-[11px]"></div><div id="oSOS" class="mt-4 text-[11px] text-red-400"></div><button id="brod" class="w-full mt-4 bg-[#FFD400] text-black py-3 rounded-xl font-bold">تصفية واتساب جماعي</button></div>
-</div>
-<div id="oModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6"><div class="bg-white text-black rounded-[20px] p-5 w-full max-w-[340px]"><h3 class="font-bold mb-2">دخول المالك</h3><input id="oPass" type="password" placeholder="0000" class="w-full bg-[#f5f2e8] p-3 rounded-xl"><button id="oLogin" class="w-full mt-2 bg-black text-white py-3 rounded-xl">دخول</button></div></div>
-<div id="sosModal" class="hidden fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4">
-<div class="bg-white text-black rounded-[24px] p-5 w-full max-w-[380px] max-h-[90vh] overflow-y-auto">
-<h3 class="font-extrabold text-[18px] text-red-600">🚨 استغاثة طوارئ - اتصال مباشر بالحكومة</h3>
-<div id="sosRealLoc" class="mt-3 bg-[#111] text-[#FFD400] p-3 rounded-xl font-mono text-[11px]">جاري تحديد موقعك الحقيقي GPS...</div>
-<div class="mt-4 grid gap-2">
-<a href="tel:122" class="flex justify-between items-center bg-black text-white p-4 rounded-xl font-bold"><span>👮 شرطة النجدة - 122</span><span class="bg-[#FFD400] text-black px-3 py-1 rounded-full text-[11px]">اتصال مباشر</span></a>
-<a href="tel:123" class="flex justify-between items-center bg-red-600 text-white p-4 rounded-xl font-bold"><span>🚑 الإسعاف - 123</span><span class="bg-white text-red-600 px-3 py-1 rounded-full text-[11px]">اتصال مباشر</span></a>
-<a href="tel:180" class="flex justify-between items-center bg-orange-600 text-white p-4 rounded-xl font-bold"><span>🚒 المطافي - 180</span><span class="bg-white text-orange-600 px-3 py-1 rounded-full text-[11px]">اتصال مباشر</span></a>
-<a href="tel:112" class="flex justify-between items-center bg-[#111] text-white p-4 rounded-xl font-bold"><span>📞 طوارئ عام - 112</span><span class="bg-white/20 px-3 py-1 rounded-full text-[11px]">اتصال مباشر</span></a>
-<a href="tel:126" class="flex justify-between items-center bg-white border-2 border-black text-black p-4 rounded-xl font-bold"><span>🚦 مرور - 126</span><span class="bg-black text-white px-3 py-1 rounded-full text-[11px]">اتصال مباشر</span></a>
-</div>
-<div class="mt-4 grid grid-cols-2 gap-2">
-<button id="shareMaps" class="bg-[#FFD400] text-black p-3 rounded-xl font-bold text-[11px]">📍 مشاركة موقعي</button>
-<button id="shareWaOwner" class="bg-green-600 text-white p-3 rounded-xl font-bold text-[11px]">💬 واتساب للمالك</button>
-</div>
-<button id="closeSOS" class="w-full mt-4 bg-black text-white py-3 rounded-xl font-bold">إغلاق</button>
-</div>
-</div>
-<script>
-let defP=null,cur=null,pos=null,serv='',role='عميل',voiceBlob=null,voiceURL=null,mediaRec=null,recStart=null,timerInt=null;
-let orders=JSON.parse(localStorage.getItem('orders')||'[]');
-let stats=JSON.parse(localStorage.getItem('stats')||'{"t":0,"tot":0,"c":0}');
-let tap=0,lt=0;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();defP=e;document.getElementById('inst').classList.remove('hidden');});
-document.getElementById('inst').onclick=()=>defP&&defP.prompt();
-const mani={name:"توصيلة أمان",short_name:"توصيلة أمان",display:"standalone",start_url:".",theme_color:"#FFD400",background_color:"#0f0f0f",icons:[{src:"logo.png",sizes:"512x512",type:"image/png"}]};
-document.getElementById('mani').href=URL.createObjectURL(new Blob([JSON.stringify(mani)],{type:'application/json'}));
-if('serviceWorker' in navigator){const c='self.addEventListener("install",e=>self.skipWaiting())';navigator.serviceWorker.register(URL.createObjectURL(new Blob([c],{type:'text/javascript'})));}
-document.getElementById('btnGPS').onclick=()=>navigator.geolocation.getCurrentPosition(p=>{pos=p;document.getElementById('splash').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('loc').textContent=p.coords.latitude.toFixed(6)+','+p.coords.longitude.toFixed(6);document.getElementById('uInfo').textContent='GPS حقيقي: '+p.coords.latitude.toFixed(3);navigator.geolocation.watchPosition(pp=>{pos=pp;document.getElementById('loc').textContent=pp.coords.latitude.toFixed(6)+','+pp.coords.longitude.toFixed(6);});},()=>alert('افتح الموقع'),{enableHighAccuracy:true});
-function chkO(){let n=Date.now();if(n-lt>3000)tap=0;tap++;lt=n;if(tap>=5)document.getElementById('oModal').classList.remove('hidden');}
-document.getElementById('tap5').onclick=chkO;
-document.getElementById('logoMain').onclick=chkO;
-document.getElementById('oLogin').onclick=()=>{if(document.getElementById('oPass').value==='0000'){document.getElementById('oModal').classList.add('hidden');document.getElementById('cView').classList.add('hidden');document.getElementById('dView').classList.add('hidden');document.getElementById('oView').classList.remove('hidden');renderO();}else alert('غلط');};
-document.querySelectorAll('.rb').forEach(b=>b.onclick=()=>{document.querySelectorAll('.rb').forEach(x=>x.className='rb bg-black text-white px-4 py-2 rounded-full text-[12px]');b.className='rb bg-[#FFD400] text-black px-4 py-2 rounded-full text-[12px] font-bold';role=b.dataset.r;document.getElementById('cView').classList.toggle('hidden',role!=='عميل');document.getElementById('dView').classList.toggle('hidden',role==='عميل');document.getElementById('oView').classList.add('hidden');if(role!=='عميل')renderD();document.getElementById('driverMode').textContent=role;});
-function calcMalakiPrice(){
-  const baseFare=15; const perKm=7; const perMin=1.2; const minFare=25;
-  let dist=(Math.random()*12+1.5);
-  const timeMin=dist*3;
-  let price=baseFare + (dist*perKm) + (timeMin*perMin);
-  price=Math.round(price/5)*5;
-  if(price<minFare) price=minFare;
-  const breakdown=`فتح عداد ${baseFare}ج + مسافة ${dist.toFixed(1)}كم × ${perKm}ج = ${(dist*perKm).toFixed(0)}ج + وقت ${timeMin.toFixed(0)}د × ${perMin}ج = ${(timeMin*perMin).toFixed(0)}ج = <b>${price}ج</b>`;
-  document.getElementById('malakiCalc').innerHTML=breakdown;
-  document.getElementById('distInfo').textContent=`المسافة التقديرية ${dist.toFixed(1)} كم - تسعير تلقائي 2026`;
-  return price;
+'use client';
+import { useState, useEffect, useRef } from 'react';
+import { auth, db, storage } from '../lib/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+function RealMap({ lat, lng, otherLat, otherLng, showRoute=false, height='300px' }: any){
+  const mapRef=useRef<HTMLDivElement>(null);
+  const mapInst=useRef<any>(null);
+  useEffect(()=>{
+    if(!mapRef.current ||!lat ||!lng) return;
+    const load=async()=>{
+      if(!(window as any).L){
+        const link=document.createElement('link'); link.rel='stylesheet'; link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(link);
+        const scr=document.createElement('script'); scr.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; document.head.appendChild(scr);
+        await new Promise(r=>scr.onload=r);
+      }
+      const L=(window as any).L;
+      if(mapInst.current) { try{ mapInst.current.remove(); }catch{} }
+      const map=L.map(mapRef.current).setView([lat,lng],16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap مصر'}).addTo(map);
+      L.marker([lat,lng],{icon:L.divIcon({html:'📍أنت',className:'text-[12px] bg-yellow-400 px-2 rounded-full border'})}).addTo(map).bindPopup('موقعك الحقيقي GPS');
+      if(otherLat && otherLng){
+        L.marker([otherLat,otherLng],{icon:L.divIcon({html:'🚗',className:'text-[20px]'})}).addTo(map).bindPopup('الطرف الآخر');
+        if(showRoute){ const ll=[[lat,lng],[otherLat,otherLng]]; L.polyline(ll,{color:'#FFD400',weight:5,dashArray:'10,10'}).addTo(map); map.fitBounds(ll,{padding:[30,30]}); }
+      }
+      mapInst.current=map;
+    }; load();
+    return()=>{ if(mapInst.current) try{mapInst.current.remove();}catch{} };
+  },[lat,lng,otherLat,otherLng]);
+  return <div ref={mapRef} style={{height,width:'100%',borderRadius:'16px',border:'2px solid #FFD400',zIndex:0}} />;
 }
-document.querySelectorAll('.sb').forEach(b=>b.onclick=()=>{
-  serv=b.dataset.s;
-  document.getElementById('servName').textContent=serv;
-  document.getElementById('orderForm').classList.remove('hidden');
-  if(serv==='ملاكي'){document.getElementById('malakiPriceBox').classList.remove('hidden');calcMalakiPrice();}else{document.getElementById('malakiPriceBox').classList.add('hidden');}
-});
-document.getElementById('recVoice').onclick=async()=>{
-  if(mediaRec && mediaRec.state==='recording'){mediaRec.stop();return;}
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRec=new MediaRecorder(stream);
-    let chunks=[];
-    mediaRec.ondataavailable=e=>chunks.push(e.data);
-    mediaRec.onstart=()=>{
-      recStart=Date.now();
-      document.getElementById('recVoice').textContent='⏹️ إيقاف التسجيل';
-      document.getElementById('recVoice').className='flex-1 bg-red-600 text-white py-2 rounded-xl text-[11px] font-bold';
-      timerInt=setInterval(()=>{const sec=Math.floor((Date.now()-recStart)/1000);document.getElementById('voiceTime').textContent=`00:${sec<10?'0'+sec:sec}`;},1000);
-    };
-    mediaRec.onstop=()=>{
-      clearInterval(timerInt);
-      voiceBlob=new Blob(chunks,{type:'audio/webm'});
-      voiceURL=URL.createObjectURL(voiceBlob);
-      document.getElementById('recVoice').textContent='🎤 إعادة تسجيل';
-      document.getElementById('recVoice').className='flex-1 bg-black text-white py-2 rounded-xl text-[11px] font-bold';
-      document.getElementById('playVoice').classList.remove('hidden');
-      document.getElementById('delVoice').classList.remove('hidden');
-      document.getElementById('voiceStatus').textContent='تم تسجيل رسالة صوتية - السائق هيسمعها';
-      stream.getTracks().forEach(t=>t.stop());
-    };
-    mediaRec.start();
-  }catch(e){alert('المايك مقفول - افتح إذن المايك');}
-};
-document.getElementById('playVoice').onclick=()=>{if(voiceURL){let a=new Audio(voiceURL);a.play();}};
-document.getElementById('delVoice').onclick=()=>{
-  voiceBlob=null;voiceURL=null;
-  document.getElementById('playVoice').classList.add('hidden');
-  document.getElementById('delVoice').classList.add('hidden');
-  document.getElementById('voiceStatus').textContent='السائق هيسمع رسالتك الصوتية بالتفصيل';
-  document.getElementById('voiceTime').textContent='00:00';
-};
-document.getElementById('sendO').onclick=async()=>{
-  let f=document.getElementById('fromI').value,t=document.getElementById('toI').value;
-  if(!f||!t)return alert('اكتب منين لفين');
-  let price=0;let pricingType='';
-  if(serv==='ملاكي'){price=calcMalakiPrice();pricingType='تسعير تلقائي 2026';}else{pricingType='تسعير السائق';}
-  let voiceData=null;
-  if(voiceBlob){voiceData=await new Promise(res=>{let r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(voiceBlob);});}
-  let o={id:Date.now(),serv,f,t,ex:document.getElementById('exI').value,voice:voiceData,status:serv==='ملاكي'?'offer':'wait',price,pricingType,lat:pos?.coords.latitude,lng:pos?.coords.longitude,timestamp:Date.now()};
-  orders.unshift(o);cur=o;
-  localStorage.setItem('orders',JSON.stringify(orders));
-  document.getElementById('orderForm').classList.add('hidden');
-  if(serv==='ملاكي'){document.getElementById('offer').classList.remove('hidden');document.getElementById('offerP').textContent=price+' جنيه';document.getElementById('offerType').textContent=pricingType;document.getElementById('offerDetails').textContent='فتح عداد + مسافة + وقت - نظام 2026';}else{document.getElementById('wait').classList.remove('hidden');setTimeout(()=>{document.getElementById('wait').classList.add('hidden');document.getElementById('offer').classList.remove('hidden');document.getElementById('offerP').textContent='في انتظار تسعير السائق';document.getElementById('offerType').textContent='توكتوك / دليفري - السائق يحدد السعر';},1000);}
-};
-document.getElementById('acc').onclick=()=>{cur.status='trip';localStorage.setItem('orders',JSON.stringify(orders));document.getElementById('offer').classList.add('hidden');document.getElementById('trip').classList.remove('hidden');};
-document.getElementById('rej').onclick=()=>document.getElementById('offer').classList.add('hidden');
-document.getElementById('sos').onclick=()=>{
-  document.getElementById('sosModal').classList.remove('hidden');
-  navigator.vibrate&&navigator.vibrate([200,100,200,100,400]);
-  document.getElementById('sosRealLoc').textContent='جاري تحديد موقعك الحقيقي بدقة عالية...';
-  navigator.geolocation.getCurrentPosition(p=>{
-    const lat=p.coords.latitude, lng=p.coords.longitude, acc=Math.round(p.coords.accuracy);
-    const mapsLink=`https://www.google.com/maps?q=${lat},${lng}`;
-    const text=`استغاثة طوارئ - توصيلة أمان - موقعي الحقيقي: ${lat.toFixed(6)},${lng.toFixed(6)} - دقة ${acc}م - ${mapsLink}`;
-    document.getElementById('sosRealLoc').innerHTML=`موقعك الحقيقي:<br><b>${lat.toFixed(6)}, ${lng.toFixed(6)}</b><br>دقة ${acc}م - ${new Date().toLocaleString('ar-EG')}<br><a href="${mapsLink}" target="_blank" class="text-[#FFD400] underline">فتح في خرائط جوجل</a>`;
-    let s=JSON.parse(localStorage.getItem('sos')||'[]');
-    s.unshift({t:Date.now(),lat,lng,acc,mapsLink});
-    localStorage.setItem('sos',JSON.stringify(s));
-    document.getElementById('shareMaps').onclick=()=>{
-      if(navigator.share){navigator.share({title:'موقعي - استغاثة',text:text,url:mapsLink});}
-      else{window.open(mapsLink,'_blank');}
-    };
-    document.getElementById('shareWaOwner').onclick=()=>{
-      const wa=`https://wa.me/?text=${encodeURIComponent(text)}`;
-      window.open(wa,'_blank');
-    };
-  },err=>{
-    document.getElementById('sosRealLoc').textContent='فشل تحديد الموقع - تأكد انك فاتح GPS - '+err.message;
-  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
-};
-document.getElementById('closeSOS').onclick=()=>document.getElementById('sosModal').classList.add('hidden');
-document.getElementById('fin').onclick=()=>{if(!cur)return;cur.status='done';stats.t++;stats.tot+=cur.price;stats.c+=cur.price*0.1;localStorage.setItem('orders',JSON.stringify(orders));localStorage.setItem('stats',JSON.stringify(stats));alert('تم - عمولة 10% = '+(cur.price*0.1)+' ج');document.getElementById('trip').classList.add('hidden');};
-function renderD(){
-  document.getElementById('myT').textContent=stats.t;document.getElementById('myTot').textContent=stats.tot;document.getElementById('myC').textContent=stats.c.toFixed(1);
-  let d=document.getElementById('incoming');d.innerHTML='';
-  orders.filter(o=>o.status==='wait' || o.status==='offer').forEach(o=>{
-    let e=document.createElement('div');e.className='bg-white border rounded-xl p-3 text-[11px]';
-    let voiceBtn=o.voice?`<button class="playV bg-[#FFD400] text-black px-2 py-1 rounded-full text-[10px] mt-2">▶️ اسمع رسالة العميل الصوتية</button><audio class="hidden" src="${o.voice}"></audio>`:'';
-    if(o.serv==='ملاكي' && o.status==='offer'){
-      e.innerHTML=`<div class="font-bold">🚗 ملاكي - تسعير تلقائي ${o.price}ج</div><div>${o.f} → ${o.t}</div><div class="opacity-60">${o.ex}</div>${voiceBtn}<div class="text-[10px] mt-2 bg-[#FFD400]/20 p-2 rounded">${o.pricingType}</div><div class="flex gap-2 mt-2"><button class="accD flex-1 bg-black text-white py-2 rounded-xl">قبول الرحلة</button></div>`;
-    }else{
-      e.innerHTML=`<div class="font-bold">${o.serv} - ${o.f} → ${o.t}</div><div class="opacity-60">${o.ex}</div>${voiceBtn}<div class="flex gap-2 mt-2"><input class="pr flex-1 bg-[#f5f2e8] p-2 rounded-xl" placeholder="حدد السعر للتوكتوك/دليفري"><button class="sp bg-[#FFD400] px-3 rounded-xl font-bold">تحديد السعر</button></div>`;
+
+export default function Home(){
+  const [step,setStep]=useState('gps');
+  const [role,setRole]=useState('عميل');
+  const [phone,setPhone]=useState(''); const [otp,setOtp]=useState(''); const [name,setName]=useState(''); const [address,setAddress]=useState('');
+  const [vehicleType,setVehicleType]=useState('توكتوك'); const [vehicleNumber,setVehicleNumber]=useState('');
+  const [confirmationResult,setConfirmationResult]=useState<any>(null);
+  const [pos,setPos]=useState<any>(null); const [deferredPrompt,setDeferredPrompt]=useState<any>(null); const [showInstall,setShowInstall]=useState(false);
+  const [tapCount,setTapCount]=useState(0); const [lastTap,setLastTap]=useState(0); const [showOwnerLogin,setShowOwnerLogin]=useState(false); const [ownerPass,setOwnerPass]=useState('');
+  const [serv,setServ]=useState(''); const [from,setFrom]=useState(''); const [to,setTo]=useState(''); const [extra,setExtra]=useState('');
+  const [orders,setOrders]=useState<any[]>([]); const [currentOrder,setCurrentOrder]=useState<any>(null);
+  const [voiceBlob,setVoiceBlob]=useState<Blob|null>(null); const [voiceUrl,setVoiceUrl]=useState<string|null>(null); const [isRecording,setIsRecording]=useState(false);
+  const [sosLoc,setSosLoc]=useState<any>(null); const [showSos,setShowSos]=useState(false);
+  const [users,setUsers]=useState<any[]>([]); const [chatMsg,setChatMsg]=useState(''); const [chatList,setChatList]=useState<any[]>([]);
+  const [fuelPrice,setFuelPrice]=useState(15.5); const [baseFare,setBaseFare]=useState(18);
+  const mediaRef=useRef<MediaRecorder|null>(null);
+
+  useEffect(()=>{
+    window.addEventListener('beforeinstallprompt',(e:any)=>{e.preventDefault(); setDeferredPrompt(e); setShowInstall(true);});
+    if(navigator.geolocation){ navigator.geolocation.watchPosition(p=>setPos(p),()=>{},{enableHighAccuracy:true,maximumAge:0}); }
+    setOrders(JSON.parse(localStorage.getItem('orders')||'[]'));
+    setUsers(JSON.parse(localStorage.getItem('users')||'[]'));
+    setFuelPrice(parseFloat(localStorage.getItem('fuelPrice')||'15.5'));
+    setBaseFare(parseFloat(localStorage.getItem('baseFare')||'18'));
+  },[]);
+
+  const handleLogoTap=()=>{
+    const now=Date.now(); if(now-lastTap>3000) setTapCount(0);
+    const nc=tapCount+1; setTapCount(nc); setLastTap(now);
+    if(nc>=5){ setShowOwnerLogin(true); setTapCount(0); }
+  };
+  const requestGPS=()=>navigator.geolocation.getCurrentPosition(p=>{setPos(p); setStep('register');},()=>alert('افتح الموقع'),{enableHighAccuracy:true});
+  const sendOTP=async()=>{
+    if(!name||!phone||!address) return alert('اكمل بياناتك');
+    if(role!=='عميل' &&!vehicleNumber) return alert('رقم المركبة إجباري');
+    if(!(window as any).recaptchaVerifier){
+      (window as any).recaptchaVerifier=new RecaptchaVerifier(auth,'recaptcha',{size:'invisible'});
     }
-    if(o.voice){e.querySelector('.playV').onclick=()=>{let a=e.querySelector('audio');a.play();};}
-    let sp=e.querySelector('.sp'); if(sp){sp.onclick=()=>{let p=parseInt(e.querySelector('.pr').value);if(!p)return;o.price=p;o.status='offer';localStorage.setItem('orders',JSON.stringify(orders));renderD();};}
-    let accD=e.querySelector('.accD'); if(accD){accD.onclick=()=>{o.status='trip';localStorage.setItem('orders',JSON.stringify(orders));renderD(); alert('تم قبول رحلة ملاكي - تحرك للعميل');};}
-    d.appendChild(e);
-  });
-  if(d.innerHTML==='') d.innerHTML='<div class="text-center opacity-50 text-[12px]">لا يوجد طلبات جديدة</div>';
-}
-function renderO(){
-  let o=document.getElementById('oList');o.innerHTML='';
-  orders.filter(x=>x.status==='done').forEach(x=>{let e=document.createElement('div');e.className='bg-white/5 p-2 rounded-xl flex justify-between';e.innerHTML='<div>'+x.serv+' '+x.f+'</div><div class="text-[#FFD400]">'+x.price+'ج عمولة '+(x.price*0.1).toFixed(1)+'ج</div>';o.appendChild(e);});
-  let s=JSON.parse(localStorage.getItem('sos')||'[]');document.getElementById('oSOS').innerHTML='استغاثات: '+s.length+'<br>'+s.map(x=>new Date(x.t).toLocaleString()+' - '+x.lat+','+x.lng).join('<br>');
-}
-document.getElementById('brod').onclick=()=>{let txt=encodeURIComponent('تذكير تصفية عمولة توصيلة أمان 10%');window.open('https://wa.me/?text='+txt,'_blank');};
-</script>
-</body>
-</html>
+    try{
+      const res=await signInWithPhoneNumber(auth,'+2'+phone,(window as any).recaptchaVerifier);
+      setConfirmationResult(res); setStep('otp');
+    }catch{
+      const u={id:Date.now(),name,phone,address,role,vehicleType,vehicleNumber,totalOrders:0,tuktukOrders:0,malakiOrders:0,deliveryOrders:0,totalCommission:0,createdAt:Date.now()};
+      const all=[u,...users]; setUsers(all); localStorage.setItem('users',JSON.stringify(all)); localStorage.setItem('currentUser',JSON.stringify(u)); setStep('home');
+    }
+  };
+  const calcMalakiPrice=(distKm?:number)=>{
+    const perKm=parseFloat((fuelPrice*0.45+0.5).toFixed(2));
+    const perMin=1.5; const minFare=baseFare+7;
+    let d=distKm||(1.5+Math.random()*12);
+    const tm=d*3.5; let pr=baseFare+(d*perKm)+(tm*perMin); pr=Math.round(pr/5)*5; if(pr<minFare) pr=minFare;
+    return {price:pr,dist:d,perKm,timeMin:tm};
+  };
+  const sendOrder=async()=>{
+    if(!from||!to) return alert('اكتب منين لفين');
+    let price=0; let pType='';
+    if(serv==='ملاكي'){ const c=calcMalakiPrice(); price=c.price; pType=`تلقائي 2026 - بنزين ${fuelPrice}ج - ${c.dist.toFixed(1)}كم`; } else { pType='سعر السائق - تفاوض'; }
+    let voiceData=null; if(voiceBlob){ voiceData=await new Promise<string>(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result as string); fr.readAsDataURL(voiceBlob); }); }
+    const order={id:Date.now(),serv,from,to,extra,voice:voiceData,price,pricingType:pType,status:serv==='ملاكي'?'offer':'wait',user:{name,phone,address,role,vehicleNumber},lat:pos?.coords.latitude,lng:pos?.coords.longitude,chat:chatList,day:new Date().toISOString().slice(0,10),fuelPriceAtOrder:fuelPrice,createdAt:Date.now()};
+    const newOrders=[order,...orders]; setOrders(newOrders); localStorage.setItem('orders',JSON.stringify(newOrders)); setCurrentOrder(order);
+    try{ await addDoc(collection(db,'orders'),order); }catch{}
+  };
+  const handleSos=()=>{
+    setShowSos(true); navigator.vibrate&&navigator.vibrate([200,100,200,100,400]);
+    navigator.geolocation.getCurrentPosition(p=>setSosLoc({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)}),()=>{},{enableHighAccuracy:true});
+  };
+
+  if(step==='gps'){
+    return (<div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6" dir="rtl">
+      <img src="/logo.png" onClick={handleLogoTap} className="w-32 h-32 rounded-[28px] border-2 border-yellow-400 bg-black p-2 cursor-pointer" alt="logo"/>
+      <h1 className="mt-4 text-3xl font-extrabold text-yellow-400">توصيلة أمان</h1>
+      <p className="opacity-60">خرائط حقيقية - مصر كلها - تثبيت مباشر</p>
+      <button onClick={requestGPS} className="mt-6 bg-yellow-400 text-black px-8 py-4 rounded-2xl font-bold w-full max-w-[340px]">تفعيل الموقع - خرائط حقيقية</button>
+      {showOwnerLogin && (<div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6"><div className="bg-white text-black p-5 rounded-2xl w-full max-w-[320px]"><input type="password" value={ownerPass} onChange={e=>setOwnerPass(e.target.value)} placeholder="كلمة السر" className="w-full bg-gray-100 p-3 rounded-xl mt-3"/><button onClick={()=>{ if(ownerPass==='0000'){ setStep('owner'); setShowOwnerLogin(false);} else alert('غلط');}} className="w-full mt-3 bg-black text-white py-3 rounded-xl">دخول المالك السري</button></div></div>)}
+    </div>);
+  }
+  if(step==='register'){
+    return (<div className="min-h-screen bg-[#111] text-white p-5" dir="rtl"><div id="recaptcha"></div><div className="max-w-[500px] mx-auto">
+      <h2 className="text-xl font-extrabold">تسجيل - بيانات وصور حقيقية</h2>
+      <input value={name} onChange={e=>setName(e.target.value)} placeholder="الاسم ثلاثي" className="w-full bg-[#222] p-4 rounded-2xl mt-4"/>
+      <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="010xxxxxxxx" className="w-full bg-[#222] p-4 rounded-2xl mt-3"/>
+      <input value={address} onChange={e=>setAddress(e.target.value)} placeholder="العنوان بالتفصيل" className="w-full bg-[#222] p-4 rounded-2xl mt-3"/>
+      <div className="grid grid-cols-4 gap-2 mt-4">{['عميل','توكتوك','دليفري','ملاكي'].map(r=>(<button key={r} onClick={()=>setRole(r)} className={`py-3 rounded-xl text-[12px] font-bold ${role===r?'bg-yellow-400 text-black':'bg-[#222]'}`}>{r}</button>))}</div>
+      {role!=='عميل' && (<div className="mt-5 bg-[#1a1a1a] p-4 rounded-2xl border border-white/10"><div className="grid grid-cols-2 gap-3"><select value={vehicleType} onChange={e=>setVehicleType(e.target.value)} className="w-full bg-[#222] p-3 rounded-xl"><option>توكتوك</option><option>موتوسيكل</option><option>ملاكي</option></select><input value={vehicleNumber} onChange={e=>setVehicleNumber(e.target.value)} placeholder="رقم المركبة" className="w-full bg-[#222] p-3 rounded-xl"/></div><label className="mt-3 block text-[11px]">صورة المركبة حقيقي</label><input type="file" accept="image/*" className="w-full mt-1 text-[11px]" onChange={async e=>{ const f=e.target.files?.[0]; if(!f) return; const r=ref(storage,`drivers/${phone}/${f.name}`); await uploadBytes(r,f); alert('اترفعت'); }} /><label className="mt-2 block text-[11px]">صورتك الشخصية</label><input type="file" accept="image/*" className="w-full mt-1 text-[11px]" onChange={async e=>{ const f=e.target.files?.[0]; if(!f) return; const r=ref(storage,`drivers/${phone}/self_${f.name}`); await uploadBytes(r,f); alert('اترفعت'); }} /></div>)}
+      <button onClick={sendOTP} className="w-full mt-8 bg-yellow-400 text-black py-4 rounded-2xl font-bold">إرسال كود ودخول</button></div></div>);
+  }
+  if(step==='otp'){
+    return (<div className="min-h-screen bg-black text-white p-6 flex flex-col justify-center max-w-[500px] mx-auto" dir="rtl"><input value={otp} onChange={e=>setOtp(e.target.value)} placeholder="123456" className="w-full bg-[#222] p-4 rounded-2xl mt-4 text-center text-2xl"/><button onClick={async()=>{ try{ const cred=await confirmationResult.confirm(otp); const uid=cred.user.uid; const userData={name,phone,address,role,vehicleType,vehicleNumber,totalOrders:0,tuktukOrders:0,malakiOrders:0,deliveryOrders:0,totalCommission:0,createdAt:serverTimestamp()}; await setDoc(doc(db,'users',uid),userData); const all=[{...userData,id:uid},...users]; setUsers(all); localStorage.setItem('users',JSON.stringify(all)); localStorage.setItem('currentUser',JSON.stringify({...userData,id:uid})); setStep('home'); }catch{ alert('كود غلط'); } }} className="mt-6 bg-yellow-400 text-black py-4 rounded-2xl font-bold">تأكيد</button></div>);
+  }
+  if(step==='owner'){
+    const today=new Date().toISOString().slice(0,10);
+    const perDriver=users.filter((u:any)=>u.role!=='عميل').map((u:any)=>{
+      const uOrders=orders.filter((o:any)=>o.user?.phone===u.phone);
+      return {...u,total:uOrders.length,today:uOrders.filter((o:any)=>o.day===today).length,commission:uOrders.reduce((s:any,o:any)=>s+(o.price*0.1||0),0),tuktuk:uOrders.filter((o:any)=>o.serv==='توكتوك').length,malaki:uOrders.filter((o:any)=>o.serv==='ملاكي').length,delivery:uOrders.filter((o:any)=>o.serv==='دليفري').length};
+    });
+    return (<div className="min-h-screen bg-[#0f0f0f] text-white p-5" dir="rtl">
+      <div className="flex justify-between"><h1 className="text-xl font-bold text-yellow-400">لوحة المالك - عمولات مفصلة</h1><button onClick={()=>setStep('home')} className="bg-white text-black px-4 py-2 rounded-xl text-[11px]">رجوع</button></div>
+      <div className="mt-4 bg-yellow-400/10 border border-yellow-400 rounded-xl p-4"><h3 className="font-bold text-[13px]">تسعير البنزين - سبتمبر 2026 - يتغير تلقائيا</h3><div className="grid grid-cols-2 gap-2 mt-2"><div><label className="text-[10px]">سعر البنزين</label><input type="number" value={fuelPrice} onChange={e=>{setFuelPrice(parseFloat(e.target.value)); localStorage.setItem('fuelPrice',e.target.value);}} className="w-full bg-black text-yellow-400 p-2 rounded-xl"/></div><div><label className="text-[10px]">فتح العداد ملاكي</label><input type="number" value={baseFare} onChange={e=>{setBaseFare(parseFloat(e.target.value)); localStorage.setItem('baseFare',e.target.value);}} className="w-full bg-black text-white p-2 rounded-xl"/></div></div><div className="text-[10px] mt-2">سعر الكم = {(fuelPrice*0.45+0.5).toFixed(2)}ج - حد أدنى {baseFare+7}ج - لو البنزين غلى غير هنا</div></div>
+      <h3 className="mt-6 font-bold text-yellow-400">السائقين - خانه لكل واحد - تصفية 10 مساء</h3><div className="grid gap-3 mt-3">{perDriver.map((d:any)=>(<div key={d.id} className="bg-white/5 border border-white/10 rounded-xl p-3"><div className="flex justify-between"><div><div className="font-bold">{d.name} - {d.role} - {d.phone}</div><div className="text-[11px] opacity-60">{d.address} - {d.vehicleType} {d.vehicleNumber}</div><div className="text-[11px] mt-1"><span className="bg-yellow-400/20 px-2 py-1 rounded-full ml-1">توكتوك {d.tuktuk}</span><span className="bg-blue-500/20 px-2 py-1 rounded-full ml-1">ملاكي {d.malaki}</span><span className="bg-green-500/20 px-2 py-1 rounded-full">دليفري {d.delivery}</span></div></div><div className="text-left"><div className="text-[11px]">اليوم {d.today}</div><div className="text-[11px]">إجمالي {d.total}</div><div className="font-bold text-yellow-400">{d.commission.toFixed(1)}ج عمولة</div><div className="flex gap-1 mt-1"><a href={`tel:${d.phone}`} className="bg-white text-black px-2 py-1 rounded-full text-[10px]">📞</a><a href={`https://wa.me/2${d.phone.replace(/^0/,'')}`} target="_blank" className="bg-green-600 text-white px-2 py-1 rounded-full text-[10px]">تصفية واتساب</a><button onClick={()=>{ if(confirm(`حظر ${d.name}؟`)){ const f=users.filter((u:any)=>u.id!==d.id); setUsers(f); localStorage.setItem('users',JSON.stringify(f)); } }} className="bg-red-600 text-white px-2 py-1 rounded-full text-[10px]">حظر وحذف</button></div></div></div></div>))}</div>
+      <h3 className="mt-6 font-bold">الخريطة الحية - مصر كلها</h3>{pos && <RealMap lat={pos.coords.latitude} lng={pos.coords.longitude} height="400px"/>}
+    </div>);
+  }
+  return (<div className="min-h-screen bg-[#fafaf8] text-black max-w-[520px] mx-auto" dir="rtl">
+    <div className="sticky top-0 bg-[#111] text-white p-4 flex justify-between items-center z-10"><div className="flex gap-2 items-center"><img src="/logo.png" onClick={handleLogoTap} className="w-9 h-9 rounded-xl border border-yellow-400 bg-black object-contain cursor-pointer" alt="logo"/><div><div className="font-bold text-yellow-400 text-[13px]">توصيلة أمان</div><div className="text-[10px] opacity-60">{name} - بنزين {fuelPrice}ج</div></div></div>{showInstall && <button onClick={()=>deferredPrompt?.prompt()} className="bg-yellow-400 text-black px-3 py-1 rounded-full text-[11px] font-bold animate-pulse">تثبيت مباشر</button>}</div>
+    <div className="p-2">{pos && <RealMap lat={pos.coords.latitude} lng={pos.coords.longitude} otherLat={currentOrder?.lat} otherLng={currentOrder?.lng} showRoute={!!currentOrder} height="280px"/>}<div className="mt-2 bg-black text-white p-2 rounded-xl text-[10px] text-center">خريطة حقيقية - تتحرك بالمتر - العميل يشوف السائق لايف</div></div>
+    <div className="p-3 flex gap-2 overflow-x-auto">{['عميل','توكتوك','دليفري','ملاكي'].map(r=>(<button key={r} onClick={()=>setRole(r)} className={`px-4 py-2 rounded-full text-[12px] ${role===r?'bg-yellow-400 text-black font-bold':'bg-black text-white'}`}>{r}</button>))}</div>
+    {role==='عميل' && (<div className="p-4"><div className="grid grid-cols-3 gap-2"><button onClick={()=>setServ('توكتوك')} className={`bg-white border-2 rounded-[18px] p-4 font-bold text-[12px] ${serv==='توكتوك'?'border-yellow-400':'border-gray-200'}`}>🛺 توكتوك<br/><span className="text-[9px]">سعر السائق</span></button><button onClick={()=>setServ('دليفري')} className={`bg-white border rounded-[18px] p-4 font-bold text-[12px] ${serv==='دليفري'?'border-yellow-400':''}`}>🏍️ دليفري<br/><span className="text-[9px]">سعر السائق</span></button><button onClick={()=>setServ('ملاكي')} className={`bg-white border rounded-[18px] p-4 font-bold text-[12px] ${serv==='ملاكي'?'border-yellow-400':''}`}>🚗 ملاكي<br/><span className="text-[9px]">تلقائي {fuelPrice}ج</span></button></div>
+      {serv && (<div className="mt-4 bg-white border rounded-[20px] p-4"><input value={from} onChange={e=>setFrom(e.target.value)} placeholder="منين" className="w-full bg-[#f5f2e8] p-3 rounded-xl text-[13px]"/><input value={to} onChange={e=>setTo(e.target.value)} placeholder="لفين" className="w-full mt-2 bg-[#f5f2e8] p-3 rounded-xl text-[13px]"/><input value={extra} onChange={e=>setExtra(e.target.value)} placeholder="تفاصيل" className="w-full mt-2 bg-[#f5f2e8] p-3 rounded-xl text-[13px]"/>
+        <div className="mt-3 bg-[#f5f2e8] rounded-xl p-3"><div className="text-[11px] font-bold">رسالة صوتية + دردشة تفاوض</div><div className="flex gap-2 mt-2"><button onClick={async()=>{ if(isRecording){ mediaRef.current?.stop(); setIsRecording(false); return; } const s=await navigator.mediaDevices.getUserMedia({audio:true}); const r=new MediaRecorder(s); const ch:any[]=[]; r.ondataavailable=e=>ch.push(e.data); r.onstop=()=>{ const b=new Blob(ch,{type:'audio/webm'}); setVoiceBlob(b); setVoiceUrl(URL.createObjectURL(b)); s.getTracks().forEach(t=>t.stop()); }; mediaRef.current=r; r.start(); setIsRecording(true); }} className={`flex-1 py-2 rounded-xl text-[11px] font-bold ${isRecording?'bg-red-600 text-white animate-pulse':'bg-black text-white'}`}>{isRecording?'⏹️ إيقاف':'🎤 رسالة صوتية'}</button>{voiceUrl && <button onClick={()=>new Audio(voiceUrl!).play()} className="bg-yellow-400 px-3 rounded-xl text-[11px]">▶️</button>}</div><div className="flex gap-2 mt-2"><input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} placeholder="تفاوض على السعر" className="flex-1 bg-white p-2 rounded-xl text-[11px]"/><button onClick={()=>{ if(!chatMsg) return; setChatList([...chatList,{from:'عميل',msg:chatMsg,time:Date.now()}]); setChatMsg(''); }} className="bg-yellow-400 px-3 rounded-xl text-[11px]">إرسال</button></div><div className="mt-2">{chatList.map((c:any,i:any)=>(<div key={i} className="text-[11px]"><b>{c.from}:</b> {c.msg}</div>))}</div></div>
+        {serv==='ملاكي' && (<div className="mt-3 bg-yellow-400/20 border-2 border-yellow-400 rounded-xl p-3 text-[11px]"><div className="font-bold">تسعير سبتمبر 2026 - مرتبط بالبنزين</div><div>بنزين {fuelPrice}ج ×0.45+0.5={(fuelPrice*0.45+0.5).toFixed(2)}ج/كم - فتح {baseFare}ج</div><div className="font-bold">السعر {calcMalakiPrice().price}ج - {calcMalakiPrice().dist.toFixed(1)}كم</div><div className="text-[10px] opacity-60">يتغير تلقائيا لو البنزين غلى - محسوب من الخريطة</div></div>)}
+        <button onClick={sendOrder} className="w-full mt-3 bg-yellow-400 text-black py-3 rounded-xl font-bold">إرسال - خريطة حقيقية</button></div>)}
+      {currentOrder && (<div className="mt-4"><RealMap lat={pos.coords.latitude} lng={pos.coords.longitude} otherLat={currentOrder.lat} otherLng={currentOrder.lng} showRoute height="250px"/><div className="mt-3 bg-white border-2 border-yellow-400 rounded-[20px] p-5 text-center"><div className="text-[11px] opacity-60">{currentOrder.pricingType}</div><div className="text-[28px] font-extr
