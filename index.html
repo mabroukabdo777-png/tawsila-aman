@@ -3,107 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google" content="notranslate">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>توصيلة أمان</title>
-<meta name="theme-color" content="#0A3D62">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>توصيلة أمان - Tawseela Aman</title>
+<meta name="theme-color" content="#0A2540">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-*{font-family:Cairo,sans-serif;box-sizing:border-box}
-body{margin:0;background:#f3f6f9}.header{background:#0A3D62;color:#fff;padding:10px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:999}
-.logo{height:52px;background:#fff;border-radius:12px;padding:4px}.install-btn{background:#00B140;color:#fff;border:none;padding:10px 16px;border-radius:30px;font-weight:900}
-.back-btn{background:#ffffff33;border:1px solid #fff;color:#fff;padding:6px 12px;border-radius:20px}
-.card{background:#fff;border-radius:18px;padding:16px;margin:10px;box-shadow:0 6px 20px rgba(0,0,0,.06);cursor:pointer}
-.input{width:100%;padding:14px;border-radius:12px;border:1.5px solid #ccc;margin:8px 0;font-size:16px}
-.btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:900;font-size:16px;cursor:pointer}
-.btn-green{background:#00B140;color:#fff}.btn-dark{background:#0A3D62;color:#fff}
-.map{height:350px;width:100%;border-radius:16px;margin:10px 0;border:2px solid #0A3D62}
-.locBox{background:#fff3cd;border:2px solid #ffc107;border-radius:16px;padding:16px;margin:10px;text-align:center}
-.goog-te-banner-frame{display:none!important} body{top:0!important}
+*{font-family:'Cairo',sans-serif;box-sizing:border-box}
+body{margin:0;background:#F6F8FB;color:#0A2540}
+.header{position:sticky;top:0;z-index:1000;background:rgba(10,37,64,0.94);backdrop-filter:blur(16px);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo{height:48px;width:48px;background:white;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#0A2540}
+.app-name{color:white;line-height:1}.app-name b{font-size:15px;display:block}.app-name span{font-size:11px;opacity:.7}
+.install{border:none;background:white;color:#0A2540;padding:10px 18px;border-radius:100px;font-weight:900;font-size:13px;cursor:pointer}
+.install.ready{background:#00E676}
+.back{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:white;padding:7px 14px;border-radius:100px;font-size:13px;cursor:pointer}
+.shell{max-width:520px;margin:auto;padding:14px}
+.loc-card{background:white;border:1px solid #E6ECF5;border-radius:24px;padding:18px;box-shadow:0 12px 32px rgba(10,37,64,.08);margin-bottom:14px}
+.btn{width:100%;border:none;border-radius:16px;padding:15px;font-weight:900;font-size:15px;cursor:pointer}
+.btn-dark{background:#0A2540;color:white}.btn-green{background:#00B140;color:white}
+.map{height:260px;border-radius:20px;overflow:hidden;border:1px solid #DDE5EF;margin-top:12px;display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.role-card{background:white;border:1px solid #E8EEF7;border-radius:22px;padding:16px;text-align:center;box-shadow:0 8px 24px rgba(10,37,64,.06);cursor:pointer}
+.icon-circle{width:56px;height:56px;border-radius:18px;margin:0 auto 10px auto;display:flex;align-items:center;justify-content:center;font-size:28px}
+.screen{background:white;border:1px solid #E6ECF5;border-radius:24px;padding:16px;box-shadow:0 12px 32px rgba(10,37,64,.08)}
+.input{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid #D8E2EF;background:#F8FAFF;font-size:15px;margin:8px 0}
 </style>
 </head>
-<body translate="no" class="notranslate">
+<body translate="no">
 <div class="header">
-<div style="display:flex;align-items:center;gap:6px">
-<button id="backBtn" onclick="goBack()" class="back-btn" style="display:none">← رجوع</button>
-<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMTIwJyB2aWV3Qm94PScwIDAgMTIwIDEyMCc+PHBhdGggZD0nTTYwIDUgTDExMCAyNSBMMTEwIDYwIEMxMTAgOTAgNjAgMTE1IDYwIDExNSBDNjAgMTE1IDEwIDkwIDEwIDYwIEwxMCAyNSBaJyBmaWxsPScjMEEzRDYyJy8+PHBhdGggZD0nTTYwIDE1IEwxMDAgMzAgTDEwMCA1OCBDMTAwIDgyIDYwIDEwNSA2MCAxMDUgQzYwIDEwNSAyMCA4MiAyMCA1OCBMMjAgMzAgWicgZmlsbD0nIzAwQjE0MCcvPjx0ZXh0IHg9JzYwJyB5PSYjMzk7NjImIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZpbGw9J3doaXRlJyBmb250LWZhbWlseT0nQ2Fpcm8nIGZvbnQtd2VpZ2h0PSc5MDAnIGZvbnQtc2l6ZT0nMjgnPtmQ2YXYp9ixPC90ZXh0Pjx0ZXh0IHg9JzYwJyB5PSc3OCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtc2l6ZT0nOSc+8J+bsyDwn5qgIHfwn5SlPC90ZXh0Pjwvc3ZnPg==" class="logo">
+<div class="logo-wrap"><button id="backBtn" onclick="goBack()" class="back" style="display:none">← رجوع</button><div class="logo">أمان</div><div class="app-name"><b>توصيلة أمان</b><span>TAWSEELA AMAN</span></div></div>
+<button id="installBtn" class="install">📲 ثبّت</button>
 </div>
-<button id="installBtn" class="install-btn">📲 ثبّت الآن</button>
+<div class="shell">
+<div id="locBox" class="loc-card"><h3>📍 فعّل موقعك الحقيقي</h3><p style="font-size:13px;color:#5B6B80">عشان نجيبلك سواقين في 3 كم والخرائط حقيقية</p><button onclick="askLocation()" class="btn btn-dark">✅ السماح بفتح الموقع</button><div id="locStatus" style="font-size:12px;margin-top:10px"></div><div id="mapPreview" class="map"></div></div>
+<div id="roleSelect"><h2 style="margin:4px 6px 12px 0;font-size:18px">اختر حسابك</h2><div class="grid">
+<div class="role-card" onclick="goAuth()"><div class="icon-circle" style="background:#E8F0FF">👤</div><b>عميل</b></div>
+<div class="role-card" onclick="goAuth()"><div class="icon-circle" style="background:#FFF3CD">🛺</div><b>توكتوك</b></div>
+<div class="role-card" onclick="goAuth()"><div class="icon-circle" style="background:#E6FFF0">🏍️</div><b>دليفري</b></div>
+<div class="role-card" onclick="goAuth()"><div class="icon-circle" style="background:#E8EEFF">🚗</div><b>ملاكي</b></div>
+</div></div>
+<div id="authScreen" style="display:none"><button onclick="goBack()" class="btn" style="width:auto;background:#F0F4F8">← الرئيسية</button><div class="screen" style="margin-top:10px"><input class="input" placeholder="01xxxxxxxxx"><input class="input" placeholder="الاسم"><button onclick="verify()" class="btn btn-green">دخول - 1234</button></div></div>
+<div id="clientFlow" style="display:none"><button onclick="goBack()" class="btn" style="width:auto;background:#F0F4F8">← رجوع</button><div class="screen" style="margin-top:10px"><div id="map" class="map" style="display:block;height:360px"></div><button onclick="alert('تم الطلب ✅ - عمولة 10%')" class="btn btn-green" style="margin-top:12px">اطلب الآن</button></div></div>
 </div>
-
-<div id="locBox" class="locBox">
-<h3 style="margin:0;color:#856404">📍 توصيلة أمان محتاجة موقعك</h3>
-<p style="font-size:13px">عشان الخرائط تشتغل حقيقية من مكانك</p>
-<button onclick="askLocation()" class="btn btn-dark">✅ السماح بفتح الموقع</button>
-<p id="locStatus" style="font-size:11px"></p>
-<div id="mapPreview" class="map" style="display:none;height:200px"></div>
-</div>
-
-<div id="app" style="max-width:520px;margin:auto;padding:6px">
-<div id="roleSelect">
-<h2 style="text-align:center;color:#0A3D62">اختر نوع حسابك</h2>
-<div class="card" onclick="goAuth('client')">👤 <b>عميل</b></div>
-<div class="card" onclick="goAuth('toktok')">🛺 <b>سائق توكتوك - فصال</b></div>
-<div class="card" onclick="goAuth('delivery')">🏍️ <b>دليفري - فصال</b></div>
-<div class="card" onclick="goAuth('malaky')">🚗 <b>ملاكي - سعر ثابت</b></div>
-</div>
-
-<div id="authScreen" style="display:none">
-<div style="display:flex;justify-content:space-between"><button onclick="goBack()" class="btn" style="width:auto;background:#eee;color:#0A3D62">← رجوع للرئيسية</button><h3>تسجيل</h3><span></span></div>
-<div class="card" style="cursor:default">
-<div id="newForm">
-<input id="phone" class="input" placeholder="01xxxxxxxxx" type="tel">
-<input id="name" class="input" placeholder="الاسم بالكامل">
-<select class="input"><option>القليوبية</option><option>القاهرة</option></select>
-<select class="input"><option>طوخ</option><option>بنها</option></select>
-<select class="input"><option>السفاينة</option><option>ميت كنانة</option></select>
-<button onclick="sendOTP()" class="btn btn-green">إرسال كود التحقق</button>
-</div>
-<div id="otpForm" style="display:none">
-<button onclick="document.getElementById('otpForm').style.display='none';document.getElementById('newForm').style.display='block'" class="btn" style="width:auto;background:#eee">← رجوع</button>
-<input id="otp" class="input" placeholder="كود 1234">
-<button onclick="verifyOTP()" class="btn btn-dark">تأكيد</button>
-</div>
-</div>
-</div>
-
-<div id="clientFlow" style="display:none">
-<div style="display:flex;justify-content:space-between"><button onclick="goBack()" class="btn" style="width:auto;background:#eee">← رجوع</button><h3>أهلا <span id="userName"></span></h3></div>
-<div class="card" style="cursor:default">
-<div id="map" class="map"></div>
-<div id="priceBox" style="background:#0A3D62;color:#fff;padding:12px;border-radius:12px;text-align:center">📍 الخريطة حقيقية من موقعك</div>
-<button onclick="document.getElementById('offers').innerHTML='<div style=background:#fff;border-right:5px solid #00B140;padding:12px;border-radius:12px;margin-top:10px>✅ تم الطلب - عمولة 10% اتحسبت</div>'" class="btn btn-green" style="margin-top:10px">اطلب الآن</button>
-<div id="offers"></div>
-</div>
-</div>
-</div>
-
 <script>
 let userLoc=null,deferredPrompt=null,stack=['roleSelect'],map,mapPreview;
-function goAuth(r){if(!userLoc &&!localStorage.getItem('userLoc')){alert('فعل الموقع الأول');askLocation();return;}document.getElementById('roleSelect').style.display='none';document.getElementById('authScreen').style.display='block';stack.push('authScreen');document.getElementById('backBtn').style.display='inline-block';}
-function goBack(){if(stack.length<=1)return;document.getElementById(stack.pop()).style.display='none';document.getElementById(stack[stack.length-1]).style.display='block';if(stack.length==1)document.getElementById('backBtn').style.display='none';}
-function askLocation(){
-let s=document.getElementById('locStatus');
-if(!navigator.geolocation){s.innerHTML='❌';return;}
-s.innerHTML='⏳ بنحدد موقعك...';
-navigator.geolocation.getCurrentPosition(p=>{
-userLoc=[p.coords.latitude,p.coords.longitude];localStorage.setItem('userLoc',JSON.stringify(userLoc));
-s.innerHTML='✅ موقعك الحقيقي: '+p.coords.latitude.toFixed(5);document.getElementById('mapPreview').style.display='block';
-setTimeout(()=>{
-if(!mapPreview){mapPreview=L.map('mapPreview').setView(userLoc,15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPreview);}
-else mapPreview.setView(userLoc,15);
-L.marker(userLoc).addTo(mapPreview).bindPopup('أنت هنا').openPopup();
-},300);
-},err=>{s.innerHTML='❌ لازم توافق على الموقع من فوق';},{enableHighAccuracy:true});}
-window.addEventListener('load',()=>{let saved=localStorage.getItem('userLoc');if(saved){userLoc=JSON.parse(saved);askLocation();}});
-const manifest={name:"توصيلة أمان",short_name:"أمان",start_url:".",display:"standalone",background_color:"#0A3D62",theme_color:"#0A3D62",icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMTIwJyB2aWV3Qm94PScwIDAgMTIwIDEyMCc+PHBhdGggZD0nTTYwIDUgTDExMCAyNSBMMTEwIDYwIEMxMTAgOTAgNjAgMTE1IDYwIDExNSBDNjAgMTE1IDEwIDkwIDEwIDYwIEwxMCAyNSBaJyBmaWxsPScjMEEzRDYyJy8+PHBhdGggZD0nTTYwIDE1IEwxMDAgMzAgTDEwMCA1OCBDMTAwIDgyIDYwIDEwNSA2MCAxMDUgQzYwIDEwNSAyMCA4MiAyMCA1OCBMMjAgMzAgWicgZmlsbD0nIzAwQjE0MCcvPjx0ZXh0IHg9JzYwJyB5PSYjMzk7NjImIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZpbGw9J3doaXRlJyBmb250LWZhbWlseT0nQ2Fpcm8nIGZvbnQtd2VpZ2h0PSc5MDAnIGZvbnQtc2l6ZT0nMjgnPtmQ2YXYp9ixPC90ZXh0Pjx0ZXh0IHg9JzYwJyB5PSc3OCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtc2l6ZT0nOSc+8J+bsyDwn5qgIHfwn5SlPC90ZXh0Pjwvc3ZnPg==",sizes:"512x512",type:"image/svg+xml"}]};
-let blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});let url=URL.createObjectURL(blob);let link=document.createElement('link');link.rel='manifest';link.href=url;document.head.appendChild(link);
-if('serviceWorker' in navigator){let sw="self.addEventListener('fetch',e=>{})";let b=new Blob([sw],{type:'text/javascript'});navigator.serviceWorker.register(URL.createObjectURL(b));}
-let btn=document.getElementById('installBtn');
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;btn.innerHTML='📲 ثبّت الآن ✅';btn.style.background='#00ff44';btn.style.color='#000';});
-btn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;btn.innerHTML='✅ تم';}else alert('من الثلاث نقط فوق: تثبيت التطبيق Install App - دلوقتي هيثبت تطبيق حقيقي مش اختصار');});
-function sendOTP(){document.getElementById('newForm').style.display='none';document.getElementById('otpForm').style.display='block';}
-function verifyOTP(){let name=document.getElementById('name').value||'عميل';localStorage.setItem('name',name);document.getElementById('authScreen').style.display='none';document.getElementById('clientFlow').style.display='block';document.getElementById('locBox').style.display='none';document.getElementById('userName').innerText=name;stack.push('clientFlow');setTimeout(()=>{if(!map){map=L.map('map').setView(userLoc||[30.35,31.19],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);L.marker(userLoc||[30.35,31.19]).addTo(map).bindPopup('موقعك الحقيقي').openPopup();}},400);}
+function goAuth(){if(!userLoc && !localStorage.getItem('userLoc')){alert('فعل الموقع الأول');askLocation();return;}document.getElementById('roleSelect').style.display='none';document.getElementById('authScreen').style.display='block';stack.push('authScreen');document.getElementById('backBtn').style.display='inline-block';}
+function goBack(){if(stack.length<=1)return;document.getElementById(stack.pop()).style.display='none';document.getElementById(stack[stack.length-1]).style.display='block';if(stack.length==1){document.getElementById('backBtn').style.display='none';document.getElementById('locBox').style.display='block';}}
+function askLocation(){let s=document.getElementById('locStatus');s.innerHTML='⏳ بنحدد موقعك...';navigator.geolocation.getCurrentPosition(p=>{userLoc=[p.coords.latitude,p.coords.longitude];localStorage.setItem('userLoc',JSON.stringify(userLoc));s.innerHTML='✅ موقعك الحقيقي';document.getElementById('mapPreview').style.display='block';setTimeout(()=>{if(!mapPreview){mapPreview=L.map('mapPreview',{zoomControl:false}).setView(userLoc,15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPreview);}mapPreview.setView(userLoc,15);L.marker(userLoc).addTo(mapPreview).bindPopup('أنت هنا').openPopup();L.circle(userLoc,{radius:3000,color:'#00B140',fillOpacity:0.06}).addTo(mapPreview);},200);},e=>{s.innerHTML='❌ وافق من فوق';},{enableHighAccuracy:true});}
+window.addEventListener('load',()=>{let sv=localStorage.getItem('userLoc');if(sv){userLoc=JSON.parse(sv);} if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}});
+let b=document.getElementById('installBtn');window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;b.classList.add('ready');b.innerHTML='📲 ثبّت الآن ✅';});b.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;}});
+function verify(){document.getElementById('authScreen').style.display='none';document.getElementById('clientFlow').style.display='block';document.getElementById('locBox').style.display='none';stack.push('clientFlow');setTimeout(()=>{if(!map){map=L.map('map',{zoomControl:false}).setView(userLoc||[30.35,31.19],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);L.marker(userLoc||[30.35,31.19]).addTo(map).bindPopup('موقعك الحقيقي').openPopup();}},300);}
 </script>
 </body>
 </html>
