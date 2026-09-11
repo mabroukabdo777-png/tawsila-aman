@@ -3,122 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google" content="notranslate">
-<meta name="googlebot" content="notranslate">
-<meta http-equiv="Content-Language" content="ar">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>توصيلة أمان</title>
 <meta name="theme-color" content="#0A3D62">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-*{font-family:'Cairo',sans-serif;box-sizing:border-box}
-body{margin:0;background:#f2f4f7}
-.header{background:linear-gradient(90deg,#0A3D62,#0d4f7a);color:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000}
-.logo{height:52px;background:white;border-radius:10px;padding:4px}
-.install-btn{background:#00B140;color:white;border:none;padding:10px 16px;border-radius:30px;font-weight:900;font-size:13px;cursor:pointer}
-.card{background:white;border-radius:20px;padding:22px;margin:12px;box-shadow:0 8px 24px rgba(0,0,0,0.06)}
-.input{width:100%;padding:14px;border-radius:12px;border:1px solid #ccc;margin:8px 0;font-size:16px}
+*{font-family:Cairo,sans-serif;box-sizing:border-box}
+body{margin:0;background:#f3f6f9}.header{background:#0A3D62;color:#fff;padding:10px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:999}
+.logo{height:52px;background:#fff;border-radius:12px;padding:4px}.install-btn{background:#00B140;color:#fff;border:none;padding:10px 16px;border-radius:30px;font-weight:900}
+.back-btn{background:#ffffff33;border:1px solid #fff;color:#fff;padding:6px 12px;border-radius:20px}
+.card{background:#fff;border-radius:18px;padding:16px;margin:10px;box-shadow:0 6px 20px rgba(0,0,0,.06);cursor:pointer}
+.input{width:100%;padding:14px;border-radius:12px;border:1.5px solid #ccc;margin:8px 0;font-size:16px}
 .btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:900;font-size:16px;cursor:pointer}
-.btn-green{background:#00B140;color:white} .btn-dark{background:#0A3D62;color:white}
-.map{height:340px;width:100%;border-radius:16px;margin:12px 0;border:2px solid #0A3D62}
-.price-box{background:#0A3D62;color:white;border-radius:12px;padding:14px;text-align:center;margin:12px 0}
-.negotiate{background:white;border-radius:12px;padding:12px;margin:8px 0;border-right:5px solid #00B140}
-.location-permission{background:#fff3cd;border:2px solid #ffc107;border-radius:12px;padding:16px;margin:12px;text-align:center}
-.goog-te-banner-frame,.goog-te-balloon-frame,#goog-gt-tt,.goog-te-menu-value{display:none !important;} body{top:0 !important;} .notranslate{translate:no;}
+.btn-green{background:#00B140;color:#fff}.btn-dark{background:#0A3D62;color:#fff}
+.map{height:350px;width:100%;border-radius:16px;margin:10px 0;border:2px solid #0A3D62}
+.locBox{background:#fff3cd;border:2px solid #ffc107;border-radius:16px;padding:16px;margin:10px;text-align:center}
+.goog-te-banner-frame{display:none!important} body{top:0!important}
 </style>
 </head>
 <body translate="no" class="notranslate">
 <div class="header">
-  <img src="logo.png" class="logo" alt="توصيلة امان">
-  <button id="installBtn" class="install-btn">📲 ثبّت الآن</button>
+<div style="display:flex;align-items:center;gap:6px">
+<button id="backBtn" onclick="goBack()" class="back-btn" style="display:none">← رجوع</button>
+<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMTIwJyB2aWV3Qm94PScwIDAgMTIwIDEyMCc+PHBhdGggZD0nTTYwIDUgTDExMCAyNSBMMTEwIDYwIEMxMTAgOTAgNjAgMTE1IDYwIDExNSBDNjAgMTE1IDEwIDkwIDEwIDYwIEwxMCAyNSBaJyBmaWxsPScjMEEzRDYyJy8+PHBhdGggZD0nTTYwIDE1IEwxMDAgMzAgTDEwMCA1OCBDMTAwIDgyIDYwIDEwNSA2MCAxMDUgQzYwIDEwNSAyMCA4MiAyMCA1OCBMMjAgMzAgWicgZmlsbD0nIzAwQjE0MCcvPjx0ZXh0IHg9JzYwJyB5PSYjMzk7NjImIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZpbGw9J3doaXRlJyBmb250LWZhbWlseT0nQ2Fpcm8nIGZvbnQtd2VpZ2h0PSc5MDAnIGZvbnQtc2l6ZT0nMjgnPtmQ2YXYp9ixPC90ZXh0Pjx0ZXh0IHg9JzYwJyB5PSc3OCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtc2l6ZT0nOSc+8J+bsyDwn5qgIHfwn5SlPC90ZXh0Pjwvc3ZnPg==" class="logo">
+</div>
+<button id="installBtn" class="install-btn">📲 ثبّت الآن</button>
 </div>
 
-<div id="locationAsk" class="location-permission notranslate" translate="no">
-  <h3 style="margin:0;color:#856404">📍 توصيلة أمان محتاجة موقعك</h3>
-  <p style="font-size:14px">عشان الخرائط تشتغل حقيقية من مكانك الحالي</p>
-  <button onclick="askLocation()" class="btn btn-dark">✅ السماح بفتح الموقع</button>
-  <p id="locStatus" style="font-size:12px;margin-top:8px"></p>
+<div id="locBox" class="locBox">
+<h3 style="margin:0;color:#856404">📍 توصيلة أمان محتاجة موقعك</h3>
+<p style="font-size:13px">عشان الخرائط تشتغل حقيقية من مكانك</p>
+<button onclick="askLocation()" class="btn btn-dark">✅ السماح بفتح الموقع</button>
+<p id="locStatus" style="font-size:11px"></p>
+<div id="mapPreview" class="map" style="display:none;height:200px"></div>
 </div>
 
-<div id="app" style="padding:10px;max-width:500px;margin:auto" class="notranslate" translate="no">
+<div id="app" style="max-width:520px;margin:auto;padding:6px">
 <div id="roleSelect">
-  <h2 style="text-align:center;color:#0A3D62;font-weight:900">اختر نوع حسابك</h2>
-  <div class="card" onclick="goAuth('client')">👤<br><b>عميل</b></div>
-  <div class="card" onclick="goAuth('toktok')">🛺<br><b>سائق توكتوك - فصال</b></div>
-  <div class="card" onclick="goAuth('delivery')">🏍️<br><b>دليفري - فصال</b></div>
-  <div class="card" onclick="goAuth('malaky')">🚗<br><b>ملاكي - سعر ثابت أوتوماتيك</b></div>
+<h2 style="text-align:center;color:#0A3D62">اختر نوع حسابك</h2>
+<div class="card" onclick="goAuth('client')">👤 <b>عميل</b></div>
+<div class="card" onclick="goAuth('toktok')">🛺 <b>سائق توكتوك - فصال</b></div>
+<div class="card" onclick="goAuth('delivery')">🏍️ <b>دليفري - فصال</b></div>
+<div class="card" onclick="goAuth('malaky')">🚗 <b>ملاكي - سعر ثابت</b></div>
 </div>
 
 <div id="authScreen" style="display:none">
-  <h2 id="authTitle" style="text-align:center;color:#0A3D62">تسجيل</h2>
-  <div class="card">
-    <div id="newUserForm">
-      <input id="phone" class="input" placeholder="رقم الموبايل 01xxxxxxxxx" type="tel">
-      <input id="name" class="input" placeholder="الاسم بالكامل">
-      <select id="gov" onchange="updateCenters()" class="input"><option>اختر المحافظة</option><option>القليوبية</option><option>القاهرة</option><option>الجيزة</option></select>
-      <select id="center" class="input"><option>المركز</option></select>
-      <select id="village" class="input"><option>القرية</option></select>
-      <div id="driverExtra" style="display:none"><p style="font-size:13px;color:#d00">⚠️ سائق: بطاقة + سيلفي + صورة المركبة</p></div>
-      <button onclick="sendOTP()" class="btn btn-green">إرسال كود التحقق</button>
-    </div>
-    <div id="otpForm" style="display:none">
-      <p>📩 كود التحقق (جرب 1234)</p>
-      <input id="otp" class="input" placeholder="كود 4 أرقام">
-      <button onclick="verifyOTP()" class="btn btn-dark">تأكيد ودخول التطبيق</button>
-    </div>
-  </div>
+<div style="display:flex;justify-content:space-between"><button onclick="goBack()" class="btn" style="width:auto;background:#eee;color:#0A3D62">← رجوع للرئيسية</button><h3>تسجيل</h3><span></span></div>
+<div class="card" style="cursor:default">
+<div id="newForm">
+<input id="phone" class="input" placeholder="01xxxxxxxxx" type="tel">
+<input id="name" class="input" placeholder="الاسم بالكامل">
+<select class="input"><option>القليوبية</option><option>القاهرة</option></select>
+<select class="input"><option>طوخ</option><option>بنها</option></select>
+<select class="input"><option>السفاينة</option><option>ميت كنانة</option></select>
+<button onclick="sendOTP()" class="btn btn-green">إرسال كود التحقق</button>
+</div>
+<div id="otpForm" style="display:none">
+<button onclick="document.getElementById('otpForm').style.display='none';document.getElementById('newForm').style.display='block'" class="btn" style="width:auto;background:#eee">← رجوع</button>
+<input id="otp" class="input" placeholder="كود 1234">
+<button onclick="verifyOTP()" class="btn btn-dark">تأكيد</button>
+</div>
+</div>
 </div>
 
 <div id="clientFlow" style="display:none">
-  <h3>👋 أهلا <span id="userNameShow"></span></h3>
-  <select id="villageFrom" class="input"><option>من قرية</option></select>
-  <select id="villageTo" class="input"><option>إلى قرية</option></select>
-  <select id="serviceType" class="input"><option value="toktok">توكتوك (فصال)</option><option value="delivery">دليفري (فصال)</option><option value="malaky">ملاكي (ثابت)</option></select>
-  <div id="map" class="map"></div>
-  <div class="price-box" id="priceBox">📍 الخريطة شغالة من موقعك الحقيقي</div>
-  <button onclick="sendRequest()" class="btn btn-green" style="padding:16px;font-size:19px">اطلب الآن</button>
-  <div id="offers"></div>
+<div style="display:flex;justify-content:space-between"><button onclick="goBack()" class="btn" style="width:auto;background:#eee">← رجوع</button><h3>أهلا <span id="userName"></span></h3></div>
+<div class="card" style="cursor:default">
+<div id="map" class="map"></div>
+<div id="priceBox" style="background:#0A3D62;color:#fff;padding:12px;border-radius:12px;text-align:center">📍 الخريطة حقيقية من موقعك</div>
+<button onclick="document.getElementById('offers').innerHTML='<div style=background:#fff;border-right:5px solid #00B140;padding:12px;border-radius:12px;margin-top:10px>✅ تم الطلب - عمولة 10% اتحسبت</div>'" class="btn btn-green" style="margin-top:10px">اطلب الآن</button>
+<div id="offers"></div>
+</div>
 </div>
 </div>
 
 <script>
-let currentRole='', userLocation=null, deferredPrompt=null;
+let userLoc=null,deferredPrompt=null,stack=['roleSelect'],map,mapPreview;
+function goAuth(r){if(!userLoc &&!localStorage.getItem('userLoc')){alert('فعل الموقع الأول');askLocation();return;}document.getElementById('roleSelect').style.display='none';document.getElementById('authScreen').style.display='block';stack.push('authScreen');document.getElementById('backBtn').style.display='inline-block';}
+function goBack(){if(stack.length<=1)return;document.getElementById(stack.pop()).style.display='none';document.getElementById(stack[stack.length-1]).style.display='block';if(stack.length==1)document.getElementById('backBtn').style.display='none';}
 function askLocation(){
-  const status=document.getElementById('locStatus');
-  if(!navigator.geolocation){ status.innerHTML='❌ جهازك لا يدعم الموقع'; return; }
-  status.innerHTML='⏳ بنحدد موقعك...';
-  navigator.geolocation.getCurrentPosition(p=>{
-    userLocation=[p.coords.latitude,p.coords.longitude];
-    status.innerHTML=`✅ موقعك الحقيقي: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
-    localStorage.setItem('userLoc',JSON.stringify(userLocation));
-  },err=>{ status.innerHTML='❌ لازم توافق على الموقع'; },{enableHighAccuracy:true});
-}
-window.addEventListener('load',()=>{ const saved=localStorage.getItem('userLoc'); if(!saved) setTimeout(askLocation,800); });
-
-const installBtn=document.getElementById('installBtn');
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e; installBtn.innerHTML='📲 ثبّت الآن ✅';});
-installBtn.addEventListener('click',async()=>{ if(deferredPrompt){deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null;} else alert('من المتصفح: إضافة إلى الشاشة الرئيسية');});
-
-function goAuth(role){ 
-  if(!localStorage.getItem('userLoc') && !userLocation){ alert('📍 لازم تسمح بفتح الموقع الأول'); askLocation(); return; }
-  currentRole=role; 
-  document.getElementById('roleSelect').style.display='none'; 
-  document.getElementById('authScreen').style.display='block';
-}
-function sendOTP(){ const phone=document.getElementById('phone').value; if(phone.length<11){alert('دخل رقم صحيح'); return;} document.getElementById('newUserForm').style.display='none'; document.getElementById('otpForm').style.display='block';}
-function verifyOTP(){ const otp=document.getElementById('otp').value; if(otp!=='1234' && otp.length<4){alert('جرب 1234'); return;} const name=document.getElementById('name').value||'مستخدم'; localStorage.setItem('name',name); localStorage.setItem('isLogged','true'); enterApp(name);}
-function enterApp(name){ document.getElementById('authScreen').style.display='none'; document.getElementById('clientFlow').style.display='block'; document.getElementById('userNameShow').innerText=name; setTimeout(initMap,500);}
-let map;
-function initMap(){ 
-  const loc=userLocation || JSON.parse(localStorage.getItem('userLoc')||'[30.05,31.25]');
-  map=L.map('map').setView(loc,14); 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'خرائط حقيقية'}).addTo(map); 
-  L.marker(loc).addTo(map).bindPopup('موقعك الحقيقي').openPopup();
-}
-function updateCenters(){}
-function sendRequest(){ const s=document.getElementById('serviceType').value; const o=document.getElementById('offers'); o.innerHTML=`<div class=negotiate>✅ تم الطلب - ${s} - عمولة 10% اتحسبت أوتوماتيك</div>`;}
-if(localStorage.getItem('isLogged')){ document.getElementById('roleSelect').style.display='none'; document.getElementById('locationAsk').style.display='none'; enterApp(localStorage.getItem('name')); }
+let s=document.getElementById('locStatus');
+if(!navigator.geolocation){s.innerHTML='❌';return;}
+s.innerHTML='⏳ بنحدد موقعك...';
+navigator.geolocation.getCurrentPosition(p=>{
+userLoc=[p.coords.latitude,p.coords.longitude];localStorage.setItem('userLoc',JSON.stringify(userLoc));
+s.innerHTML='✅ موقعك الحقيقي: '+p.coords.latitude.toFixed(5);document.getElementById('mapPreview').style.display='block';
+setTimeout(()=>{
+if(!mapPreview){mapPreview=L.map('mapPreview').setView(userLoc,15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPreview);}
+else mapPreview.setView(userLoc,15);
+L.marker(userLoc).addTo(mapPreview).bindPopup('أنت هنا').openPopup();
+},300);
+},err=>{s.innerHTML='❌ لازم توافق على الموقع من فوق';},{enableHighAccuracy:true});}
+window.addEventListener('load',()=>{let saved=localStorage.getItem('userLoc');if(saved){userLoc=JSON.parse(saved);askLocation();}});
+const manifest={name:"توصيلة أمان",short_name:"أمان",start_url:".",display:"standalone",background_color:"#0A3D62",theme_color:"#0A3D62",icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMTIwJyB2aWV3Qm94PScwIDAgMTIwIDEyMCc+PHBhdGggZD0nTTYwIDUgTDExMCAyNSBMMTEwIDYwIEMxMTAgOTAgNjAgMTE1IDYwIDExNSBDNjAgMTE1IDEwIDkwIDEwIDYwIEwxMCAyNSBaJyBmaWxsPScjMEEzRDYyJy8+PHBhdGggZD0nTTYwIDE1IEwxMDAgMzAgTDEwMCA1OCBDMTAwIDgyIDYwIDEwNSA2MCAxMDUgQzYwIDEwNSAyMCA4MiAyMCA1OCBMMjAgMzAgWicgZmlsbD0nIzAwQjE0MCcvPjx0ZXh0IHg9JzYwJyB5PSYjMzk7NjImIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZpbGw9J3doaXRlJyBmb250LWZhbWlseT0nQ2Fpcm8nIGZvbnQtd2VpZ2h0PSc5MDAnIGZvbnQtc2l6ZT0nMjgnPtmQ2YXYp9ixPC90ZXh0Pjx0ZXh0IHg9JzYwJyB5PSc3OCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtc2l6ZT0nOSc+8J+bsyDwn5qgIHfwn5SlPC90ZXh0Pjwvc3ZnPg==",sizes:"512x512",type:"image/svg+xml"}]};
+let blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});let url=URL.createObjectURL(blob);let link=document.createElement('link');link.rel='manifest';link.href=url;document.head.appendChild(link);
+if('serviceWorker' in navigator){let sw="self.addEventListener('fetch',e=>{})";let b=new Blob([sw],{type:'text/javascript'});navigator.serviceWorker.register(URL.createObjectURL(b));}
+let btn=document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;btn.innerHTML='📲 ثبّت الآن ✅';btn.style.background='#00ff44';btn.style.color='#000';});
+btn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;btn.innerHTML='✅ تم';}else alert('من الثلاث نقط فوق: تثبيت التطبيق Install App - دلوقتي هيثبت تطبيق حقيقي مش اختصار');});
+function sendOTP(){document.getElementById('newForm').style.display='none';document.getElementById('otpForm').style.display='block';}
+function verifyOTP(){let name=document.getElementById('name').value||'عميل';localStorage.setItem('name',name);document.getElementById('authScreen').style.display='none';document.getElementById('clientFlow').style.display='block';document.getElementById('locBox').style.display='none';document.getElementById('userName').innerText=name;stack.push('clientFlow');setTimeout(()=>{if(!map){map=L.map('map').setView(userLoc||[30.35,31.19],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);L.marker(userLoc||[30.35,31.19]).addTo(map).bindPopup('موقعك الحقيقي').openPopup();}},400);}
 </script>
 </body>
 </html>
