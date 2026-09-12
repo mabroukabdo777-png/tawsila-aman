@@ -487,47 +487,7 @@ window.cancelOrder = function(id){
   localStorage.setItem('tawsil_orders', JSON.stringify(orders));
   renderRestDashboard();
 }
-// ===== الكود المسيطر 15 + 5 جنيه على الكيلو تلقائي =====
-window.MASTER_CODE = '246246';
-if(!localStorage.getItem('tawsil_base')) localStorage.setItem('tawsil_base','15');
-if(!localStorage.getItem('tawsil_perKm')) localStorage.setItem('tawsil_perKm','5');
 
-window.getMasterPricing = function(){
-  return {
-    base: parseInt(localStorage.getItem('tawsil_base')||'15'),
-    perKm: parseInt(localStorage.getItem('tawsil_perKm')||'5')
-  };
-}
-
-window.calculateDeliveryPrice = function(km){
-  const {base, perKm} = window.getMasterPricing();
-  return Math.round(base + (km * perKm));
-}
-
-window.setMasterPrice = function(newBase, newPerKm){
-  const pass = prompt('🔐 كود المسيطر:');
-  if(pass !== window.MASTER_CODE) return alert('غلط!');
-  localStorage.setItem('tawsil_base', newBase);
-  localStorage.setItem('tawsil_perKm', newPerKm);
-  alert('✅ تم التحديث: '+newBase+' + '+newPerKm+'/كم');
-  location.reload();
-}
-
-// يصلح أي حسبة قديمة 10+4 تلقائي
-const originalHaversine = window.haversine;
-window.getDeliveryFee = function(distanceKm){
-  return window.calculateDeliveryPrice(distanceKm);
-}
-// ===== نهاية الكود المسيطر =====
-
-// شغل اللوحة لما المطعم يسجل
-setTimeout(()=>{
-  const isRest = document.body.innerHTML.includes('مطعم') || localStorage.getItem('currentRestaurant');
-  if(isRest || document.getElementById('restName')){
-    renderRestDashboard();
-    setInterval(renderRestDashboard, 2000);
-  }
-},1500);
 </script>
 </body>
 </html>
