@@ -197,33 +197,62 @@ function requestGPSNow(){
   }catch(e){}
 }
 function checkFirstTimeGPS(){
+  // اظهر الخريطة والاحصائيات فورا قبل اي حاجة - عشان متفضلش فاضية زي الصورة
+  try{ updateStats(); }catch(e){}
+  try{ initMainMap(); }catch(e){}
+  // اعرض مودال GPS بعد ما الخريطة ظهرت
   const seen=localStorage.getItem('gpsAsked');
   if(!seen){
-    document.getElementById('gpsModal').style.display='block';
+    setTimeout(()=>{
+      const m=document.getElementById('gpsModal');
+      if(m) m.style.display='block';
+    }, 1200);
     localStorage.setItem('gpsAsked','1');
   }
-  updateStats(); initMainMap();
-  setTimeout(requestGPSNow, 800);
+  // حاول GPS
+  setTimeout(()=>{ try{ requestGPSNow(); }catch(e){ try{initMainMap();}catch(_){} } }, 1000);
+  // ضمان - لو بعد 3 ثواني الخريطة لسه فاضية شغلها تاني
+  setTimeout(()=>{ try{ initMainMap(); updateStats(); }catch(e){} }, 3000);
 }
 function initMainMap(){
   try{
-    if(map){ map.remove(); map=null; }
-    const el=document.getElementById('mainMap'); if(!el||typeof L==='undefined') return;
+    if(typeof L==='undefined'){
+      console.log('Leaflet not loaded yet, retry');
+      setTimeout(initMainMap, 800);
+      return;
+    }
+    if(map){ try{ map.remove(); }catch(e){} map=null; }
+    const el=document.getElementById('mainMap');
+    if(!el) return;
     el.innerHTML='';
+    el.style.minHeight='360px';
     map=L.map('mainMap',{zoomControl:true}).setView([userLoc.lat,userLoc.lng], locEnabled?14:6);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM & CARTO',maxZoom:19}).addTo(map);
+    // انت هنا - GPS حقيقي
     L.marker([userLoc.lat,userLoc.lng]).addTo(map).bindPopup('📍 أنت هنا - GPS حقيقي').openPopup();
-    const sorted=[...realRestaurants].map(r=>({ ...r, dist:hav(userLoc.lat,userLoc.lng,r.lat||userLoc.lat+(Math.random()-0.5)*0.02,r.lng||userLoc.lng+(Math.random()-0.5)*0.02)})).sort((a,b)=>a.dist-b.dist);
+    const sorted=[...realRestaurants].map(r=>({ ...r, dist:hav(userLoc.lat,userLoc.lng,r.lat||userLoc.lat+(Math.random()-0.5)*0.03,r.lng||userLoc.lng+(Math.random()-0.5)*0.03)})).sort((a,b)=>a.dist-b.dist);
+    if(sorted.length===0){
+      // لو مفيش مطاعم - اظهر رسالة على الخريطة
+      const stats=document.getElementById('stats');
+      if(stats && !stats.innerHTML.includes('مطعم')){
+        // keep
+      }
+    }
     sorted.forEach(r=>{
-      const lat=r.lat||userLoc.lat+(Math.random()-0.5)*0.04;
-      const lng=r.lng||userLoc.lng+(Math.random()-0.5)*0.04;
+      const lat=r.lat||userLoc.lat+(Math.random()-0.5)*0.05;
+      const lng=r.lng||userLoc.lng+(Math.random()-0.5)*0.05;
       const price=calc(r.dist);
-      L.marker([lat,lng]).addTo(map).bindPopup(`🍽️ ${r.name||r.restName}<br>📍 ${r.dist.toFixed(1)}كم<br>🚚 ${price}ج (15+${r.dist.toFixed(1)}×5)<br><button onclick="openAuth('client')">اطلب الآن</button>`);
+      L.marker([lat,lng]).addTo(map).bindPopup(`🍽️ ${r.name||r.restName}<br>📍 ${r.dist.toFixed(1)}كم<br>🚚 ${price}ج (15+${r.dist.toFixed(1)}×5)<br><button onclick="openAuth('client')" style="background:#FF6B00;color:white;border:none;padding:4px 8px;border-radius:6px">اطلب الآن</button>`);
     });
     realDrivers.filter(d=>d.online).forEach(d=>{
-      L.marker([d.lat||userLoc.lat+(Math.random()-0.5)*0.02,d.lng||userLoc.lng+(Math.random()-0.5)*0.02],{icon:L.divIcon({html:'🏍️',className:'',iconSize:[30,30]})}).addTo(map).bindPopup(`🏍️ ${d.name} - ${d.online?'اونلاين':''}`);
+      L.marker([d.lat||userLoc.lat+(Math.random()-0.5)*0.02,d.lng||userLoc.lng+(Math.random()-0.5)*0.02],{icon:L.divIcon({html:'🏍️',className:'',iconSize:[30,30]})}).addTo(map).bindPopup(`🏍️ ${d.name}`);
     });
-  }catch(e){ console.log('map err', e); }
+    setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 500);
+  }catch(e){
+    console.log('map err', e);
+    const el=document.getElementById('mainMap');
+    if(el) el.innerHTML='<div style="padding:40px;text-align:center;color:#FFB380">الخريطة الحقيقية بتحمل... لو فضلت فاضية دوس تحديث<br><button onclick="location.reload()" style="background:#FF6B00;color:white;border:none;padding:8px 16px;border-radius:8px;margin-top:10px">تحديث الخريطة</button></div>';
+  }
 }
 function initInnerMap(id){
   try{
@@ -235,14 +264,4 @@ function initInnerMap(id){
     },400);
   }catch(e){}
 }
-function ownerClicks(){const now=Date.now();if(now-last>2000)clicks=0;last=now;clicks++;if(clicks>=5){const p=prompt('باسورد المالك السري:');if(p==='246246'){document.getElementById('landing').style.display='none';document.getElementById('ownerPage').style.display='block';loadOwner();}else alert('باسورد غلط');clicks=0}}
-function closeOwner(){document.getElementById('ownerPage').style.display='none';document.getElementById('landing').style.display='block';initMainMap();}
-function toggleBox(id){const el=document.getElementById(id);if(!el)return;const cur=window.getComputedStyle(el).display;el.style.display=(cur==='none')?'block':'none';}
-function openAuth(role){curRole=role;document.getElementById('authModal').style.display='block';document.getElementById('restBox').style.display=role==='restaurant'?'block':'none';document.getElementById('authTitle').textContent=role==='client'?'تسجيل عميل - طلب حقيقي':role==='restaurant'?'تسجيل مطعم - سيرفر حقيقي':'تسجيل دليفري - شغل حقيقي';}
-function closeAuth(){document.getElementById('authModal').style.display='none';}
-
-// ========== OTP حقيقي - SMS حقيقي من Firebase ==========
-async function sendOtp(){
-  const phoneRaw=document.getElementById('fPhone').value.trim();
-  if(!phoneRaw) return alert('اكتب رقمك 01xxxxxxxxx');
-  let phone=phoneRaw.startsWith('+')?phoneRaw:('+20'+phoneRaw.replace(/^
+function ownerClicks(){const now=Dat
