@@ -24,8 +24,6 @@ body{margin:0;background:#0A0A0A;color:white;overflow-x:hidden}
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 </head>
 <body>
-
-<!-- GPS Permission Modal - اول ما يفتح التطبيق -->
 <div id="gpsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:100000;padding:20px;overflow:auto">
 <div style="background:white;color:#0A0A0A;max-width:440px;margin:60px auto;border-radius:24px;padding:24px;text-align:center">
 <div style="font-size:64px">📍</div>
@@ -38,9 +36,7 @@ body{margin:0;background:#0A0A0A;color:white;overflow-x:hidden}
 <button onclick="document.getElementById('gpsModal').style.display='none'" style="background:#eee;color:#000;padding:10px;border-radius:10px;border:none;width:100%;margin-top:10px">تخطي - استخدام موقع افتراضي</button>
 </div>
 </div>
-
 <div class="header"><span id="loc" style="background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer" onclick="requestGPSNow()">📍 جاري تحديد موقعك...</span><div onclick="ownerClicks()" style="cursor:pointer;display:flex;align-items:center;gap:10px"><div style="text-align:right"><div style="font-weight:900">مطاعم مصر</div><div style="font-size:10px;color:#FFB380">توصيل أمان</div></div><div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900">م</div></div></div>
-
 <div id="landing">
 <div style="text-align:center;padding:24px 20px"><div style="font-size:56px">🍽️</div><h1 style="color:#FF6B00;font-size:32px;font-weight:900;margin:8px 0">مطاعم <span style="color:white">مصر</span></h1><div id="stats" style="background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:12px;padding:10px;max-width:560px;margin:12px auto;color:#FFB380;font-size:11px;line-height:1.6">جاري التحميل...</div></div>
 <div id="mainMap" class="map-box"></div>
@@ -51,7 +47,6 @@ body{margin:0;background:#0A0A0A;color:white;overflow-x:hidden}
 </div>
 <div style="max-width:500px;margin:16px auto;padding:0 16px"><div class="card" onclick="showOffers()"><div style="font-size:28px">🎁</div><b>العروض والخصومات - عرض بس اسكرول</b><div style="font-size:10px;color:#666">صور وفيديو حقيقي - زرار اطلب الآن شغال حقيقي</div></div></div>
 </div>
-
 <div id="authModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:9999;overflow:auto;padding:20px">
 <div style="background:white;color:#0A0A0A;max-width:440px;margin:10px auto;border-radius:20px;padding:20px">
 <div style="display:flex;justify-content:space-between;align-items:center"><h3 id="authTitle" style="margin:0">تسجيل</h3><button onclick="closeAuth()" style="background:#0A0A0A;color:white;border:none;width:32px;height:32px;border-radius:50%">X</button></div>
@@ -65,9 +60,7 @@ body{margin:0;background:#0A0A0A;color:white;overflow-x:hidden}
 <button onclick="doRegister()" style="width:100%;background:#FF6B00;color:white;padding:14px;border-radius:14px;border:none;margin-top:14px;font-weight:900">دخول - تسجيل حقيقي</button>
 </div>
 </div>
-
 <div id="appPage" style="display:none;min-height:100vh;background:#0A0A0A;padding:16px"></div>
-
 <div id="ownerPage" style="display:none;min-height:100vh;background:#0A0A0A;padding:16px">
 <div style="background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border:1px solid #FF6B00;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:900">لوحة المالك السرية - 246246</div><div style="font-size:10px;color:#FFB380">دوس 5 مرات على اللوجو - عمولتك 10% من كل توصيلة - حسبة 15+km×5</div></div><button onclick="closeOwner()" style="background:white;color:#0A0A0A;border:none;padding:8px 16px;border-radius:20px">إغلاق X</button></div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:16px"><div class="box" style="text-align:center;margin:0"><div id="cClients" style="font-weight:900;font-size:20px">0</div><div style="font-size:11px">عملاء حقيقيين</div></div><div class="box" style="text-align:center;margin:0"><div id="cRests" style="font-weight:900;font-size:20px">0</div><div style="font-size:11px">مطاعم حقيقية</div></div><div class="box" style="text-align:center;margin:0"><div id="cDrivers" style="font-weight:900;font-size:20px">0</div><div style="font-size:11px">دليفري حقيقي</div></div><div style="background:#FF6B00;border-radius:20px;padding:16px;text-align:center"><div id="cOrders" style="font-weight:900;font-size:20px">0</div><div style="font-size:11px">طلبات حقيقية</div></div></div>
@@ -76,7 +69,6 @@ body{margin:0;background:#0A0A0A;color:white;overflow-x:hidden}
 <div class="box" onclick="toggleBox('adRequests')" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><h4 style="margin:0">📢 طلبات الإعلانات - صورة 35ج / فيديو 70ج / 15 يوم - المطاعم بس تختار صورة أو فيديو - يظهر في العروض اسكرول حقيقي</h4><span style="color:#FF6B00">▼</span></div><div id="adRequests" style="margin-top:12px;display:block" onclick="event.stopPropagation()"></div></div>
 <div class="box" onclick="toggleBox('ordersList')" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><h4 style="margin:0">📦 كل الطلبات الحقيقية - موبايل لموبايل - سبب العمولة والحسبة</h4><span style="color:#FF6B00">▼</span></div><div id="ordersList" style="margin-top:12px;display:block" onclick="event.stopPropagation()"></div></div>
 </div>
-
 <div id="deliveryWelcome" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:10000;overflow:auto;padding:20px">
 <div style="background:white;color:#0A0A0A;max-width:460px;margin:20px auto;border-radius:24px;padding:24px;text-align:center">
 <div style="font-size:56px">🏍️</div><h2 style="font-weight:900;margin:10px 0">أهلا بيك - شغل حقيقي</h2>
@@ -86,10 +78,8 @@ body{margin:0;background:#0A0A0A;color:white;overflow-x:hidden}
 <button onclick="document.getElementById('deliveryWelcome').style.display='none';showDeliveryApp(true)" style="background:#0A0A0A;color:white;padding:16px;border-radius:14px;border:none;width:100%;font-weight:900">ابدأ الآن - شغل حقيقي</button>
 </div>
 </div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ========== مفتاح السيرفر الحقيقي 100% - اللي طلبته ==========
 const firebaseConfig = {
   apiKey: "AIzaSyCFYCnn8BuQsfL619UhNyv3G6Vvkrmp7hk",
   authDomain: "mata3m-masr.firebaseapp.com",
@@ -101,18 +91,16 @@ const firebaseConfig = {
 };
 let fbApp=null, fbAuth=null, fbDb=null, fbStorage=null, isRealServer=false, confirmationResult=null, verifiedPhone=null, recaptchaVerifier=null;
 try{
-  if(firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("REPLACE")){
+  if(firebaseConfig.apiKey &&!firebaseConfig.apiKey.includes("REPLACE")){
     fbApp = firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
     fbStorage = firebase.storage();
     isRealServer = true;
-    console.log("🔥 سيرفر حقيقي 100% شغال - OTP حقيقي");
   }
-}catch(e){ console.log("Firebase init", e); }
-
+}catch(e){}
 function initRealServer(){
-  if(!isRealServer || !fbDb) return;
+  if(!isRealServer ||!fbDb) return;
   fbDb.collection('restaurants').onSnapshot(snap=>{
     realRestaurants = snap.docs.map(d=>({...d.data(), docId:d.id, lat:d.data().lat||userLoc.lat, lng:d.data().lng||userLoc.lng}));
     localStorage.setItem('realRestaurants', JSON.stringify(realRestaurants));
@@ -129,14 +117,12 @@ function initRealServer(){
     updateStats();
   });
   fbDb.collection('orders').orderBy('createdAt','desc').onSnapshot(snap=>{
-    realOrders = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    realOrders = snap.docs.map(d=>({id:d.id,...d.data()}));
     localStorage.setItem('realOrders', JSON.stringify(realOrders));
     updateStats();
   });
 }
 setTimeout(initRealServer, 1000);
-
-// ========== المتغيرات - كل التفاصيل القديمة والجديدة ==========
 let userLoc={lat:26.8206,lng:30.8025},locEnabled=false,clicks=0,last=0,curRole='',cart=[],selRest=null,orderStep='menu',map=null,adType='صورة',uploadedAdBase64='',uploadedMenuBase64='',deliveryWelcomeShown=false;
 let realClients=JSON.parse(localStorage.getItem('realClients')||'[]'),realDrivers=JSON.parse(localStorage.getItem('realDrivers')||'[]'),realRestaurants=JSON.parse(localStorage.getItem('realRestaurants')||'[]'),realOrders=JSON.parse(localStorage.getItem('realOrders')||'[]');
 const calc=k=>Math.round(15+k*5);
@@ -146,63 +132,100 @@ function updateStats(){
   const el=document.getElementById('stats');
   if(el) el.innerHTML=`📍 ${userLoc.lat.toFixed(5)},${userLoc.lng.toFixed(5)} ${locEnabled?'✅ GPS حقيقي شغال حي':'📍 فعل GPS'} • ${realRestaurants.length} مطعم حقيقي • ${realDrivers.filter(d=>d.online).length} دليفري أونلاين<br>حسبة التوصيل: 15+المسافة×5 • عمولتك 10% تشغيل سيرفر وخرائط وSMS • أقرب مطعم: ${sorted[0]?.name||sorted[0]?.restName||'لا يوجد'} ${sorted[0]?`(${sorted[0].dist.toFixed(1)}كم - ${calc(sorted[0].dist)}ج)`:''}`;
 }
-
-// ========== GPS حقيقي - اول ما يفتح يطلب تفعيل الموقع ==========
 function requestGPSNow(){
-  document.getElementById('gpsModal').style.display='none';
-  if(!navigator.geolocation){ updateStats(); initMainMap(); return; }
-  const opts={enableHighAccuracy:true,timeout:15000,maximumAge:0};
-  const locEl=document.getElementById('loc');
-  if(locEl) locEl.textContent='📍 جاري تحديد موقعك الحقيقي...';
-  navigator.geolocation.getCurrentPosition(pos=>{
+  var modal=document.getElementById('gpsModal');
+  if(modal) modal.style.display='none';
+  var locEl=document.getElementById('loc');
+  if(!navigator.geolocation){
+    if(locEl) locEl.textContent='📍 المتصفح لا يدعم GPS';
+    updateStats(); initMainMap();
+    return;
+  }
+  if(locEl) locEl.textContent='📍 بطلب إذن الموقع... وافق على الرسالة فوق';
+  var opts={enableHighAccuracy:true,timeout:20000,maximumAge:0};
+  navigator.geolocation.getCurrentPosition(function(pos){
     userLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
     locEnabled=true;
-    const acc=pos.coords.accuracy?` ±${Math.round(pos.coords.accuracy)}م`:'';
-    if(locEl) locEl.innerHTML=`📍 ${userLoc.lat.toFixed(5)} ✅ GPS حقيقي${acc}`;
+    localStorage.setItem('gpsAllowed','true');
+    var acc=pos.coords.accuracy? ' ±'+Math.round(pos.coords.accuracy)+'م' : '';
+    if(locEl) locEl.innerHTML='📍 '+userLoc.lat.toFixed(5)+' ✅ GPS حقيقي'+acc;
     updateStats(); initMainMap();
-  }, err=>{
-    console.log('GPS denied', err);
-    if(locEl) locEl.textContent='📍 دوس هنا لتفعيل GPS الحقيقي';
+    if(modal) modal.style.display='none';
+  }, function(err){
+    localStorage.removeItem('gpsAllowed');
+    if(locEl){
+      if(err.code===1){
+        locEl.innerHTML='📍 GPS مرفوض - دوس هنا للتفعيل';
+        setTimeout(function(){
+          if(confirm('📍 انت رفضت تحديد الموقع - عشان التطبيق يشتغل صح لازم تفعله:\\n1- دوس على علامة القفل 🔒 فوق في المتصفح\\n2- اختار الموقع > سماح\\n3- اعمل تحديث\\n\\nافتح المودال تاني؟')){
+            document.getElementById('gpsModal').style.display='block';
+          }
+        },500);
+      }else{
+        locEl.textContent='📍 فشل GPS - دوس هنا للمحاولة تاني';
+      }
+    }
     updateStats(); initMainMap();
   }, opts);
   try{
-    navigator.geolocation.watchPosition(pos=>{
+    navigator.geolocation.watchPosition(function(pos){
       userLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
       locEnabled=true;
-      if(locEl) locEl.innerHTML=`📍 ${userLoc.lat.toFixed(5)} ✅ GPS حي`;
+      if(locEl) locEl.innerHTML='📍 '+userLoc.lat.toFixed(5)+' ✅ GPS حي';
       updateStats();
       if(map){ try{ map.setView([userLoc.lat,userLoc.lng],14); }catch(e){} }
-    },()=>{},opts);
+    },function(){},opts);
   }catch(e){}
 }
 function checkFirstTimeGPS(){
-  const seen=localStorage.getItem('gpsAsked');
-  if(!seen){
-    document.getElementById('gpsModal').style.display='block';
-    localStorage.setItem('gpsAsked','1');
+  try{ updateStats(); }catch(e){}
+  try{ initMainMap(); }catch(e){}
+  var allowed=localStorage.getItem('gpsAllowed');
+  if(!allowed ||!locEnabled){
+    setTimeout(function(){
+      var m=document.getElementById('gpsModal');
+      if(m &&!locEnabled){
+        m.style.display='block';
+        try{ m.querySelector('h2').textContent='فعل موقعك عشان التطبيق يشتغل'; }catch(e){}
+      }
+    }, 800);
   }
-  updateStats(); initMainMap();
-  setTimeout(requestGPSNow, 800);
+  setTimeout(function(){
+    if(!locEnabled){
+      requestGPSNow();
+    }
+  }, 1500);
+  setTimeout(function(){ try{ initMainMap(); updateStats(); }catch(e){} }, 3000);
 }
 function initMainMap(){
   try{
-    if(map){ map.remove(); map=null; }
-    const el=document.getElementById('mainMap'); if(!el||typeof L==='undefined') return;
+    if(typeof L==='undefined'){
+      setTimeout(initMainMap, 800);
+      return;
+    }
+    if(map){ try{ map.remove(); }catch(e){} map=null; }
+    const el=document.getElementById('mainMap');
+    if(!el) return;
     el.innerHTML='';
+    el.style.minHeight='360px';
     map=L.map('mainMap',{zoomControl:true}).setView([userLoc.lat,userLoc.lng], locEnabled?14:6);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM & CARTO',maxZoom:19}).addTo(map);
     L.marker([userLoc.lat,userLoc.lng]).addTo(map).bindPopup('📍 أنت هنا - GPS حقيقي').openPopup();
-    const sorted=[...realRestaurants].map(r=>({ ...r, dist:hav(userLoc.lat,userLoc.lng,r.lat||userLoc.lat+(Math.random()-0.5)*0.02,r.lng||userLoc.lng+(Math.random()-0.5)*0.02)})).sort((a,b)=>a.dist-b.dist);
+    const sorted=[...realRestaurants].map(r=>({...r, dist:hav(userLoc.lat,userLoc.lng,r.lat||userLoc.lat+(Math.random()-0.5)*0.03,r.lng||userLoc.lng+(Math.random()-0.5)*0.03)})).sort((a,b)=>a.dist-b.dist);
     sorted.forEach(r=>{
-      const lat=r.lat||userLoc.lat+(Math.random()-0.5)*0.04;
-      const lng=r.lng||userLoc.lng+(Math.random()-0.5)*0.04;
+      const lat=r.lat||userLoc.lat+(Math.random()-0.5)*0.05;
+      const lng=r.lng||userLoc.lng+(Math.random()-0.5)*0.05;
       const price=calc(r.dist);
-      L.marker([lat,lng]).addTo(map).bindPopup(`🍽️ ${r.name||r.restName}<br>📍 ${r.dist.toFixed(1)}كم<br>🚚 ${price}ج (15+${r.dist.toFixed(1)}×5)<br><button onclick="openAuth('client')">اطلب الآن</button>`);
+      L.marker([lat,lng]).addTo(map).bindPopup(`🍽️ ${r.name||r.restName}<br>📍 ${r.dist.toFixed(1)}كم<br>🚚 ${price}ج (15+${r.dist.toFixed(1)}×5)<br><button onclick="openAuth('client')" style="background:#FF6B00;color:white;border:none;padding:4px 8px;border-radius:6px">اطلب الآن</button>`);
     });
     realDrivers.filter(d=>d.online).forEach(d=>{
-      L.marker([d.lat||userLoc.lat+(Math.random()-0.5)*0.02,d.lng||userLoc.lng+(Math.random()-0.5)*0.02],{icon:L.divIcon({html:'🏍️',className:'',iconSize:[30,30]})}).addTo(map).bindPopup(`🏍️ ${d.name} - ${d.online?'اونلاين':''}`);
+      L.marker([d.lat||userLoc.lat+(Math.random()-0.5)*0.02,d.lng||userLoc.lng+(Math.random()-0.5)*0.02],{icon:L.divIcon({html:'🏍️',className:'',iconSize:[30,30]})}).addTo(map).bindPopup(`🏍️ ${d.name}`);
     });
-  }catch(e){ console.log('map err', e); }
+    setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 500);
+  }catch(e){
+    const el=document.getElementById('mainMap');
+    if(el) el.innerHTML='<div style="padding:40px;text-align:center;color:#FFB380">الخريطة بتحمل...<br><button onclick="location.reload()" style="background:#FF6B00;color:white;border:none;padding:8px 16px;border-radius:8px;margin-top:10px">تحديث</button></div>';
+  }
 }
 function initInnerMap(id){
   try{
@@ -217,236 +240,4 @@ function initInnerMap(id){
 function ownerClicks(){const now=Date.now();if(now-last>2000)clicks=0;last=now;clicks++;if(clicks>=5){const p=prompt('باسورد المالك السري:');if(p==='246246'){document.getElementById('landing').style.display='none';document.getElementById('ownerPage').style.display='block';loadOwner();}else alert('باسورد غلط');clicks=0}}
 function closeOwner(){document.getElementById('ownerPage').style.display='none';document.getElementById('landing').style.display='block';initMainMap();}
 function toggleBox(id){const el=document.getElementById(id);if(!el)return;const cur=window.getComputedStyle(el).display;el.style.display=(cur==='none')?'block':'none';}
-function openAuth(role){curRole=role;document.getElementById('authModal').style.display='block';document.getElementById('restBox').style.display=role==='restaurant'?'block':'none';document.getElementById('authTitle').textContent=role==='client'?'تسجيل عميل - طلب حقيقي':role==='restaurant'?'تسجيل مطعم - سيرفر حقيقي':'تسجيل دليفري - شغل حقيقي';}
-function closeAuth(){document.getElementById('authModal').style.display='none';}
-
-// ========== OTP حقيقي - SMS حقيقي من Firebase ==========
-async function sendOtp(){
-  const phoneRaw=document.getElementById('fPhone').value.trim();
-  if(!phoneRaw) return alert('اكتب رقمك 01xxxxxxxxx');
-  let phone=phoneRaw.startsWith('+')?phoneRaw:('+20'+phoneRaw.replace(/^0/,''));
-  if(isRealServer && fbAuth){
-    try{
-      document.getElementById('otpStatus').textContent='جاري ارسال SMS حقيقي من السيرفر...';
-      if(!recaptchaVerifier){
-        recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'normal',callback:()=>{}});
-        recaptchaVerifier.render();
-      }
-      confirmationResult=await fbAuth.signInWithPhoneNumber(phone, recaptchaVerifier);
-      document.getElementById('otpBox').style.display='block';
-      document.getElementById('otpStatus').textContent='✅ اتبعتت رسالة SMS حقيقية على '+phone+' - اكتب الكود اللي جالك';
-      return;
-    }catch(e){
-      console.error(e);
-      alert('فشل OTP الحقيقي: '+e.message+' - جرب 1234 تجريبي، وتأكد Enable في Firebase Phone');
-    }
-  }
-  alert('OTP تجريبي: 1234 - لو عايز حقيقي فعل Phone في Firebase');
-  document.getElementById('otpBox').style.display='block';
-  document.getElementById('otpStatus').textContent='تجريبي - الكود 1234';
-}
-async function verifyOtp(){
-  const code=document.getElementById('fOtp').value.trim();
-  if(!code) return alert('اكتب الكود');
-  if(isRealServer && confirmationResult){
-    try{
-      const res=await confirmationResult.confirm(code);
-      verifiedPhone=res.user.phoneNumber;
-      document.getElementById('otpStatus').textContent='✅ رقمك اتأكد حقيقي 100%: '+verifiedPhone;
-      return;
-    }catch(e){ return alert('كود غلط: '+e.message); }
-  }else{
-    if(code==='1234'){ verifiedPhone='+20'+document.getElementById('fPhone').value.trim(); document.getElementById('otpStatus').textContent='✅ تم - تجريبي'; }
-    else alert('اكتب 1234 تجريبي');
-  }
-}
-async function doRegister(){
-  const name=document.getElementById('fName').value.trim(),phone=document.getElementById('fPhone').value.trim(),addr=document.getElementById('fAddr').value.trim(),restName=document.getElementById('fRest').value.trim();
-  if(!name||!phone||!addr) return alert('اكتب كل البيانات - العنوان مهم للدليفري');
-  if(curRole==='restaurant'&&!restName) return alert('اكتب اسم المطعم');
-  const finalPhone=verifiedPhone||('+20'+phone.replace(/^0/,''));
-  const data={name,phone:finalPhone,addr,restName:restName||name,lat:userLoc.lat,lng:userLoc.lng,date:new Date().toLocaleString('ar-EG'),id:Date.now(),type:curRole,verified:!!verifiedPhone,online:true,deliveries:0,totalEarning:0};
-  if(isRealServer && fbDb){
-    try{
-      const col=curRole==='client'?'clients':curRole==='restaurant'?'restaurants':'drivers';
-      await fbDb.collection(col).add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-    }catch(e){ console.log(e); }
-  }
-  if(curRole==='client'){realClients.push(data);localStorage.setItem('realClients',JSON.stringify(realClients));}
-  else if(curRole==='delivery'){const ex=realDrivers.find(d=>d.phone===finalPhone);if(!ex){realDrivers.push({...data,deliveries:0,online:true,totalEarning:0});localStorage.setItem('realDrivers',JSON.stringify(realDrivers));}else{ex.online=true;localStorage.setItem('realDrivers',JSON.stringify(realDrivers));}}
-  else{realRestaurants.push({...data,name:restName||name,restName:restName||name});localStorage.setItem('realRestaurants',JSON.stringify(realRestaurants));}
-  localStorage.setItem('currentUser',JSON.stringify({...data,type:curRole}));closeAuth();
-  const pending=localStorage.getItem('pendingOfferId');if(pending){localStorage.removeItem('pendingOfferId');if(curRole==='client'){setTimeout(()=>orderFromOffer(parseInt(pending)),400);return;}}
-  if(curRole==='client')showClientApp();else if(curRole==='restaurant')showRestaurantApp();else{if(!deliveryWelcomeShown){document.getElementById('deliveryWelcome').style.display='block';deliveryWelcomeShown=true;}else showDeliveryApp(true);} updateStats();
-}
-
-// ========== صفحات العميل والمطعم والدليفري والعروض - كلها حقيقية 100% ==========
-function showClientApp(){
-  const sorted=realRestaurants.map(r=>{const d=hav(userLoc.lat,userLoc.lng,r.lat||userLoc.lat,r.lng||userLoc.lng);return {...r,dist:d,deliveryPrice:calc(d),deliveryFormula:`${d.toFixed(1)}×5`}}).sort((a,b)=>a.dist-b.dist);
-  const p=document.getElementById('appPage'); document.getElementById('landing').style.display='none'; p.style.display='block';
-  p.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:900;font-size:18px">👤 أقرب مطاعم ليك - GPS حقيقي</div><div style="font-size:11px;color:#FFB380">موقعك: ${userLoc.lat.toFixed(4)} - أقرب مطعم ${sorted[0]?.dist?.toFixed(1)||'0'}كم</div></div><button onclick="location.reload()" style="background:white;color:#000;border:none;padding:8px 14px;border-radius:20px">رجوع</button></div><div id="clientMap" class="map-box" style="height:220px"></div><div id="restsList" style="margin-top:12px"></div><div id="cartBox" style="display:none" class="box"></div>`;
-  initInnerMap('clientMap');
-  const listEl=document.getElementById('restsList');
-  if(sorted.length===0){ listEl.innerHTML='<div class="box" style="text-align:center">لا يوجد مطاعم مسجلة حاليا - سجل مطعم جديد وهيظهر هنا فورا على الخريطة الحقيقية</div>'; return; }
-  listEl.innerHTML=sorted.map(r=>{
-    const menu=JSON.parse(localStorage.getItem('menu_'+(r.name||r.restName))||'[]');
-    return `<div style="background:white;color:#000;border-radius:16px;padding:12px;margin-bottom:10px;border-right:4px solid #FF6B00"><div style="display:flex;justify-content:space-between"><b>🍽️ ${r.name||r.restName}</b><span style="background:#FFF7F0;border:1px solid #FF6B00;padding:4px 10px;border-radius:20px;font-size:11px">📍 ${r.dist.toFixed(1)}كم • 🚚 ${r.deliveryPrice}ج</span></div><div style="font-size:11px;color:#666;margin-top:4px">📞 ${r.phone} - 📍 ${r.addr||''}<br>حسبة التوصيل: 15ج + ${r.dist.toFixed(1)}×5 = ${r.deliveryPrice}ج - عمولة المنصة 10% = ${Math.round(r.deliveryPrice*0.1)}ج</div><div style="margin-top:8px">${menu.length?menu.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;background:#F8F8F8;border-radius:10px;padding:8px;margin-top:6px"><div><b>${m.name}</b><div style="font-size:11px">${m.price}ج</div></div><button onclick="addCart('${(r.name||r.restName).replace(/'/g,'')}', '${m.name.replace(/'/g,'')}', ${m.price}, ${r.deliveryPrice}, '${r.dist.toFixed(1)}×5')" style="background:#FF6B00;color:white;border:none;padding:6px 12px;border-radius:8px">إضافة</button></div>`).join(''):'<div style="font-size:11px;color:#888">المطعم لسه مضافش منيو</div>'}</div><button onclick="selRest={name:'${(r.name||r.restName).replace(/'/g,'')}',phone:'${r.phone}',dist:${r.dist},deliveryPrice:${r.deliveryPrice},formula:'${r.dist.toFixed(1)}×5'}; document.getElementById('cartBox').style.display='block'; renderCart();" style="background:#0A0A0A;color:white;border:none;padding:8px 12px;border-radius:8px;margin-top:8px;width:100%">عرض السلة</button></div>`;
-  }).join('');
-}
-function addCart(restName, mealName, price, deliveryPrice, formula){
-  const ex=cart.find(i=>i.name===mealName&&i.restName===restName);
-  if(ex) ex.qty++; else cart.push({name:mealName,price,qty:1,restName,deliveryPrice,formula});
-  selRest={name:restName,deliveryPrice,formula};
-  document.getElementById('cartBox').style.display='block'; renderCart();
-}
-function renderCart(){
-  if(cart.length===0){ document.getElementById('cartBox').innerHTML='السلة فاضية'; return; }
-  const itemsTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
-  const delivery=selRest?.deliveryPrice||0;
-  const grand=itemsTotal+delivery;
-  document.getElementById('cartBox').innerHTML=`<h4>🛒 سلتك - ${selRest?.name||''}</h4>${cart.map((i,idx)=>`<div style="display:flex;justify-content:space-between;margin-top:6px"><span>${i.name} ×${i.qty} = ${i.price*i.qty}ج</span><button onclick="cart.splice(${idx},1);renderCart()" style="background:#FF4444;color:white;border:none;padding:2px 8px;border-radius:6px">X</button></div>`).join('')}<hr><div>الأكل: ${itemsTotal}ج</div><div>التوصيل: ${delivery}ج = 15 + ${selRest?.formula||''} (حسبة حقيقية)</div><div style="font-size:11px;color:#666">عمولة المنصة 10% = ${Math.round(delivery*0.1)}ج سببها سيرفر وخرائط وSMS - للدليفري 90% = ${Math.round(delivery*0.9)}ج</div><div style="font-weight:900;font-size:18px;margin-top:8px">الإجمالي: ${grand}ج</div><button onclick="confirmOrder()" style="background:#10B981;color:white;padding:12px;border-radius:12px;border:none;width:100%;margin-top:10px;font-weight:900">تأكيد الطلب - حقيقي 100%</button>`;
-}
-async function confirmOrder(){
-  if(cart.length===0) return alert('السلة فاضية');
-  const user=JSON.parse(localStorage.getItem('currentUser')||'{}');
-  const itemsTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
-  const delivery=selRest?.deliveryPrice||0;
-  const order={client:user,restName:selRest.name,items:cart,itemsTotal,deliveryPrice:delivery,deliveryFormula:selRest.formula,grandTotal:itemsTotal+delivery,date:new Date().toLocaleString('ar-EG'),status:'جديد - حقيقي',createdAt:new Date()};
-  if(isRealServer && fbDb){
-    try{ await fbDb.collection('orders').add({...order, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); }catch(e){}
-  }
-  realOrders.push({...order,id:Date.now()}); localStorage.setItem('realOrders',JSON.stringify(realOrders));
-  alert(`✅ طلبك اتبعت حقيقي للمطعم ${selRest.name} - الإجمالي ${order.grandTotal}ج - التوصيل ${delivery}ج - هيوصلك الدليفري`);
-  cart=[]; document.getElementById('cartBox').style.display='none'; location.reload();
-}
-function showRestaurantApp(){
-  const u=JSON.parse(localStorage.getItem('currentUser')||'{}');
-  const p=document.getElementById('appPage'); document.getElementById('landing').style.display='none'; p.style.display='block';
-  p.innerHTML=`<div style="display:flex;justify-content:space-between"><div><div style="font-weight:900">🍽️ مطعم ${u.restName||u.name} - طلبات حقيقية</div><div style="font-size:11px;color:#10B981">✅ الطلبات هتوصلك هنا من موبايل العميل لموبايلك باسم العميل ورقمه وعنوانه الحقيقي</div></div><button onclick="location.reload()" style="background:white;color:#000;border:none;padding:8px 14px;border-radius:20px">خروج</button></div><div class="box"><h4>➕ إضافة وجبة - عرض المنيو حقيقي</h4><input id="mealName" class="input" placeholder="اسم الوجبة"><input id="mealPrice" class="input" placeholder="السعر" type="number"><input type="file" id="menuFileInput" accept="image/*" style="margin-top:8px"><div id="menuFileName" style="font-size:11px"></div><div id="menuPrev" style="display:none;margin-top:8px"><img id="menuImgPrev" style="width:100%;height:140px;object-fit:cover;border-radius:10px"></div><button onclick="addMenu()" style="background:#FF6B00;color:white;padding:10px;border-radius:10px;border:none;width:100%;margin-top:8px">إضافة للمنيو - يظهر للعميل فورا</button><div id="myMenu" style="margin-top:10px"></div></div><div class="box"><h4>📢 طلب إعلان ممول - المطاعم بس - اختيار صورة أو فيديو</h4><input id="adMealName" class="input" placeholder="اسم الوجبة للإعلان"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><div class="type-card active" id="typeImg" onclick="adType='صورة';document.getElementById('typeImg').classList.add('active');document.getElementById('typeVid').classList.remove('active');"><div>🖼️</div><div style="font-size:12px;font-weight:800">صورة - 35ج / 15 يوم</div></div><div class="type-card" id="typeVid" onclick="adType='فيديو';document.getElementById('typeVid').classList.add('active');document.getElementById('typeImg').classList.remove('active');"><div>🎬</div><div style="font-size:12px;font-weight:800">فيديو - 70ج / 15 يوم</div></div></div><input type="file" id="adFileInput" accept="image/*,video/*" style="margin-top:8px"><div id="adFileName" style="font-size:11px"></div><div id="adPrev" style="display:none;margin-top:8px"><img id="adImgPrev" style="width:100%;height:140px;object-fit:cover;border-radius:10px;display:none"><video id="adVidPrev" style="width:100%;height:140px;object-fit:cover;border-radius:10px;display:none" controls></video></div><button onclick="requestAd()" style="background:#0A0A0A;color:white;padding:12px;border-radius:12px;border:none;width:100%;margin-top:10px">طلب إعلان - يظهر في العروض اسكرول</button></div><div id="myOrders" class="box"><h4>📦 طلبات جتلك - موبايل لموبايل حقيقي - باسم العميل ورقمه</h4><div id="ordersHere">جاري الاستماع للطلبات الحقيقية...</div></div>`;
-  renderMyMenu(u.restName||u.name);
-  loadMyOrdersRealtime(u.restName||u.name);
-}
-function renderMyMenu(restName){
-  const key='menu_'+restName; const menu=JSON.parse(localStorage.getItem(key)||'[]');
-  document.getElementById('myMenu').innerHTML=menu.map((m,i)=>`<div style="display:flex;justify-content:space-between;background:#F8F8F8;padding:8px;border-radius:8px;margin-top:6px"><span>${m.name} - ${m.price}ج</span><button onclick="delMenu('${restName}',${i})" style="background:#FF4444;color:white;border:none;padding:2px 8px;border-radius:6px">X</button></div>`).join('')||'لا يوجد وجبات';
-}
-function addMenu(){
-  const name=document.getElementById('mealName').value.trim(),price=parseInt(document.getElementById('mealPrice').value);
-  const u=JSON.parse(localStorage.getItem('currentUser')||'{}'); const restName=u.restName||u.name;
-  if(!name||!price) return alert('اكتب اسم وسعر');
-  const key='menu_'+restName; const menu=JSON.parse(localStorage.getItem(key)||'[]');
-  menu.push({name,price,img:uploadedMenuBase64||'',date:new Date().toLocaleString()});
-  localStorage.setItem(key,JSON.stringify(menu)); uploadedMenuBase64=''; document.getElementById('mealName').value=''; document.getElementById('mealPrice').value=''; renderMyMenu(restName); alert('✅ اتضافت للمنيو وتظهر للعميل على الخريطة الحقيقية فورا');
-}
-function delMenu(restName,i){ const key='menu_'+restName; const menu=JSON.parse(localStorage.getItem(key)||'[]'); menu.splice(i,1); localStorage.setItem(key,JSON.stringify(menu)); renderMyMenu(restName); }
-function requestAd(){
-  const meal=document.getElementById('adMealName').value.trim(); const u=JSON.parse(localStorage.getItem('currentUser')||'{}');
-  if(!meal||!uploadedAdBase64) return alert('اكتب اسم الوجبة واختار صورة أو فيديو');
-  const cost=adType==='صورة'?35:70;
-  const ad={id:Date.now(),restaurant:u.restName||u.name,mealName:meal,type:adType,cost,img:uploadedAdBase64,date:new Date().toLocaleString('ar-EG'),price:adType==='صورة'?'35ج / 15 يوم':'70ج / 15 يوم'};
-  const all=JSON.parse(localStorage.getItem('adRequests')||'[]'); all.push(ad); localStorage.setItem('adRequests',JSON.stringify(all));
-  uploadedAdBase64=''; alert(`✅ طلب إعلان ${adType} ${cost}ج / 15 يوم اتبعت للمالك - هيظهر في صفحة العروض اسكرول صور وفيديو حقيقي وزرار اطلب الآن شغال`); document.getElementById('adMealName').value='';
-}
-function loadMyOrdersRealtime(restName){
-  if(isRealServer && fbDb){
-    fbDb.collection('orders').where('restName','==',restName).orderBy('createdAt','desc').onSnapshot(snap=>{
-      const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
-      document.getElementById('ordersHere').innerHTML=orders.map(o=>`<div style="background:#FFF7F0;border:2px solid #FF6B00;border-radius:12px;padding:10px;margin-top:8px"><b>👤 ${o.client?.name} - 📞 <a href="tel:${o.client?.phone}">${o.client?.phone}</a></b><br>📍 ${o.client?.addr} - حقيقي<br>🍽️ ${o.items?.map(i=>i.name+'×'+i.qty).join(', ')}<br>💰 ${o.grandTotal}ج - 🚚 ${o.deliveryPrice}ج = 15+${o.deliveryFormula||''} - عمولتك 10% = ${Math.round(o.deliveryPrice*0.1)}ج<br><span style="font-size:11px">${o.date} - ${o.status}</span></div>`).join('')||'لسه مفيش طلبات - لما عميل يطلب من الخريطة الحقيقية هيظهر هنا فورا';
-    });
-  }else{
-    const orders=realOrders.filter(o=>o.restName===restName).reverse();
-    document.getElementById('ordersHere').innerHTML=orders.map(o=>`<div style="background:#FFF7F0;border:2px solid #FF6B00;border-radius:12px;padding:10px;margin-top:8px"><b>👤 ${o.client?.name} - 📞 ${o.client?.phone}</b><br>📍 ${o.client?.addr}<br>🍽️ ${o.items?.map(i=>i.name+'×'+i.qty).join(', ')}<br>💰 ${o.grandTotal}ج</div>`).join('')||'لا يوجد طلبات';
-  }
-}
-function showDeliveryApp(first){
-  const u=JSON.parse(localStorage.getItem('currentUser')||'{}');
-  const p=document.getElementById('appPage'); document.getElementById('landing').style.display='none'; p.style.display='block';
-  const nearby=realOrders.filter(o=>o.status==='جديد - حقيقي').map(o=>{
-    const c=realClients.find(x=>x.phone===o.client?.phone) || o.client;
-    const d=hav(userLoc.lat,userLoc.lng,c?.lat||userLoc.lat,c?.lng||userLoc.lng);
-    return {...o,dist:d};
-  }).sort((a,b)=>a.dist-b.dist);
-  p.innerHTML=`<div style="display:flex;justify-content:space-between"><div><div style="font-weight:900">🏍️ ${u.name} - شغل حقيقي</div><div style="font-size:11px;color:#10B981">موقعك GPS حقيقي حي - التصفية 10-11م - ليك 90%</div></div><button onclick="location.reload()" style="background:white;color:#000;border:none;padding:8px 14px;border-radius:20px">خروج</button></div><div id="delMap" class="map-box" style="height:200px"></div><div style="background:white;color:#000;border-radius:16px;padding:12px;margin-top:12px"><h4>📦 طلبات قريبة ليك - GPS حقيقي - باسم العميل ورقمه</h4><div id="delOrders">${nearby.length?nearby.map(o=>`<div style="background:#FFF7F0;border:2px solid #10B981;border-radius:12px;padding:10px;margin-top:8px"><b>👤 ${o.client?.name} → 🍽️ ${o.restName}</b><br>📞 ${o.client?.phone} - 📍 ${o.client?.addr}<br>📍 ${o.dist.toFixed(1)}كم منك - 🚚 ${o.deliveryPrice}ج - ليك 90% = ${Math.round(o.deliveryPrice*0.9)}ج<br>🍽️ ${o.items?.map(i=>i.name+'×'+i.qty).join(', ')} - ${o.grandTotal}ج<br><button onclick="takeOrder('${o.id}')" style="background:#10B981;color:white;border:none;padding:8px 14px;border-radius:8px;margin-top:6px">استلام الطلب - حقيقي ✅</button></div>`).join(''):'لا يوجد طلبات قريبة حاليا'}</div></div>`;
-  initInnerMap('delMap');
-}
-function takeOrder(id){
-  const idx=realOrders.findIndex(o=>o.id==id||o.id===id);
-  if(idx>-1){ realOrders[idx].status='تم الاستلام - مع الدليفري'; localStorage.setItem('realOrders',JSON.stringify(realOrders)); const u=JSON.parse(localStorage.getItem('currentUser')||'{}'); const d=realDrivers.find(x=>x.phone===u.phone); if(d){ d.deliveries=(d.deliveries||0)+1; d.totalEarning=(d.totalEarning||0)+Math.round((realOrders[idx].deliveryPrice||0)*0.9); localStorage.setItem('realDrivers',JSON.stringify(realDrivers)); } alert('✅ استلمت الطلب - كلم العميل - التوصيل حقيقي'); showDeliveryApp(); }
-}
-function showOffers(){
-  const p=document.getElementById('appPage'); document.getElementById('landing').style.display='none'; p.style.display='block';
-  const approved=JSON.parse(localStorage.getItem('approvedAds')||'[]');
-  p.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:900">🎁 العروض - عرض بس اسكرول - صور وفيديو حقيقي</div><button onclick="location.reload()" style="background:white;color:#000;border:none;padding:8px 14px;border-radius:20px">رجوع</button></div><div id="offersMap" class="map-box" style="height:180px"></div><div style="margin-top:12px">${approved.length?approved.map(ad=>`<div class="offer-card"><div style="height:220px;background:#000;overflow:hidden">${ad.img?.startsWith('data:video')?`<video src="${ad.img}" style="width:100%;height:100%;object-fit:cover" controls autoplay muted loop></video>`:`<img src="${ad.img}" style="width:100%;height:100%;object-fit:cover">`}</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>🍽️ ${ad.restaurant} - ${ad.mealName}</b><span style="background:${ad.type==='صورة'?'#10B981':'#FF6B00'};color:white;padding:4px 10px;border-radius:20px;font-size:11px">${ad.type}</span></div><div style="font-size:11px;color:#FFB380;margin-top:4px">عرض حقيقي 15 يوم - على الخريطة الحقيقية</div><button onclick="orderFromOffer(${ad.id})" style="background:#FF6B00;color:white;border:none;padding:12px;border-radius:12px;width:100%;margin-top:10px;font-weight:900">اطلب الآن - حقيقي ✅</button></div></div>`).join(''):'<div class="box" style="text-align:center">لا يوجد عروض حاليا - المطاعم تقدر تطلب إعلان صورة 35ج أو فيديو 70ج / 15 يوم ويظهر هنا اسكرول حقيقي</div>'}</div>`;
-  initInnerMap('offersMap');
-}
-function orderFromOffer(id){
-  const ad=JSON.parse(localStorage.getItem('approvedAds')||'[]').find(a=>a.id===id);
-  if(!ad) return;
-  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
-  if(!user||user.type!=='client'){
-    localStorage.setItem('pendingOfferId', id);
-    alert('سجل كعميل الأول عشان تطلب العرض الحقيقي'); openAuth('client'); return;
-  }
-  const rest=realRestaurants.find(r=>(r.name||r.restName)===ad.restaurant);
-  const dist=rest?hav(userLoc.lat,userLoc.lng,rest.lat||userLoc.lat,rest.lng||userLoc.lng):2;
-  const delivery=calc(dist);
-  cart=[{name:ad.mealName,price:50,qty:1,restName:ad.restaurant,deliveryPrice:delivery,formula:`${dist.toFixed(1)}×5`}];
-  selRest={name:ad.restaurant,deliveryPrice:delivery,formula:`${dist.toFixed(1)}×5`};
-  showClientApp();
-  setTimeout(()=>{ document.getElementById('cartBox').style.display='block'; renderCart(); },500);
-}
-function loadOwner(){
-  document.getElementById('cClients').textContent=realClients.length;
-  document.getElementById('cRests').textContent=realRestaurants.length;
-  document.getElementById('cDrivers').textContent=realDrivers.length;
-  document.getElementById('cOrders').textContent=realOrders.length;
-  document.getElementById('restsTable').innerHTML=realRestaurants.map(r=>{const key='menu_'+(r.name||r.restName),menu=JSON.parse(localStorage.getItem(key)||'[]');return `<div style="background:#FFF7F0;padding:10px;border-radius:10px;margin-bottom:6px;border-right:4px solid #FF6B00"><b>🍽️ ${r.name||r.restName}</b> - 📞 ${r.phone} - ${menu.length} وجبات - حقيقي على الخريطة<br><span style="font-size:10px">📍 ${r.lat?.toFixed(5)},${r.lng?.toFixed(5)} - ${r.addr||''} - حسبة ${calc(hav(userLoc.lat,userLoc.lng,r.lat||0,r.lng||0))}ج</span></div>`}).join('')||'لا يوجد مطاعم حقيقية';
-  let totalPrice=realOrders.reduce((s,o)=>s+(o.deliveryPrice||0),0);
-  let totalPlatform=realOrders.reduce((s,o)=>s+Math.round((o.deliveryPrice||0)*0.1),0);
-  let totalDriver=realOrders.reduce((s,o)=>s+Math.round((o.deliveryPrice||0)*0.9),0);
-  document.getElementById('deliveryCommission').innerHTML=`<div style="background:#F0FDF4;border:2px solid #10B981;border-radius:12px;padding:12px"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center"><div style="background:white;border-radius:10px;padding:10px"><div style="font-weight:900;font-size:18px">${totalPrice}ج</div><div style="font-size:10px">إجمالي التوصيل - حسبة 15+km×5</div></div><div style="background:#10B981;color:white;border-radius:10px;padding:10px"><div style="font-weight:900;font-size:18px">${totalDriver}ج</div><div style="font-size:10px">للدليفري 90% - سبب: تعب وبنزين</div></div><div style="background:#000;color:white;border-radius:10px;padding:10px"><div style="font-weight:900;font-size:18px">${totalPlatform}ج</div><div style="font-size:10px">عمولتك 10% - سيرفر وخرائط وSMS حقيقي</div></div></div><div style="background:#0A0A0A;color:white;border-radius:10px;padding:10px;margin-top:10px;font-size:11px">⏰ التصفية 10-11م يوميا - الحسبة: 15ج ثابت + 5ج لكل كم - مثال 2كم = 15+10=25ج - ليك 2.5ج - للدليفري 22.5ج - سبب العمولة تشغيل السيرفر والخرائط والـ SMS الحقيقي</div><div style="margin-top:12px"><b>الدليفري الحقيقي (${realDrivers.length}):</b></div>${realDrivers.map(d=>`<div style="background:white;border:1px solid #BBF7D0;border-radius:10px;padding:10px;margin-top:8px;display:flex;justify-content:space-between;align-items:center"><div><b>🏍️ ${d.name}</b><div style="font-size:11px">📞 ${d.phone} - ${d.online?'🟢 أونلاين':'🔴 أوفلاين'}</div><div style="font-size:11px">📍 ${d.addr||''} - توصيلات: ${d.deliveries||0} - أرباحه: ${d.totalEarning||0}ج (90%)</div></div><button onclick="settleDriver('${d.phone}')" style="background:#10B981;color:white;border:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800">تصفية 10-11م ✅</button></div>`).join('')}</div>`;
-  document.getElementById('adRequests').innerHTML=(JSON.parse(localStorage.getItem('adRequests')||'[]')).map(ad=>`<div style="background:#FFF7F0;padding:12px;border-radius:12px;margin-bottom:10px;border:2px solid #FF6B00"><div style="display:flex;justify-content:space-between"><b>🍽️ ${ad.restaurant} - ${ad.mealName}</b><span style="background:${ad.type==='صورة'?'#10B981':'#FF6B00'};color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800">${ad.type} ${ad.cost}ج / 15 يوم</span></div><div style="font-size:11px;margin-top:4px">${ad.price} - ${ad.date}</div><div style="height:140px;background:#000;margin-top:8px;border-radius:10px;overflow:hidden">${ad.img?.startsWith('data:video')?`<video src="${ad.img}" style="width:100%;height:100%;object-fit:cover" controls></video>`:`<img src="${ad.img}" style="width:100%;height:100%;object-fit:cover">`}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button onclick="approveAd(${ad.id})" style="background:#10B981;color:white;padding:10px;border-radius:10px;border:none;font-weight:800">موافقة - يظهر اسكرول حقيقي</button><button onclick="rejectAd(${ad.id})" style="background:#FF4444;color:white;padding:10px;border-radius:10px;border:none">رفض</button></div></div>`).join('')||'لا يوجد طلبات إعلانات';
-  document.getElementById('ordersList').innerHTML=realOrders.map(o=>`<div style="background:#FFF7F0;padding:10px;border-radius:10px;margin-bottom:8px;border-right:4px solid #FF6B00"><div style="display:flex;justify-content:space-between"><b>👤 ${o.client?.name} → 🍽️ ${o.restName}</b><b style="color:#FF6B00">${o.grandTotal}ج</b></div><div style="font-size:11px">📞 ${o.client?.phone} - 📍 ${o.client?.addr||''} - حقيقي 100%</div><div style="font-size:11px">${o.items?.map(i=>i.name+'×'+i.qty).join(', ')} - توصيل ${o.deliveryPrice}ج = 15+${o.deliveryFormula||''} - عمولتك 10%=${Math.round(o.deliveryPrice*0.1)}ج سيرفر وخرائط وSMS - للدليفري 90%=${Math.round(o.deliveryPrice*0.9)}ج</div><div style="font-size:10px;color:#666">${o.date} - ${o.status}</div></div>`).join('')||'لا يوجد طلبات حقيقية';
-}
-function settleDriver(phone){const d=realDrivers.find(x=>x.phone===phone);if(!d)return;if(confirm(`تصفية ${d.name} - ${d.totalEarning||0}ج - من 10 لـ 11م؟`)){d.totalEarning=0;d.deliveries=0;localStorage.setItem('realDrivers',JSON.stringify(realDrivers));loadOwner();alert('تمت التصفية - عمولتك 10% اتخصمت');}}
-function approveAd(id){const all=JSON.parse(localStorage.getItem('adRequests')||'[]'),ad=all.find(a=>a.id===id),appr=JSON.parse(localStorage.getItem('approvedAds')||'[]');if(!ad)return;appr.push({...ad,status:'approved'});localStorage.setItem('approvedAds',JSON.stringify(appr));localStorage.setItem('adRequests',JSON.stringify(all.filter(a=>a.id!==id)));loadOwner();alert('✅ وافقنا - هيظهر في العروض اسكرول صور وفيديو حقيقي وزرار اطلب الآن شغال حقيقي');}
-function rejectAd(id){if(!confirm('ترفض الإعلان؟'))return;const all=JSON.parse(localStorage.getItem('adRequests')||'[]');localStorage.setItem('adRequests',JSON.stringify(all.filter(a=>a.id!==id)));loadOwner();}
-
-document.addEventListener('change',e=>{
-if(e.target.id==='adFileInput'){const f=e.target.files[0];if(!f)return;if(f.size>50*1024*1024)return alert('الفيديو كبير - أقل من 50 ميجا');document.getElementById('adFileName').textContent='📁 '+f.name+' ('+(f.size/1024/1024).toFixed(1)+' MB)';const r=new FileReader();r.onload=ev=>{uploadedAdBase64=ev.target.result;const isV=f.type.startsWith('video');document.getElementById('adPrev').style.display='block';if(isV){document.getElementById('adVidPrev').style.display='block';document.getElementById('adImgPrev').style.display='none';document.getElementById('adVidPrev').src=uploadedAdBase64;adType='فيديو';}else{document.getElementById('adImgPrev').style.display='block';document.getElementById('adVidPrev').style.display='none';document.getElementById('adImgPrev').src=uploadedAdBase64;adType='صورة';}};r.readAsDataURL(f);}
-if(e.target.id==='menuFileInput'){const f=e.target.files[0];if(!f)return;document.getElementById('menuFileName').textContent='📁 '+f.name;const r=new FileReader();r.onload=ev=>{uploadedMenuBase64=ev.target.result;document.getElementById('menuPrev').style.display='block';document.getElementById('menuImgPrev').src=uploadedMenuBase64;};r.readAsDataURL(f);}
-});
-
-// ========== PWA تثبيت مباشر + تحديث تلقائي للقديم ==========
-let deferredPrompt=null;
-const installBanner=document.createElement('div');
-installBanner.id='pwaInstallBanner';
-installBanner.style.cssText='display:none;position:fixed;bottom:16px;left:12px;right:12px;background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border:2px solid #FF6B00;border-radius:16px;padding:12px;z-index:999999;box-shadow:0 10px 30px rgba(0,0,0,0.5)';
-installBanner.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div style="display:flex;align-items:center;gap:10px"><div style="background:#FF6B00;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900">م</div><div><div style="font-weight:900;color:white">تثبيت مطاعم مصر 📲</div><div style="font-size:11px;color:#FFB380">تثبيت مباشر - يشتغل بدون نت - تحديث تلقائي</div></div></div><div style="display:flex;gap:8px"><button id="pwaInstallBtn" style="background:#FF6B00;color:white;border:none;padding:10px 18px;border-radius:12px;font-weight:900">تثبيت</button><button onclick="this.closest('#pwaInstallBanner').style.display='none'" style="background:rgba(255,255,255,0.1);color:white;border:none;width:32px;height:32px;border-radius:50%">X</button></div></div>`;
-document.body.appendChild(installBanner);
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBanner.style.display='block';});
-document.addEventListener('click',async e=>{if(e.target&&e.target.id==='pwaInstallBtn'){if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;installBanner.style.display='none';}});
-window.addEventListener('appinstalled',()=>{installBanner.style.display='none';deferredPrompt=null;});
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=33').then(reg=>{
-    reg.addEventListener('updatefound',()=>{
-      const nw=reg.installing;
-      nw.addEventListener('statechange',()=>{
-        if(nw.state==='installed'&&navigator.serviceWorker.controller){
-          if(confirm('🔄 فيه تحديث جديد لمطاعم مصر - حدث الآن؟ التطبيق القديم هيتحدث تلقائيا')){
-            nw.postMessage('skipWaiting'); window.location.reload();
-          }
-        }
-      });
-    });
-  });
-  let refreshing=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!refreshing){refreshing=true;window.location.reload();}});
-}
-
-// بدء التطبيق
-checkFirstTimeGPS();
-</script>
-</body>
-</html>
+function openAuth(role){curRole=role;document.getElementByI
