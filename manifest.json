@@ -1,8 +1,8 @@
 {
-  "name": "مطاعم مصر - توصيل أمان - سيرفر حقيقي",
+  "name": "مطاعم مصر - توصيل أمان - سيرفر حقيقي 100%",
   "short_name": "مطاعم مصر",
   "description": "توصيل أمان - سيرفر حقيقي 100% - GPS حقيقي - OTP حقيقي - طلب موبايل لموبايل - تثبيت مباشر - تحديث تلقائي",
-  "start_url": "./index.html?v=35-force-gps",
+  "start_url": "./index.html?v=33-final-real-server",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone","window-controls-overlay","browser"],
