@@ -1,9 +1,38 @@
 {
-  "name": "مطاعم مصر - فخم - كامل v24 - كل التفاصيل",
+  "name": "مطاعم مصر - توصيل أمان",
   "short_name": "مطاعم مصر",
-  "start_url": "./index.html?v=24-final-full",
+  "description": "توصيل أمان من مطاعم مصر - سيرفر حقيقي 100% - طلب مباشر موبايل لموبايل - قابل للتحديث في أي وقت",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "browser"],
+  "orientation": "any",
   "background_color": "#0A0A0A",
   "theme_color": "#FF6B00",
-  "icons": [{"src":"https://cdn-icons-png.flaticon.com/512/3075/3075977.png","sizes":"512x512","type":"image/png"}]
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": ["food", "shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "اطلب الآن",
+      "short_name": "اطلب",
+      "description": "اطلب من أقرب مطعم",
+      "url": "./index.html",
+      "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png", "sizes": "192x192"}]
+    }
+  ]
 }
