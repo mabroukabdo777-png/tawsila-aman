@@ -1,10 +1,10 @@
 {
-  "name": "توصيل أمان",
-  "short_name": "توصيل أمان",
-  "start_url": "./index.html",
+  "name": "مطاعم مصر",
+  "short_name": "مطاعم مصر",
+  "start_url": "./index.html?v=15-5",
   "display": "standalone",
   "background_color": "#0A0A0A",
-  "theme_color": "#0A0A0A",
+  "theme_color": "#FF6B00",
   "dir": "rtl",
   "lang": "ar",
   "icons": [
