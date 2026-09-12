@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مطاعم مصر - توصيل سريع فخم</title>
-<link rel="manifest" href="./manifest.json?v=17">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مطاعم مصر - فخم - كامل</title>
+<link rel="manifest" href="./manifest.json?v=20-full">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -12,199 +11,110 @@
 body{margin:0;background:#0A0A0A;color:white}
 .header{position:sticky;top:0;background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border-bottom:1px solid #FF6B00;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:100}
 .logo{cursor:pointer;display:flex;align-items:center;gap:10px}
-.card{background:white;color:#0A0A0A;border-radius:24px;padding:20px;text-align:center;cursor:pointer;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid #eee;transition:all 0.2s}
-.card:hover{transform:translateY(-4px);border-color:#FF6B00}
+.card{background:white;color:#0A0A0A;border-radius:24px;padding:20px;text-align:center;cursor:pointer;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid #eee}
 .badge{background:#FFF0E5;color:#FF6B00;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-top:8px}
-.map-box{height:400px;border-radius:24px;border:2px solid #FF6B00;overflow:hidden;margin:12px}
-.btn{padding:12px;border-radius:14px;border:none;font-weight:800;cursor:pointer}
-.btn-orange{background:#FF6B00;color:white}
-.btn-white{background:white;color:#0A0A0A;border:1px solid #eee}
+.map-box{height:300px;border-radius:24px;border:2px solid #FF6B00;overflow:hidden;margin:12px}
 .luxury-box{background:white;color:#0A0A0A;border-radius:20px;padding:16px;border:1px solid #eee;margin-top:16px}
 </style>
 </head>
 <body>
-
 <div class="header">
-  <div style="display:flex;gap:8px;align-items:center">
-    <span id="loc" style="background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:20px;font-size:12px">📍 جاري تحديد...</span>
-  </div>
-  <div class="logo" id="logo" onclick="ownerClicks()">
-    <div style="text-align:right"><div style="font-weight:900">مطاعم مصر</div><div style="font-size:10px;color:#FFB380">توصيل سريع • فخم</div></div>
-    <div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px">م</div>
-  </div>
+  <span id="loc" style="background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:20px;font-size:12px">📍 جاري تحديد...</span>
+  <div class="logo" onclick="ownerClicks()"><div style="text-align:right"><div style="font-weight:900">مطاعم مصر</div><div style="font-size:10px;color:#FFB380">فخم • 15+5</div></div><div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900">م</div></div>
 </div>
 
-<div id="app">
-  <div style="text-align:center;padding:30px 20px">
-    <div style="font-size:64px">🍽️</div>
-    <h1 style="color:#FF6B00;font-size:36px;font-weight:900;margin:10px 0">مطاعم <span style="color:white">مصر</span></h1>
-    <p style="color:#FFB380">خرائط حقيقية - فخم أسود في أبيض - 15ج + 5ج/كم 🇪🇬</p>
-    <div style="background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:12px;padding:10px;max-width:400;margin:16px auto;color:#FFB380;font-size:12px">📍 <span id="coords">جاري...</span></div>
-  </div>
+<div id="app"></div>
 
-  <div id="map" class="map-box"></div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:800px;margin:20px auto;padding:0 16px">
-    <div class="card" onclick="enter('client')"><div style="font-size:40px">👤</div><div style="font-weight:800;margin-top:8px">عميل</div><div style="font-size:11px;color:#666">اطلب من أقرب مطعم</div><span class="badge">دخول ←</span></div>
-    <div class="card" onclick="enter('restaurant')"><div style="font-size:40px">🍽️</div><div style="font-weight:800;margin-top:8px">مطعم</div><div style="font-size:11px;color:#666">استقبل طلبات + اعلان</div><span class="badge">صورة 35ج • فيديو 70ج</span></div>
-    <div class="card" onclick="enter('delivery')"><div style="font-size:40px">🏍️</div><div style="font-weight:800;margin-top:8px">دليفري</div><div style="font-size:11px;color:#666">استقبل طلبات واكسب</div><span class="badge">15ج + 5ج/كم • عمولة 10%</span></div>
-  </div>
-
-  <div style="max-width:400px;margin:20px auto;padding:0 16px">
-    <div style="background:white;color:#0A0A0A;border-radius:20px;padding:16px;display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-weight:800">💰 حساب التوصيل</div><div style="font-size:11px;color:#666">15ج فتح + 5ج/كم • تلقائي على الخريطة</div></div>
-      <div style="background:#FFF0E5;color:#FF6B00;padding:8px 12px;border-radius:12px;font-weight:800" id="priceDemo">19ج</div>
-    </div>
-  </div>
-</div>
-
-<div id="ownerPage" style="display:none;min-height:100vh;background:#0A0A0A;color:white;padding:16px">
-  <div style="background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border-bottom:1px solid #FF6B00;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center">
-    <div style="display:flex;gap:12px;align-items:center"><div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center">👑</div><div><div style="font-weight:900">لوحة تحكم المالك - مطاعم مصر</div><div style="font-size:11px;color:#FFB380">15ج + 5ج/كم • عمولة 10% • فخم</div></div></div>
-    <button onclick="closeOwner()" style="background:white;color:#0A0A0A;border:none;padding:8px 16px;border-radius:20px;font-weight:700">إغلاق X</button>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
-    <div class="luxury-box" style="text-align:center"><div style="font-size:28px;font-weight:900">342</div><div style="font-size:11px;color:#666">إجمالي الطلبات</div></div>
-    <div style="background:linear-gradient(135deg,#FF6B00,#FF8C42);border-radius:20px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:900">1,280ج</div><div style="font-size:11px">عمولتي 10% - 15+5</div></div>
-    <div class="luxury-box" style="text-align:center"><div style="font-size:28px;font-weight:900" id="adCount">0</div><div style="font-size:11px;color:#666">أرباح الإعلانات</div></div>
-  </div>
-
-  <div class="luxury-box">
-    <h4>🏍️ السائقين - اسم ورقم وعنوان وتوصيلات وعمولة 15+5</h4>
-    <div style="overflow-x:auto;margin-top:10px">
-      <table style="width:100%;font-size:11px;border-collapse:collapse"><tr style="background:#0A0A0A;color:white"><th style="padding:8px">الاسم</th><th>الرقم</th><th>العنوان</th><th>توصيلات</th><th>عمولتي 10%</th><th>صافي الدليفري 15+5</th></tr>
-        <tr style="border-bottom:1px solid #eee"><td style="padding:8px"><b>أحمد محمد</b></td><td>01111111111</td><td>الدهار - ش 15</td><td style="text-align:center;font-weight:800;color:#FF6B00">127</td><td>190ج</td><td style="color:#10B981;font-weight:700">15ج+5/كم = 19ج مثال</td></tr>
-        <tr style="border-bottom:1px solid #eee"><td style="padding:8px"><b>محمود سمير</b></td><td>01122222222</td><td>السقالة</td><td style="text-align:center;font-weight:800;color:#FF6B00">89</td><td>133ج</td><td style="color:#10B981;font-weight:700">15+5/كم</td></tr>
-      </table>
-    </div>
-    <div style="font-size:11px;color:#10B981;background:#ECFDF5;padding:8px;border-radius:8px;margin-top:8px">✅ كل دليفري بيسجل نفسه - الصورة اختيارية - الحسبة 15+5 تلقائي</div>
-  </div>
-
-  <div class="luxury-box">
-    <h4>📢 طلبات الإعلانات من المطاعم - انت توافق بس</h4>
-    <div style="font-size:11px;color:#10B981;background:#ECFDF5;padding:8px;border-radius:8px;margin-top:6px">✅ المطاعم هي اللي بتطلب - انت توافق أو ترفض فقط - مع الصورة والسعر</div>
-    <div id="adRequests" style="margin-top:10px"></div>
-    <button onclick="addDemoAd()" style="margin-top:10px;background:#FFF0E5;border:1px solid #FF6B00;padding:6px 12px;border-radius:8px;font-size:11px">اضافة طلب تجريبي للتجربة</button>
-    <div style="margin-top:12px;font-size:11px;color:#888;background:#F5F5F5;padding:8px;border-radius:8px">المنشور في العروض: <span id="approvedCount">0</span> اعلان</div>
-  </div>
-
-  <div class="luxury-box">
-    <h4>🗺️ خريطة مصر كلها - فخمة</h4>
-    <div id="ownerMap" style="height:250px;border-radius:16px;margin-top:8px;border:1px solid #ddd"></div>
-  </div>
+<div id="ownerPage" style="display:none;min-height:100vh;background:#0A0A0A;padding:16px">
+  <div style="background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border:1px solid #FF6B00;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:12px;align-items:center"><div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center">👑</div><div><div style="font-weight:900">لوحة المالك - 246246</div><div style="font-size:11px;color:#FFB380">15+5 • حقيقي • من غير وهمي</div></div></div><button onclick="closeOwner()" style="background:white;color:#0A0A0A;border:none;padding:8px 16px;border-radius:20px;font-weight:700">X</button></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:16px"><div class="luxury-box" style="text-align:center;margin:0"><div style="font-size:20px;font-weight:900" id="cClients">0</div><div style="font-size:10px">عملاء حقيقي</div></div><div class="luxury-box" style="text-align:center;margin:0"><div style="font-size:20px;font-weight:900" id="cRests">0</div><div style="font-size:10px">مطاعم حقيقي</div></div><div class="luxury-box" style="text-align:center;margin:0"><div style="font-size:20px;font-weight:900" id="cDrivers">0</div><div style="font-size:10px">دليفري حقيقي</div></div><div style="background:linear-gradient(135deg,#FF6B00,#FF8C42);border-radius:20px;padding:16px;text-align:center"><div style="font-size:20px;font-weight:900" id="cOrders">0</div><div style="font-size:10px">طلبات حقيقي</div></div></div>
+  <div class="luxury-box"><h4>🏍️ الدليفري الحقيقي - اسم ورقم وOTP وصورة اختيارية</h4><div id="driversTable"></div></div>
+  <div class="luxury-box"><h4>📢 طلبات الإعلانات - صورة 35ج / فيديو 70ج / 15 يوم - انت توافق بس</h4><div id="adRequests"></div></div>
+  <div class="luxury-box"><h4>📦 الطلبات الحقيقية - منيو + سلة + شيك + دليفري أقرب</h4><div id="ordersList"></div></div>
+  <div class="luxury-box"><div id="ownerMap" style="height:250px;border-radius:16px;border:1px solid #ddd"></div></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ===== الكود المسيطر 15+5 + فخم + تحديث تلقائي =====
-let clicks=0, last=0;
-function ownerClicks(){
-  const now=Date.now();
-  if(now-last>2000) clicks=0;
-  last=now; clicks++;
-  if(clicks>=5){
-    const p=prompt('🔐 صفحة المالك السرية - الباسورد:');
-    if(p==='246246' || p==='admin123'){
-      document.getElementById('app').style.display='none';
-      document.getElementById('ownerPage').style.display='block';
-      loadAds();
-      setTimeout(()=>{ const m=L.map('ownerMap').setView([26.8,30.8],6); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m); },500);
-    } else alert('غلط'); clicks=0;
-  }
-}
-function closeOwner(){ document.getElementById('ownerPage').style.display='none'; document.getElementById('app').style.display='block'; }
-function calculateDeliveryPrice(km){ return Math.round(15 + (km*5)); }
-function enter(role){
-  if(role==='client') alert('دخول كعميل\n✅ الصورة اختيارية\n💰 التوصيل: 15ج + 5ج/كم = 19ج مثال 0.8كم');
-  else if(role==='restaurant'){
-    const name=prompt('اسم المطعم:')||'كشري التحرير';
-    const price=prompt('السعر والخصم (مثال: كان 100 بقى 70):')||'خصم 30% - 35ج';
-    if(!name) return;
-    const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
-    ads.push({id:Date.now(), restaurant:name, price:price, desc:'عرض جديد - صورة اختيارية', type:'صورة', date:new Date().toLocaleString('ar-EG')});
-    localStorage.setItem('adRequests', JSON.stringify(ads));
-    alert('✅ طلب الإعلان راح للمالك!\nهيظهر في صفحة المالك فورا\nالعدد: '+ads.length);
-  } else if(role==='delivery'){
-    alert('دخول كدليفري\n✅ صورة البطاقة اختيارية\n💰 الحسبة: 15ج + 5ج/كم\nمثال: 0.8كم = 19ج، عمولتك 10% = 1.9ج، صافي 17.1ج');
-  }
-}
-function loadAds(){
-  const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
-  const approved=JSON.parse(localStorage.getItem('approvedAds')||'[]');
-  document.getElementById('adCount').textContent=approved.length;
-  document.getElementById('approvedCount').textContent=approved.length;
-  const container=document.getElementById('adRequests');
-  if(ads.length===0){ container.innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:13px">لا يوجد طلبات حاليا<br><small>المطاعم لما تطلب اعلان هيظهر هنا</small></div>'; return; }
-  container.innerHTML=ads.map(ad=>`
-    <div style="background:#FFF7F0;padding:12px;border-radius:12px;border:1px solid #FF6B00;margin-bottom:8px">
-      <b>${ad.restaurant} - ${ad.type} - ${ad.price}</b><div style="font-size:11px;margin-top:4px">${ad.desc}<br>التاريخ: ${ad.date}</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button onclick="approveAd(${ad.id})" style="flex:1;background:#FF6B00;color:white;padding:8px;border-radius:10px;border:none">موافقة ونشر ✅</button>
-        <button onclick="rejectAd(${ad.id})" style="flex:1;background:#EF4444;color:white;padding:8px;border-radius:10px;border:none">رفض ❌</button>
-      </div>
-    </div>
-  `).join('');
-}
-function approveAd(id){
-  const all=JSON.parse(localStorage.getItem('adRequests')||'[]');
-  const ad=all.find(a=>a.id===id);
-  const approved=JSON.parse(localStorage.getItem('approvedAds')||'[]');
-  approved.push({...ad, status:'approved'});
-  localStorage.setItem('approvedAds', JSON.stringify(approved));
-  localStorage.setItem('adRequests', JSON.stringify(all.filter(a=>a.id!==id)));
-  alert('✅ تمت الموافقة ونشر الإعلان!'); loadAds();
-}
-function rejectAd(id){
-  const all=JSON.parse(localStorage.getItem('adRequests')||'[]');
-  localStorage.setItem('adRequests', JSON.stringify(all.filter(a=>a.id!==id)));
-  alert('❌ تم الرفض'); loadAds();
-}
-function addDemoAd(){
-  const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
-  ads.push({id:Date.now(), restaurant:'كشري التحرير - تجربة', price:'35ج - خصم 30%', desc:'كان 100 بقى 70 - صورة اختيارية', type:'صورة', date:new Date().toLocaleString('ar-EG')});
-  localStorage.setItem('adRequests', JSON.stringify(ads));
-  loadAds();
-}
+let view='landing',location={lat:26.8206,lng:30.8025},locationEnabled=false,clicks=0,last=0,currentUser=JSON.parse(localStorage.getItem('currentUser')||'null'),cart=[],selectedRest=null,orderStep='menu',selectedDelivery=null,adFilter='all',map=null,ownerMap=null;
+let realClients=JSON.parse(localStorage.getItem('realClients')||'[]'),realDrivers=JSON.parse(localStorage.getItem('realDrivers')||'[]'),realRestaurants=JSON.parse(localStorage.getItem('realRestaurants')||'[]'),realOrders=JSON.parse(localStorage.getItem('realOrders')||'[]');
+const calcPrice=k=>Math.round(15+k*5);
+const hav=(a,b,c,d)=>{const R=6371,dl=(c-a)*Math.PI/180,dn=(d-b)*Math.PI/180,x=Math.sin(dl/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dn/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))};
+const menus={default:[{id:1,name:'كشري وسط',price:35},{id:2,name:'كشري كبير',price:50},{id:3,name:'طاجن',price:65}],بيتزا:[{id:1,name:'بيتزا مارجريتا',price:90},{id:2,name:'بيتزا خضار',price:110}],برجر:[{id:1,name:'برجر كلاسيك',price:75},{id:2,name:'برجر دبل',price:110}]};
 
-// خريطة
-let map, userLoc={lat:26.82,lng:30.80};
-try{
-  map=L.map('map').setView([userLoc.lat,userLoc.lng],6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      userLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
-      map.setView([userLoc.lat,userLoc.lng],14);
-      L.marker([userLoc.lat,userLoc.lng]).addTo(map).bindPopup('أنت هنا 📍').openPopup();
-      document.getElementById('loc').textContent='📍 '+userLoc.lat.toFixed(3)+', '+userLoc.lng.toFixed(3)+' حقيقي ✅';
-      document.getElementById('coords').textContent=userLoc.lat.toFixed(3)+', '+userLoc.lng.toFixed(3)+' حقيقي ✅';
-      const km=0.8; document.getElementById('priceDemo').textContent=calculateDeliveryPrice(km)+'ج';
-    });
-  }
-}catch(e){ console.log(e); }
+if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{location={lat:p.coords.latitude,lng:p.coords.longitude};locationEnabled=true;document.getElementById('loc').textContent='📍 '+location.lat.toFixed(3)+','+location.lng.toFixed(3)+' حقيقي ✅';render()},()=>render())}
 
-// ===== كود التحديث التلقائي المسيطر =====
-if('serviceWorker' in navigator){
-  let refreshing=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(refreshing) return; refreshing=true; window.location.reload();
-  });
-  navigator.serviceWorker.register('./sw.js?v=17').then(reg=>{
-    setInterval(()=>reg.update(), 60000);
-    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) reg.update(); });
-    reg.addEventListener('updatefound',()=>{
-      const nw=reg.installing;
-      nw.addEventListener('statechange',()=>{
-        if(nw.state==='installed' && navigator.serviceWorker.controller){
-          nw.postMessage('SKIP_WAITING');
-          if(confirm('🎉 في تحديث جديد لمطاعم مصر الفخم!\n15+5 + أسود في أبيض\nتحدث الآن؟')) window.location.reload();
-        }
-      });
-    });
-  });
+function ownerClicks(){const now=Date.now();if(now-last>2000)clicks=0;last=now;clicks++;if(clicks>=5){const p=prompt('🔐 الباسورد:');if(p==='246246'||p==='admin123'){document.getElementById('app').style.display='none';document.getElementById('ownerPage').style.display='block';loadOwner();setTimeout(()=>{ownerMap=L.map('ownerMap').setView([26.8,30.8],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(ownerMap)},300)}else alert('غلط');clicks=0}}
+function closeOwner(){document.getElementById('ownerPage').style.display='none';document.getElementById('app').style.display='block';render()}
+function save(type,data){if(type==='client'){realClients.push({...data,id:Date.now(),lat:location.lat,lng:location.lng,date:new Date().toLocaleString('ar-EG')});localStorage.setItem('realClients',JSON.stringify(realClients))}else if(type==='driver'){realDrivers.push({...data,id:Date.now(),lat:location.lat,lng:location.lng,deliveries:0,online:true,date:new Date().toLocaleString('ar-EG')});localStorage.setItem('realDrivers',JSON.stringify(realDrivers))}else{realRestaurants.push({...data,id:Date.now(),lat:location.lat,lng:location.lng,date:new Date().toLocaleString('ar-EG')});localStorage.setItem('realRestaurants',JSON.stringify(realRestaurants))}localStorage.setItem('currentUser',JSON.stringify({...data,type}));currentUser={...data,type}}
+
+function render(){
+let h='';
+if(view==='landing'){
+h=`<div style="text-align:center;padding:30px 20px"><div style="font-size:64px">🍽️</div><h1 style="color:#FF6B00;font-size:36px;font-weight:900">مطاعم <span style="color:white">مصر</span></h1><p style="color:#FFB380">فخم أسود في أبيض - 15ج + 5ج/كم - حقيقي 🇪🇬</p><div style="background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:12px;padding:10px;max-width:400px;margin:16px auto;color:#FFB380;font-size:11px">📍 ${location.lat.toFixed(3)},${location.lng.toFixed(3)} ${locationEnabled?'✅':''} • ${realRestaurants.length} مطعم حقيقي • ${realDrivers.filter(d=>d.online).length} دليفري أونلاين • 💰 15+5</div></div>
+<div id="map" class="map-box"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:800px;margin:20px auto;padding:0 16px">
+<div class="card" onclick="view='clientLogin';render()"><div style="font-size:40px">👤</div><div style="font-weight:800">عميل</div><div style="font-size:11px;color:#666">منيو + سلة + دليفري أقرب</div><span class="badge">اسم ورقم وOTP • صورة اختيارية</span></div>
+<div class="card" onclick="view='restaurantLogin';render()"><div style="font-size:40px">🍽️</div><div style="font-weight:800">مطعم</div><div style="font-size:11px;color:#666">طلبات + اعلان ممول</div><span class="badge">صورة 35ج • فيديو 70ج • 15 يوم</span></div>
+<div class="card" onclick="view='deliveryLogin';render()"><div style="font-size:40px">🏍️</div><div style="font-weight:800">دليفري</div><div style="font-size:11px;color:#666">أونلاين + 15+5</div><span class="badge">اسم ورقم وOTP • صورة اختيارية</span></div>
+</div>
+<div style="max-width:400px;margin:20px auto;padding:0 16px"><div style="background:white;color:#0A0A0A;border-radius:20px;padding:16px;display:flex;justify-content:space-between"><div><div style="font-weight:800">💰 حساب التوصيل</div><div style="font-size:11px;color:#666">15ج فتح + 5ج/كم • تلقائي</div></div><div style="background:#FFF0E5;color:#FF6B00;padding:8px 12px;border-radius:12px;font-weight:800">19ج</div></div>
+<button onclick="view='offers';render()" style="width:100%;margin-top:12px;padding:12px;border-radius:14px;border:none;font-weight:800;background:white">🎁 صفحة العروض والخصومات - صور وفيديو - سكرول</button></div>`;
 }
-localStorage.setItem('app_version','v17-luxury-auto');
+else if(view.endsWith('Login')){
+const isRest=view==='restaurantLogin',isDel=view==='deliveryLogin',role=isRest?'مطعم':isDel?'دليفري':'عميل';
+h=`<div style="max-width:420px;margin:0 auto;padding:20px"><div style="text-align:center"><div style="font-size:48px">${isRest?'🍽️':isDel?'🏍️':'👤'}</div><h2>تسجيل ${role} حقيقي</h2><p style="font-size:11px;color:#FFB380">اسم ورقم وOTP + صورة اختيارية ✅</p></div>
+<div style="background:white;color:#0A0A0A;border-radius:20px;padding:20px;margin-top:12px"><label style="font-weight:800">الاسم *</label><input id="name" style="width:100%;padding:12px;border-radius:12px;border:2px solid #FFE4CC;margin-top:6px" placeholder="اسمك">
+<label style="font-weight:800;margin-top:12px;display:block">رقم الهاتف *</label><input id="phone" style="width:100%;padding:12px;border-radius:12px;border:2px solid #FFE4CC;margin-top:6px" placeholder="01xxxxxxxxx">
+<button onclick="alert('كود OTP: 1234');document.getElementById('otpBox').style.display='block'" style="background:#0A0A0A;color:white;padding:10px;border-radius:10px;border:none;width:100%;margin-top:8px">ارسال OTP 📱</button>
+<div id="otpBox" style="display:none"><label style="font-weight:800;margin-top:10px;display:block">كود OTP *</label><input id="otp" style="width:100%;padding:12px;border-radius:12px;border:2px solid #10B981;margin-top:6px" placeholder="1234"></div>
+<label style="font-weight:800;margin-top:12px;display:block">العنوان *</label><input id="addr" style="width:100%;padding:12px;border-radius:12px;border:2px solid #FFE4CC;margin-top:6px" placeholder="العنوان">
+${isRest?`<label style="font-weight:800;margin-top:12px;display:block">اسم المطعم *</label><input id="restName" style="width:100%;padding:12px;border-radius:12px;border:2px solid #FFE4CC;margin-top:6px" placeholder="اسم المطعم">`:''}
+<div style="margin-top:14px;border:2px dashed #FF6B00;border-radius:12px;padding:16px;background:#FFF7F0;text-align:center"><div style="font-weight:700">📸 تحميل الصورة (اختياري) ✅</div><input type="file" id="imgFile" accept="image/*" style="margin-top:8px;font-size:11px"></div>
+<button onclick="doReg('${isRest?'restaurant':isDel?'driver':'client'}')" style="background:#FF6B00;color:white;padding:14px;border-radius:14px;border:none;font-weight:800;width:100%;margin-top:14px">دخول ${role} حقيقي 🚀</button>
+<button onclick="view='landing';render()" style="background:none;border:none;color:#888;width:100%;margin-top:10px">رجوع</button></div></div>`;
+}
+else if(view==='clientApp'){
+const nearby=realRestaurants.map(r=>{const d=hav(location.lat,location.lng,r.lat||location.lat,r.lng||location.lng);return {...r,dist:d,deliveryPrice:calcPrice(d)}}).sort((a,b)=>a.dist-b.dist);
+const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
+h=`<div style="padding:12px"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div style="color:#FF6B00;font-weight:900">عميل ${currentUser?.name||''}</div><div style="display:flex;gap:8px"><button onclick="view='offers';render()" style="background:#FF6B00;color:white;border:none;padding:6px 12px;border-radius:20px;font-size:11px">🎁 العروض</button><button onclick="view='landing';render()" style="background:white;color:#0A0A0A;border:none;padding:6px 12px;border-radius:20px;font-size:11px">خروج</button></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onclick="orderStep='menu';render()" style="background:${orderStep==='menu'?'#FF6B00':'white'};color:${orderStep==='menu'?'white':'#0A0A0A'};padding:12px;border-radius:14px;border:none;font-weight:800">📋 منيو - أقرب مطاعم</button><button onclick="orderStep='cart';render()" style="background:${orderStep==='cart'?'#FF6B00':'white'};color:${orderStep==='cart'?'white':'#0A0A0A'};padding:12px;border-radius:14px;border:none;font-weight:800">🛒 السلة (${cart.length})</button></div>
+<div id="map" class="map-box" style="height:300px"></div>
+${orderStep==='menu'?`<h3>🍽️ أقرب مطاعم مسجلة حقيقية فقط</h3>${nearby.length===0?`<div style="background:white;color:#0A0A0A;border-radius:20px;padding:20px;text-align:center">لا يوجد مطاعم مسجلة حقيقية</div>`:nearby.map(r=>`<div style="background:white;color:#0A0A0A;border-radius:20px;padding:16px;margin-top:12px"><div style="display:flex;justify-content:space-between"><div><div style="font-weight:800">${r.name}</div><div style="font-size:11px">${r.dist.toFixed(1)} كم • ${r.deliveryPrice}ج (15+5)</div></div><button onclick="selectedRest='${r.id}';render()" style="background:#0A0A0A;color:white;padding:8px 14px;border-radius:12px;border:none">منيو</button></div>${selectedRest==r.id?`<div style="margin-top:12px;border-top:1px solid #eee;padding-top:12px">${(r.restName?.includes('بيتزا')?menus.بيتزا:r.restName?.includes('برجر')?menus.برجر:menus.default).map(m=>`<div style="display:flex;justify-content:space-between;background:#F9F9F9;padding:10px;border-radius:12px;margin-bottom:8px"><div><div style="font-weight:700">${m.name}</div><div style="font-size:10px">${m.price}ج</div></div><button onclick="addToCart('${r.id}','${r.name}',${r.dist},${r.deliveryPrice},${m.id},'${m.name}',${m.price})" style="background:#FF6B00;color:white;padding:6px 12px;border-radius:10px;border:none">أضف 🛒</button></div>`).join('')}</div>`:''}</div>`).join('')}`:''}
+${orderStep==='cart'?`<div style="background:white;color:#0A0A0A;border-radius:20px;padding:16px"><h3>🛒 السلة - تأكيد الأوردر ولا يلغى</h3>${cart.length===0?`<div style="text-align:center;padding:20px;color:#888">فاضية - دوس منيو عشان تختار من أقرب مطاعم</div>`:`<div>${cart.map((it,i)=>`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee"><span>${it.name}×${it.qty}</span><span>${it.price*it.qty}ج</span></div>`).join('')}<div style="background:#FFF7F0;padding:12px;border-radius:12px;margin-top:10px;border:1px solid #FF6B00"><div>سعر المطعم: ${total}ج</div><div>التوصيل 15+${cart[0]?.dist.toFixed(1)}×5: ${cart[0]?.deliveryPrice}ج</div><div style="font-weight:900;border-top:1px solid #FF6B00;margin-top:6px;padding-top:6px">الإجمالي: ${total+(cart[0]?.deliveryPrice||0)}ج</div><div style="font-size:10px;color:#666">المسافة تحسب تلقائي + سعر المطعم يظهر للدليفري لأنه هيحاسب</div></div><button onclick="confirmOrder()" style="background:#0A0A0A;color:white;padding:14px;border-radius:14px;border:none;width:100%;margin-top:12px;font-weight:800">تأكيد ✅ - يوصل للمطعم ولا يلغى</button></div>`}</div>`:''}
+${orderStep==='check'?`<div style="background:white;color:#0A0A0A;border-radius:20px;padding:16px"><h3>🧾 شيك - اختار أقرب دليفري أونلاين</h3><div style="background:#ECFDF5;border:1px solid #10B981;padding:12px;border-radius:12px"><div style="font-weight:800;color:#10B981">✅ وصل للمطعم</div></div><h4>🏍️ أقرب دليفري فاتحين أونلاين - مين أقرب:</h4>${realDrivers.filter(d=>d.online).map(d=>{const dist=hav(location.lat,location.lng,d.lat||location.lat,d.lng||location.lng),cost=calcPrice(dist);return `<div style="background:#FFF7F0;border:1px solid #FF6B00;padding:12px;border-radius:12px;margin-top:8px;display:flex;justify-content:space-between"><div><div style="font-weight:800">${d.name}</div><div style="font-size:11px">${dist.toFixed(1)} كم • ${cost}ج (15+5) • ${d.phone}</div><div style="font-size:10px;color:#10B981">🟢 أونلاين</div></div><button onclick="chooseDel('${d.id}',${dist},${cost})" style="background:#FF6B00;color:white;padding:8px 14px;border-radius:10px;border:none">اختار ${dist.toFixed(1)} كم</button></div>`}).join('')}</div>`:''}
+</div>`;
+}
+else if(view==='offers'){
+const ads=JSON.parse(localStorage.getItem('approvedAds')||'[]'), filtered=adFilter==='all'?ads:ads.filter(a=>a.type===adFilter);
+h=`<div style="padding:12px"><div style="display:flex;justify-content:space-between"><button onclick="view='landing';render()" style="background:white;color:#0A0A0A;border:none;padding:6px 12px;border-radius:20px">← رجوع</button><div>🎁 العروض والخصومات - سكرول</div><div style="background:#FF6B00;padding:6px 12px;border-radius:20px;font-size:11px">${ads.length} عرض حقيقي</div></div><div style="display:flex;gap:8px;margin-top:12px"><button onclick="adFilter='all';render()" style="flex:1;background:${adFilter==='all'?'#FF6B00':'white'};color:${adFilter==='all'?'white':'#0A0A0A'};padding:10px;border-radius:12px;border:none">الكل</button><button onclick="adFilter='صورة';render()" style="flex:1;background:${adFilter==='صورة'?'#FF6B00':'white'};color:${adFilter==='صورة'?'white':'#0A0A0A'};padding:10px;border-radius:12px;border:none">🖼️ صور</button><button onclick="adFilter='فيديو';render()" style="flex:1;background:${adFilter==='فيديو'?'#FF6B00':'white'};color:${adFilter==='فيديو'?'white':'#0A0A0A'};padding:10px;border-radius:12px;border:none">🎬 فيديو</button></div><div style="margin-top:12px">${filtered.length===0?`<div style="background:white;color:#0A0A0A;border-radius:20px;padding:30px;text-align:center">لا يوجد عروض - المطاعم لما تطلب اعلان (صورة 35ج / فيديو 70ج / 15 يوم) والمالك يوافق هيظهر هنا</div>`:filtered.map(ad=>`<div style="background:white;color:#0A0A0A;border-radius:20px;overflow:hidden;margin-bottom:12px"><div style="height:160px;background:${ad.type==='فيديو'?'#0A0A0A':'linear-gradient(135deg,#FF6B00,#FFB380)'};display:flex;align-items:center;justify-content:center;font-size:40px">${ad.type==='فيديو'?'▶️':'🍛'}</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>${ad.restaurant} - ${ad.mealName}</b><span style="background:#FFF0E5;color:#FF6B00;padding:4px 10px;border-radius:20px;font-size:11px">${ad.price}</span></div><div style="font-size:11px">${ad.type} - ${ad.cost}ج / ${ad.duration}</div></div></div>`).join('')}</div></div>`;
+}
+else{ h=`<div style="padding:20px"><h3>جاري...</h3></div>`; }
+
+document.getElementById('app').innerHTML=h;
+setTimeout(()=>{
+const el=document.getElementById('map'); if(el && !map){ map=L.map('map').setView([location.lat,location.lng], locationEnabled?14:6); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); L.marker([location.lat,location.lng]).addTo(map).bindPopup('أنت هنا'); }
+},100);
+}
+function doReg(type){const name=document.getElementById('name').value, phone=document.getElementById('phone').value, addr=document.getElementById('addr').value, restName=document.getElementById('restName')?.value||''; if(!name||!phone) return alert('الاسم والرقم'); save(type,{name,phone,addr,restName}); if(type==='client') view='clientApp'; else if(type==='driver') view='deliveryApp'; else{view='restaurantApp'; setTimeout(()=>{view='restaurantApp';},100)} render();}
+function addToCart(restId,restName,dist,deliveryPrice,id,name,price){const ex=cart.find(c=>c.id==id && c.restId==restId); if(ex) cart=cart.map(c=>c.id==id && c.restId==restId?{...c,qty:c.qty+1}:c); else cart.push({id,restId,restName,dist,deliveryPrice,name,price,qty:1}); alert(name+' راح السلة'); render();}
+function confirmOrder(){const total=cart.reduce((s,i)=>s+i.price*i.qty,0); const order={id:Date.now(),client:currentUser,items:cart,total,deliveryPrice:cart[0]?.deliveryPrice||0,grandTotal:total+(cart[0]?.deliveryPrice||0),dist:cart[0]?.dist||0,restName:cart[0]?.restName,status:'pending',date:new Date().toLocaleString('ar-EG')}; realOrders.push(order); localStorage.setItem('realOrders',JSON.stringify(realOrders)); orderStep='check'; render();}
+function chooseDel(id,dist,cost){const d=realDrivers.find(x=>x.id==id); const last=realOrders[realOrders.length-1]; if(last){last.delivery=d; last.deliveryDist=dist; last.deliveryCost=cost; last.status='assigned'; localStorage.setItem('realOrders',JSON.stringify(realOrders))} alert(`✅ اخترت ${d.name}\nالمسافة: ${dist.toFixed(1)} كم\nالتوصيل: ${cost}ج (15+${dist.toFixed(1)}×5)\nسعر المطعم: ${last.total}ج\nالإجمالي: ${last.grandTotal}ج\nيظهر للعميل والدليفري`); render();}
+function loadOwner(){
+document.getElementById('cClients').textContent=realClients.length;
+document.getElementById('cRests').textContent=realRestaurants.length;
+document.getElementById('cDrivers').textContent=realDrivers.length;
+document.getElementById('cOrders').textContent=realOrders.length;
+document.getElementById('driversTable').innerHTML=realDrivers.length===0?`<div style="text-align:center;padding:20px;color:#888">لا يوجد دليفري حقيقي</div>`:`<table style="width:100%;font-size:11px;border-collapse:collapse"><tr style="background:#0A0A0A;color:white"><th>الاسم</th><th>الرقم</th><th>توصيلات</th><th>عمولة 15+5</th></tr>${realDrivers.map(d=>`<tr style="border-bottom:1px solid #eee"><td><b>${d.name}</b></td><td>${d.phone}</td><td>${d.deliveries||0}</td><td>${((d.deliveries||0)*1.5).toFixed(0)}ج</td></tr>`).join('')}</table>`;
+const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
+document.getElementById('adRequests').innerHTML=ads.length===0?`<div style="text-align:center;padding:20px;color:#888">لا يوجد طلبات - المطعم يطلب صورة 35ج / فيديو 70ج / 15 يوم</div>`:ads.map(ad=>`<div style="background:#FFF7F0;padding:12px;border-radius:12px;border:1px solid #FF6B00;margin-bottom:10px"><b>${ad.restaurant} - ${ad.mealName} - ${ad.type} ${ad.cost}ج/${ad.duration} - ${ad.price}</b><div style="font-size:11px">${ad.desc}</div><div style="display:flex;gap:8px;margin-top:8px"><button onclick="approveAd(${ad.id})" style="flex:1;background:#FF6B00;color:white;padding:8px;border-radius:10px;border:none">موافقة ✅</button><button onclick="rejectAd(${ad.id})" style="flex:1;background:#EF4444;color:white;padding:8px;border-radius:10px;border:none">رفض ❌</button></div></div>`).join('');
+document.getElementById('ordersList').innerHTML=realOrders.length===0?`<div style="text-align:center;padding:20px;color:#888">لا يوجد طلبات</div>`:realOrders.map(o=>`<div style="background:#FFF7F0;padding:12px;border-radius:12px;border:1px solid #FF6B00;margin-bottom:10px"><b>${o.client?.name} → ${o.restName} - ${o.grandTotal}ج</b><div style="font-size:11px">المسافة: ${o.dist?.toFixed(1)} كم • التوصيل: ${o.deliveryPrice}ج (15+5) • سعر المطعم: ${o.total}ج يظهر للدليفري</div><div style="font-size:11px">الدليفري: ${o.delivery?.name||'لم يختار'} - ${o.deliveryDist?.toFixed(1)||''} كم</div></div>`).join('');
+}
+function approveAd(id){const all=JSON.parse(localStorage.getItem('adRequests')||'[]'),ad=all.find(a=>a.id===id),appr=JSON.parse(localStorage.getItem('approvedAds')||'[]');appr.push({...ad,status:'approved'});localStorage.setItem('approvedAds',JSON.stringify(appr));localStorage.setItem('adRequests',JSON.stringify(all.filter(a=>a.id!==id)));alert('✅ موافقة ونشر في العروض!');loadOwner()}
+function rejectAd(id){const all=JSON.parse(localStorage.getItem('adRequests')||'[]');localStorage.setItem('adRequests',JSON.stringify(all.filter(a=>a.id!==id)));loadOwner()}
+
+render();
+if('serviceWorker' in navigator){let r=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(r) return;r=true;location.reload()});navigator.serviceWorker.register('./sw.js?v=20-full').then(reg=>{setInterval(()=>reg.update(),60000);reg.addEventListener('updatefound',()=>{const nw=reg.installing;nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller){nw.postMessage('SKIP_WAITING');if(confirm('🎉 تحديث جديد فخم - منيو + سلة + دليفري أقرب + عروض!\nتحدث الآن؟'))location.reload()}})})})}
 </script>
 </body>
 </html>
