@@ -1,4 +1,4 @@
-const CACHE_NAME='mata3m-masr-v35-force-gps-prompt';
+const CACHE_NAME='mata3m-masr-v33-final-real-server';
 const urlsToCache=['./','./index.html','./manifest.json'];
 self.addEventListener('install',e=>{
   self.skipWaiting();
