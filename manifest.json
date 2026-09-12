@@ -1,11 +1,9 @@
 {
-  "name": "مطاعم مصر - فخم",
+  "name": "مطاعم مصر - فخم - كامل v20",
   "short_name": "مطاعم مصر",
-  "start_url": "./index.html?v=17-luxury-auto",
+  "start_url": "./index.html?v=20-full",
   "display": "standalone",
   "background_color": "#0A0A0A",
   "theme_color": "#FF6B00",
-  "dir": "rtl",
-  "lang": "ar",
-  "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png","sizes": "512x512","type": "image/png"}]
+  "icons": [{"src":"https://cdn-icons-png.flaticon.com/512/3075/3075977.png","sizes":"512x512","type":"image/png"}]
 }
