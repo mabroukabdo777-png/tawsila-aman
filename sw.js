@@ -1,51 +1,25 @@
-const CACHE_NAME = 'mata3m-masr-v31-real-server';
-const urlsToCache = ['./', './index.html', './manifest.json'];
-
-self.addEventListener('install', event => {
-  console.log('SW: Installing v31 - قابل للتحديث');
+const CACHE_NAME='mata3m-masr-v33-final-real-gps-otp';
+const urlsToCache=['./','./index.html','./manifest.json'];
+self.addEventListener('install',e=>{
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)));
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(
+    caches.keys().then(keys=>Promise.all(keys.map(k=>{
+      if(k!==CACHE_NAME) return caches.delete(k);
+    }))).then(()=>self.clients.claim())
   );
 });
-
-self.addEventListener('activate', event => {
-  console.log('SW: Activating v31');
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(name => {
-          if (name !== CACHE_NAME) {
-            console.log('SW: Deleting old cache', name);
-            return caches.delete(name);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', event => {
-  // Network first for index.html to allow instant updates
-  if (event.request.url.includes('index.html') || event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(res => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, res.clone());
-            return res;
-          });
-        })
-        .catch(() => caches.match(event.request))
+self.addEventListener('fetch',e=>{
+  if(e.request.mode==='navigate' || e.request.url.includes('index.html')){
+    e.respondWith(
+      fetch(e.request).then(res=>{
+        return caches.open(CACHE_NAME).then(cache=>{cache.put(e.request,res.clone());return res;});
+      }).catch(()=>caches.match(e.request))
     );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then(res => res || fetch(event.request))
-    );
+  }else{
+    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
   }
 });
-
-self.addEventListener('message', event => {
-  if (event.data === 'skipWaiting') self.skipWaiting();
-});
-               
+self.addEventListener('message',e=>{ if(e.data==='skipWaiting') self.skipWaiting(); });
