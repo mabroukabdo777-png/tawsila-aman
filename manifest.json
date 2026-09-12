@@ -1,38 +1,16 @@
 {
-  "name": "مطاعم مصر - توصيل أمان",
+  "name": "مطاعم مصر - توصيل أمان - سيرفر حقيقي",
   "short_name": "مطاعم مصر",
-  "description": "توصيل أمان من مطاعم مصر - سيرفر حقيقي 100% - طلب مباشر موبايل لموبايل - قابل للتحديث في أي وقت",
-  "start_url": "./index.html",
+  "description": "توصيل أمان - سيرفر حقيقي 100% - GPS حقيقي - OTP حقيقي - طلب موبايل لموبايل - تثبيت مباشر - تحديث تلقائي",
+  "start_url": "./index.html?v=33-final-real",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "window-controls-overlay", "browser"],
+  "display_override": ["standalone","window-controls-overlay","browser"],
   "orientation": "any",
   "background_color": "#0A0A0A",
   "theme_color": "#FF6B00",
   "dir": "rtl",
   "lang": "ar",
-  "categories": ["food", "shopping", "lifestyle"],
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "اطلب الآن",
-      "short_name": "اطلب",
-      "description": "اطلب من أقرب مطعم",
-      "url": "./index.html",
-      "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png", "sizes": "192x192"}]
-    }
-  ]
+  "categories": ["food","shopping"],
+  "icons": [{"src":"https://cdn-icons-png.flaticon.com/512/3075/3075977.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"https://cdn-icons-png.flaticon.com/512/3075/3075977.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]
 }
