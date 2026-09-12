@@ -1,390 +1,210 @@
-import React, { useState, useEffect, useRef } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مطاعم مصر - توصيل سريع فخم</title>
+<link rel="manifest" href="./manifest.json?v=17">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{font-family:'Cairo',sans-serif;box-sizing:border-box}
+body{margin:0;background:#0A0A0A;color:white}
+.header{position:sticky;top:0;background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border-bottom:1px solid #FF6B00;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:100}
+.logo{cursor:pointer;display:flex;align-items:center;gap:10px}
+.card{background:white;color:#0A0A0A;border-radius:24px;padding:20px;text-align:center;cursor:pointer;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid #eee;transition:all 0.2s}
+.card:hover{transform:translateY(-4px);border-color:#FF6B00}
+.badge{background:#FFF0E5;color:#FF6B00;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-top:8px}
+.map-box{height:400px;border-radius:24px;border:2px solid #FF6B00;overflow:hidden;margin:12px}
+.btn{padding:12px;border-radius:14px;border:none;font-weight:800;cursor:pointer}
+.btn-orange{background:#FF6B00;color:white}
+.btn-white{background:white;color:#0A0A0A;border:1px solid #eee}
+.luxury-box{background:white;color:#0A0A0A;border-radius:20px;padding:16px;border:1px solid #eee;margin-top:16px}
+</style>
+</head>
+<body>
 
-const restaurantsMock = [
-  {id:1,name:'كشري التحرير',type:'كشري ومشويات',rating:4.8,phone:'01012345678',img:'🍛'},
-  {id:2,name:'بيتزا هت',type:'بيتزا',rating:4.6,phone:'01023456789',img:'🍕'},
-  {id:3,name:'أسماك الحلقة',type:'أسماك',rating:4.9,phone:'01034567890',img:'🐟'},
-  {id:4,name:'برجر فاكتوري',type:'برجر',rating:4.5,phone:'01045678901',img:'🍔'},
-]
-const driversMock = [
-  {id:1,name:'أحمد محمد',phone:'01111111111',addr:'الدهار - ش 15',deliveries:127},
-  {id:2,name:'محمود سمير',phone:'01122222222',addr:'السقالة - ش البحر',deliveries:89},
-  {id:3,name:'سيد علي',phone:'01133333333',addr:'مبارك 2',deliveries:203},
+<div class="header">
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="loc" style="background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:20px;font-size:12px">📍 جاري تحديد...</span>
+  </div>
+  <div class="logo" id="logo" onclick="ownerClicks()">
+    <div style="text-align:right"><div style="font-weight:900">مطاعم مصر</div><div style="font-size:10px;color:#FFB380">توصيل سريع • فخم</div></div>
+    <div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px">م</div>
+  </div>
+</div>
 
-// ===== تسعير التوصيل الجديد 15 + 5 جنيه على الكيلو تلقائي =====
-function calculateDeliveryPrice(km){
-  const base = 15;
-  const perKm = 5;
-  return Math.round(base + (km * perKm));
+<div id="app">
+  <div style="text-align:center;padding:30px 20px">
+    <div style="font-size:64px">🍽️</div>
+    <h1 style="color:#FF6B00;font-size:36px;font-weight:900;margin:10px 0">مطاعم <span style="color:white">مصر</span></h1>
+    <p style="color:#FFB380">خرائط حقيقية - فخم أسود في أبيض - 15ج + 5ج/كم 🇪🇬</p>
+    <div style="background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:12px;padding:10px;max-width:400;margin:16px auto;color:#FFB380;font-size:12px">📍 <span id="coords">جاري...</span></div>
+  </div>
+
+  <div id="map" class="map-box"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:800px;margin:20px auto;padding:0 16px">
+    <div class="card" onclick="enter('client')"><div style="font-size:40px">👤</div><div style="font-weight:800;margin-top:8px">عميل</div><div style="font-size:11px;color:#666">اطلب من أقرب مطعم</div><span class="badge">دخول ←</span></div>
+    <div class="card" onclick="enter('restaurant')"><div style="font-size:40px">🍽️</div><div style="font-weight:800;margin-top:8px">مطعم</div><div style="font-size:11px;color:#666">استقبل طلبات + اعلان</div><span class="badge">صورة 35ج • فيديو 70ج</span></div>
+    <div class="card" onclick="enter('delivery')"><div style="font-size:40px">🏍️</div><div style="font-weight:800;margin-top:8px">دليفري</div><div style="font-size:11px;color:#666">استقبل طلبات واكسب</div><span class="badge">15ج + 5ج/كم • عمولة 10%</span></div>
+  </div>
+
+  <div style="max-width:400px;margin:20px auto;padding:0 16px">
+    <div style="background:white;color:#0A0A0A;border-radius:20px;padding:16px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:800">💰 حساب التوصيل</div><div style="font-size:11px;color:#666">15ج فتح + 5ج/كم • تلقائي على الخريطة</div></div>
+      <div style="background:#FFF0E5;color:#FF6B00;padding:8px 12px;border-radius:12px;font-weight:800" id="priceDemo">19ج</div>
+    </div>
+  </div>
+</div>
+
+<div id="ownerPage" style="display:none;min-height:100vh;background:#0A0A0A;color:white;padding:16px">
+  <div style="background:linear-gradient(135deg,#1A1A1A,#2D1B0E);border-bottom:1px solid #FF6B00;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;gap:12px;align-items:center"><div style="background:#FF6B00;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center">👑</div><div><div style="font-weight:900">لوحة تحكم المالك - مطاعم مصر</div><div style="font-size:11px;color:#FFB380">15ج + 5ج/كم • عمولة 10% • فخم</div></div></div>
+    <button onclick="closeOwner()" style="background:white;color:#0A0A0A;border:none;padding:8px 16px;border-radius:20px;font-weight:700">إغلاق X</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+    <div class="luxury-box" style="text-align:center"><div style="font-size:28px;font-weight:900">342</div><div style="font-size:11px;color:#666">إجمالي الطلبات</div></div>
+    <div style="background:linear-gradient(135deg,#FF6B00,#FF8C42);border-radius:20px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:900">1,280ج</div><div style="font-size:11px">عمولتي 10% - 15+5</div></div>
+    <div class="luxury-box" style="text-align:center"><div style="font-size:28px;font-weight:900" id="adCount">0</div><div style="font-size:11px;color:#666">أرباح الإعلانات</div></div>
+  </div>
+
+  <div class="luxury-box">
+    <h4>🏍️ السائقين - اسم ورقم وعنوان وتوصيلات وعمولة 15+5</h4>
+    <div style="overflow-x:auto;margin-top:10px">
+      <table style="width:100%;font-size:11px;border-collapse:collapse"><tr style="background:#0A0A0A;color:white"><th style="padding:8px">الاسم</th><th>الرقم</th><th>العنوان</th><th>توصيلات</th><th>عمولتي 10%</th><th>صافي الدليفري 15+5</th></tr>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:8px"><b>أحمد محمد</b></td><td>01111111111</td><td>الدهار - ش 15</td><td style="text-align:center;font-weight:800;color:#FF6B00">127</td><td>190ج</td><td style="color:#10B981;font-weight:700">15ج+5/كم = 19ج مثال</td></tr>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:8px"><b>محمود سمير</b></td><td>01122222222</td><td>السقالة</td><td style="text-align:center;font-weight:800;color:#FF6B00">89</td><td>133ج</td><td style="color:#10B981;font-weight:700">15+5/كم</td></tr>
+      </table>
+    </div>
+    <div style="font-size:11px;color:#10B981;background:#ECFDF5;padding:8px;border-radius:8px;margin-top:8px">✅ كل دليفري بيسجل نفسه - الصورة اختيارية - الحسبة 15+5 تلقائي</div>
+  </div>
+
+  <div class="luxury-box">
+    <h4>📢 طلبات الإعلانات من المطاعم - انت توافق بس</h4>
+    <div style="font-size:11px;color:#10B981;background:#ECFDF5;padding:8px;border-radius:8px;margin-top:6px">✅ المطاعم هي اللي بتطلب - انت توافق أو ترفض فقط - مع الصورة والسعر</div>
+    <div id="adRequests" style="margin-top:10px"></div>
+    <button onclick="addDemoAd()" style="margin-top:10px;background:#FFF0E5;border:1px solid #FF6B00;padding:6px 12px;border-radius:8px;font-size:11px">اضافة طلب تجريبي للتجربة</button>
+    <div style="margin-top:12px;font-size:11px;color:#888;background:#F5F5F5;padding:8px;border-radius:8px">المنشور في العروض: <span id="approvedCount">0</span> اعلان</div>
+  </div>
+
+  <div class="luxury-box">
+    <h4>🗺️ خريطة مصر كلها - فخمة</h4>
+    <div id="ownerMap" style="height:250px;border-radius:16px;margin-top:8px;border:1px solid #ddd"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ===== الكود المسيطر 15+5 + فخم + تحديث تلقائي =====
+let clicks=0, last=0;
+function ownerClicks(){
+  const now=Date.now();
+  if(now-last>2000) clicks=0;
+  last=now; clicks++;
+  if(clicks>=5){
+    const p=prompt('🔐 صفحة المالك السرية - الباسورد:');
+    if(p==='246246' || p==='admin123'){
+      document.getElementById('app').style.display='none';
+      document.getElementById('ownerPage').style.display='block';
+      loadAds();
+      setTimeout(()=>{ const m=L.map('ownerMap').setView([26.8,30.8],6); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m); },500);
+    } else alert('غلط'); clicks=0;
+  }
 }
-window.calculateDeliveryPrice = calculateDeliveryPrice;
-// =============================================================
-
-
-function haversine(lat1,lon1,lat2,lon2){
-  const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+function closeOwner(){ document.getElementById('ownerPage').style.display='none'; document.getElementById('app').style.display='block'; }
+function calculateDeliveryPrice(km){ return Math.round(15 + (km*5)); }
+function enter(role){
+  if(role==='client') alert('دخول كعميل\n✅ الصورة اختيارية\n💰 التوصيل: 15ج + 5ج/كم = 19ج مثال 0.8كم');
+  else if(role==='restaurant'){
+    const name=prompt('اسم المطعم:')||'كشري التحرير';
+    const price=prompt('السعر والخصم (مثال: كان 100 بقى 70):')||'خصم 30% - 35ج';
+    if(!name) return;
+    const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
+    ads.push({id:Date.now(), restaurant:name, price:price, desc:'عرض جديد - صورة اختيارية', type:'صورة', date:new Date().toLocaleString('ar-EG')});
+    localStorage.setItem('adRequests', JSON.stringify(ads));
+    alert('✅ طلب الإعلان راح للمالك!\nهيظهر في صفحة المالك فورا\nالعدد: '+ads.length);
+  } else if(role==='delivery'){
+    alert('دخول كدليفري\n✅ صورة البطاقة اختيارية\n💰 الحسبة: 15ج + 5ج/كم\nمثال: 0.8كم = 19ج، عمولتك 10% = 1.9ج، صافي 17.1ج');
+  }
+}
+function loadAds(){
+  const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
+  const approved=JSON.parse(localStorage.getItem('approvedAds')||'[]');
+  document.getElementById('adCount').textContent=approved.length;
+  document.getElementById('approvedCount').textContent=approved.length;
+  const container=document.getElementById('adRequests');
+  if(ads.length===0){ container.innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:13px">لا يوجد طلبات حاليا<br><small>المطاعم لما تطلب اعلان هيظهر هنا</small></div>'; return; }
+  container.innerHTML=ads.map(ad=>`
+    <div style="background:#FFF7F0;padding:12px;border-radius:12px;border:1px solid #FF6B00;margin-bottom:8px">
+      <b>${ad.restaurant} - ${ad.type} - ${ad.price}</b><div style="font-size:11px;margin-top:4px">${ad.desc}<br>التاريخ: ${ad.date}</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="approveAd(${ad.id})" style="flex:1;background:#FF6B00;color:white;padding:8px;border-radius:10px;border:none">موافقة ونشر ✅</button>
+        <button onclick="rejectAd(${ad.id})" style="flex:1;background:#EF4444;color:white;padding:8px;border-radius:10px;border:none">رفض ❌</button>
+      </div>
+    </div>
+  `).join('');
+}
+function approveAd(id){
+  const all=JSON.parse(localStorage.getItem('adRequests')||'[]');
+  const ad=all.find(a=>a.id===id);
+  const approved=JSON.parse(localStorage.getItem('approvedAds')||'[]');
+  approved.push({...ad, status:'approved'});
+  localStorage.setItem('approvedAds', JSON.stringify(approved));
+  localStorage.setItem('adRequests', JSON.stringify(all.filter(a=>a.id!==id)));
+  alert('✅ تمت الموافقة ونشر الإعلان!'); loadAds();
+}
+function rejectAd(id){
+  const all=JSON.parse(localStorage.getItem('adRequests')||'[]');
+  localStorage.setItem('adRequests', JSON.stringify(all.filter(a=>a.id!==id)));
+  alert('❌ تم الرفض'); loadAds();
+}
+function addDemoAd(){
+  const ads=JSON.parse(localStorage.getItem('adRequests')||'[]');
+  ads.push({id:Date.now(), restaurant:'كشري التحرير - تجربة', price:'35ج - خصم 30%', desc:'كان 100 بقى 70 - صورة اختيارية', type:'صورة', date:new Date().toLocaleString('ar-EG')});
+  localStorage.setItem('adRequests', JSON.stringify(ads));
+  loadAds();
 }
 
-export default function App(){
-  const [view,setView]=useState('landing')
-  const [location,setLocation]=useState(null)
-  const [locationEnabled,setLocationEnabled]=useState(false)
-  const [ownerClicks,setOwnerClicks]=useState(0)
-  const [cartTotal,setCartTotal]=useState(0)
-  const [selectedRest,setSelectedRest]=useState(null)
-  const [trackingStep,setTrackingStep]=useState(0)
-  const [otpSent,setOtpSent]=useState(false)
-  const [rating,setRating]=useState(5)
-  const [chatMsgs,setChatMsgs]=useState([{from:'driver',text:'أنا في الطريق ليك يا فندم 🏍️'}])
-  const [newMsg,setNewMsg]=useState('')
-  const mapRef=useRef(null)
-  const mapInstanceRef=useRef(null)
-  const markersRef=useRef([])
-
-  useEffect(()=>{
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos=>{
-        setLocation({lat:pos.coords.latitude,lng:pos.coords.longitude})
-        setLocationEnabled(true)
-      },()=>{
-        setLocation({lat:26.8206,lng:30.8025}) // Egypt center
-      })
-    } else {
-      setLocation({lat:26.8206,lng:30.8025})
-    }
-  },[])
-
-  useEffect(()=>{
-    if((view==='clientApp' || view==='deliveryApp' || view==='owner') && location && !mapInstanceRef.current){
-      setTimeout(()=>{
-        const el=document.getElementById('realMap')
-        if(!el) return
-        if(mapInstanceRef.current){ mapInstanceRef.current.remove(); mapInstanceRef.current=null }
-        const map=L.map('realMap').setView([location.lat,location.lng], locationEnabled?14:6)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© مطاعم مصر'}).addTo(map)
-        mapInstanceRef.current=map
-        markersRef.current.forEach(m=>map.removeLayer(m))
-        markersRef.current=[]
-        const userM=L.marker([location.lat,location.lng],{icon:L.divIcon({className:'',html:`<div style="background:#3B82F6;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 8px rgba(59,130,246,0.3)"></div>`})}).addTo(map).bindPopup('أنت هنا 📍')
-        markersRef.current.push(userM)
-        restaurantsMock.forEach((r,i)=>{
-          const lat=location.lat+(Math.random()-0.5)*0.04
-          const lng=location.lng+(Math.random()-0.5)*0.04
-          const d=haversine(location.lat,location.lng,lat,lng)
-          const m=L.marker([lat,lng],{icon:L.divIcon({className:'',html:`<div style="background:#FF6B00;color:white;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3)">${r.img}</div>`})}).addTo(map).bindPopup(`${r.name}<br>${d.toFixed(1)} كم`)
-          markersRef.current.push(m)
-        })
-        driversMock.forEach(d=>{
-          const lat=location.lat+(Math.random()-0.5)*0.02
-          const lng=location.lng+(Math.random()-0.5)*0.02
-          const m=L.marker([lat,lng],{icon:L.divIcon({className:'',html:`<div style="background:#1A1A1A;color:#FF6B00;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white">🏍️</div>`})}).addTo(map)
-          markersRef.current.push(m)
-        })
-      },300)
-    }
-    return ()=>{ if(view!=='clientApp' && view!=='deliveryApp' && view!=='owner' && mapInstanceRef.current){ mapInstanceRef.current.remove(); mapInstanceRef.current=null } }
-  },[view,location])
-
-  const enableLocation=()=>{
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos=>{
-        setLocation({lat:pos.coords.latitude,lng:pos.coords.longitude}); setLocationEnabled(true); alert(`✅ موقعك الحقيقي: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} - شغال في أي مكان في مصر`)
-      })
-    }
+// خريطة
+let map, userLoc={lat:26.82,lng:30.80};
+try{
+  map=L.map('map').setView([userLoc.lat,userLoc.lng],6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      userLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
+      map.setView([userLoc.lat,userLoc.lng],14);
+      L.marker([userLoc.lat,userLoc.lng]).addTo(map).bindPopup('أنت هنا 📍').openPopup();
+      document.getElementById('loc').textContent='📍 '+userLoc.lat.toFixed(3)+', '+userLoc.lng.toFixed(3)+' حقيقي ✅';
+      document.getElementById('coords').textContent=userLoc.lat.toFixed(3)+', '+userLoc.lng.toFixed(3)+' حقيقي ✅';
+      const km=0.8; document.getElementById('priceDemo').textContent=calculateDeliveryPrice(km)+'ج';
+    });
   }
+}catch(e){ console.log(e); }
 
-  const handleOwnerClick=()=>{
-    const c=ownerClicks+1; setOwnerClicks(c)
-    if(c>=5){ const p=prompt('🔐 صفحة المالك السرية - الباسورد:'); if(p==='246246' || p==='admin123') setView('owner'); else alert('غلط'); setOwnerClicks(0) }
-  }
-
-  if(view==='landing') return (
-    <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#1A1A1A,#2D1B0E)',padding:20,display:'flex',flexDirection:'column',fontFamily:'Cairo'}}>
-      <div style={{textAlign:'center',padding:'20px 0'}}>
-        <div style={{fontSize:64}}>🍽️</div>
-        <h1 style={{color:'#FF6B00',fontSize:36,fontWeight:800}}>مطاعم <span style={{color:'white'}}>مصر</span></h1>
-        <p style={{color:'#FFB380'}}>خرائط حقيقية - شغال في مصر كلها 🇪🇬</p>
-        <div style={{background:'rgba(255,107,0,0.1)',border:'1px solid rgba(255,107,0,0.3)',borderRadius:12,padding:10,margin:'16px auto',maxWidth:400,color:'#FFB380',fontSize:12}}>
-          📍 {location?`موقعك: ${location.lat.toFixed(3)}, ${location.lng.toFixed(3)} ${locationEnabled?'(حقيقي ✅)':'(افتراضي - دوس فعل الموقع)'} `:'جاري تحديد موقعك...'}
-        </div>
-      </div>
-      <div style={{display:'grid',gap:16,maxWidth:420,margin:'0 auto',width:'100%'}}>
-        {[
-          {k:'client',icon:'👤',title:'دخول كعميل',desc:'اطلب من أقرب مطعم وتابع دليفري',badge:'GPS حقيقي • تتبع مباشر • شات'},
-          {k:'restaurant',icon:'🍽️',title:'دخول كمطعم',desc:'استقبل طلبات واطلب اعلان ممول',badge:'صورة 35ج • فيديو 70ج • 15 يوم'},
-          {k:'delivery',icon:'🏍️',title:'دخول كدليفري',desc:'استقبل طلبات قريبة واكسب',badge:'15ج + 5ج/كم • عمولة 10%'},
-        ].map(c=>(
-          <div key={c.k} onClick={()=>setView(c.k+'Login')} style={{background:'white',borderRadius:24,padding:24,textAlign:'center',cursor:'pointer',boxShadow:'0 8px 30px rgba(0,0,0,0.2)',border:'2px solid transparent'}}>
-            <div style={{fontSize:48}}>{c.icon}</div>
-            <h3 style={{fontWeight:800,margin:'8px 0'}}>{c.title}</h3>
-            <p style={{fontSize:12,color:'#888'}}>{c.desc}</p>
-            <div style={{marginTop:12}}><span style={{background:'#FFF0E5',color:'#FF6B00',padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{c.badge}</span></div>
-          </div>
-        ))}
-      </div>
-      <div style={{textAlign:'center',marginTop:16}}>
-        <button onClick={()=>setView('offers')} style={{background:'rgba(255,255,255,0.1)',color:'white',border:'1px solid rgba(255,255,255,0.2)',padding:'10px 20px',borderRadius:12,cursor:'pointer'}}>🎁 العروض والخصومات - صور وفيديو</button>
-      </div>
-      <div style={{flex:1}}></div>
-      <div onClick={handleOwnerClick} style={{background:'#111',color:'#666',padding:8,textAlign:'center',fontSize:11,cursor:'pointer',margin:'0 -20px -20px'}}>© 2026 مطاعم مصر - جميع الحقوق محفوظة - مصر كلها - اضغط 5 مرات للمالك {ownerClicks>0?`(${ownerClicks}/5)`:''}</div>
-
-      {!locationEnabled && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',padding:20,zIndex:100}}>
-          <div style={{background:'white',borderRadius:24,padding:24,maxWidth:360,width:'100%',textAlign:'center'}}>
-            <div style={{fontSize:48}}>📍</div>
-            <h3 style={{fontWeight:800,margin:'12px 0'}}>فعل موقعك الحقيقي</h3>
-            <p style={{fontSize:13,color:'#666'}}>التطبيق هيجيبك في أي مكان في مصر - القاهرة، اسكندرية، الغردقة، أي محافظة - خرائط حقيقية 100%</p>
-            <button onClick={enableLocation} style={{background:'#FF6B00',color:'white',padding:'12px 20px',borderRadius:14,border:'none',fontWeight:700,width:'100%',marginTop:16,cursor:'pointer'}}>موافق - فعل الموقع الآن ✅</button>
-            <button onClick={()=>setLocationEnabled(true)} style={{background:'none',border:'none',color:'#888',fontSize:12,marginTop:8,cursor:'pointer'}}>تخطي (خريطة مصر كلها)</button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-
-  if(view.endsWith('Login')){
-    const isRest=view==='restaurantLogin'; const isDel=view==='deliveryLogin'; const role=isRest?'مطعم':isDel?'دليفري':'عميل'; const icon=isRest?'🍽️':isDel?'🏍️':'👤'
-    return (
-      <div style={{minHeight:'100vh',background:'#FFF7F0',padding:20,fontFamily:'Cairo'}}>
-        <div style={{maxWidth:420,margin:'0 auto'}}>
-          <div style={{textAlign:'center',padding:20}}><div style={{fontSize:48}}>{icon}</div><h2 style={{fontWeight:800}}>تسجيل دخول {role}</h2><p style={{fontSize:12,color:'#888'}}>خرائط حقيقية - مصر كلها 🇪🇬</p></div>
-          <div style={{background:'white',borderRadius:20,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.06)'}}>
-            <label style={{fontSize:13,fontWeight:600}}>الاسم</label><input style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}} placeholder="اسمك" />
-            <label style={{fontSize:13,fontWeight:600,marginTop:12,display:'block'}}>رقم الهاتف</label><input style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}} placeholder="01xxxxxxxxx" />
-            {!otpSent ? <button onClick={()=>setOtpSent(true)} style={{background:'#1A1A1A',color:'white',padding:'8px',borderRadius:10,border:'none',width:'100%',marginTop:8,fontSize:12}}>ارسال كود OTP 📱</button> : <div><input style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #10B981',marginTop:6}} placeholder="كود OTP 1234" /><div style={{color:'#10B981',fontSize:11,marginTop:4}}>✅ تم التأكيد</div></div>}
-            <label style={{fontSize:13,fontWeight:600,marginTop:12,display:'block'}}>العنوان بالتفصيل</label><input style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}} placeholder="المحافظة - المنطقة - الشارع" />
-            {isRest && <><label style={{fontSize:13,marginTop:12,display:'block',fontWeight:600}}>اسم المطعم</label><input style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}} placeholder="كشري التحرير" /><label style={{fontSize:13,marginTop:12,display:'block',fontWeight:600}}>رفع سجل تجاري (KYC)</label><div style={{border:'2px dashed #FF6B00',borderRadius:12,padding:16,textAlign:'center',marginTop:6,background:'#FFF7F0'}}>📤 رفع صورة السجل (اختياري)</div><small style={{color:'#10B981',fontSize:'10px'}}>✅ اختياري - تقدر تسجل من غير صور</small></div></>}
-            {isDel && <><label style={{fontSize:13,marginTop:12,display:'block',fontWeight:600}}>نوع المركبة</label><select style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}}><option>موتوسيكل</option><option>عجلة</option></select><div style={{border:'2px dashed #FF6B00',borderRadius:12,padding:16,textAlign:'center',marginTop:6,background:'#FFF7F0'}}>📤 رفع صورة البطاقة والرخصة</div></>}
-            <div style={{background:'#FFF0E5',borderRadius:12,padding:10,marginTop:14,fontSize:11,color:'#FF6B00'}}>📍 موقعك الحقيقي: {location?`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`:''} - خرائط حقيقية</div>
-            <button onClick={()=>setView(isRest?'restaurantApp':isDel?'deliveryApp':'clientApp')} style={{background:'#FF6B00',color:'white',padding:'12px',borderRadius:14,border:'none',fontWeight:700,width:'100%',marginTop:16,cursor:'pointer'}}>دخول {role} الآن 🚀</button>
-            <button onClick={()=>{setView('landing'); setOtpSent(false)}} style={{background:'none',border:'none',color:'#888',fontSize:13,marginTop:10,width:'100%',cursor:'pointer'}}>رجوع</button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if(view==='clientApp') return (
-    <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-      <div style={{background:'#1A1A1A',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',position:'sticky',top:0,zIndex:50}}><div style={{color:'#FF6B00',fontWeight:800}}>مطاعم مصر</div><div style={{fontSize:12,background:'#FF6B00',padding:'4px 10px',borderRadius:20}}>عميل • {locationEnabled?'GPS حقيقي 📍':'مصر كلها'}</div></div>
-      <div id="realMap" style={{height:450,margin:12,borderRadius:24,border:'2px solid #FF6B00',zIndex:1}}></div>
-      <div style={{padding:'0 6px'}}>
-        <div style={{display:'flex',justifyContent:'space-between',padding:'10px 12px'}}><h3 style={{fontWeight:800}}>أقرب مطاعم ليك (خرائط حقيقية)</h3><span style={{background:'#FFF0E5',color:'#FF6B00',padding:'4px 10px',borderRadius:20,fontSize:11}}>مرتبة بالـ GPS</span></div>
-        {restaurantsMock.map(r=>{
-          const d=location?haversine(location.lat,location.lng,location.lat+(Math.random()-0.5)*0.04,location.lng+(Math.random()-0.5)*0.04):0.8
-          return (
-            <div key={r.id} onClick={()=>{setSelectedRest(r); setView('menu')}} style={{background:'white',borderRadius:20,padding:16,margin:10,boxShadow:'0 4px 20px rgba(0,0,0,0.06)',display:'flex',gap:12,cursor:'pointer'}}>
-              <div style={{width:56,height:56,background:'#FFF0E5',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{r.img}</div>
-              <div style={{flex:1}}><div style={{display:'flex',justifyContent:'space-between'}}><b>{r.name}</b><span style={{fontSize:12}}>⭐ {r.rating}</span></div><div style={{fontSize:11,color:'#888'}}>{r.type} • {d.toFixed(1)} كم • {Math.round(d*4+8)} د</div><div style={{marginTop:6}}><span style={{background:'#FFF0E5',color:'#FF6B00',padding:'4px 10px',borderRadius:20,fontSize:11}}>📍 {d.toFixed(1)} كم - خريطة حقيقية</span></div></div>
-            </div>
-          )
-        })}
-        <div style={{background:'#1A1A1A',color:'white',borderRadius:20,padding:14,margin:10,textAlign:'center',cursor:'pointer'}} onClick={()=>setView('offers')}>🎁 شوف العروض - صور وفيديو</div>
-        <div style={{height:80}}></div>
-      </div>
-    </div>
-  )
-
-  if(view==='menu') return (
-    <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-      <div style={{background:'#1A1A1A',color:'white',padding:14,display:'flex',justifyContent:'space-between'}}><div onClick={()=>setView('clientApp')} style={{cursor:'pointer'}}>← رجوع</div><div>{selectedRest?.name}</div><div>🛒</div></div>
-      <div style={{background:'white',borderRadius:20,padding:16,margin:12,textAlign:'center'}}><div style={{fontSize:48}}>{selectedRest?.img}</div><h3>{selectedRest?.name}</h3><p style={{fontSize:12,color:'#888'}}>{selectedRest?.phone} • {location?.lat.toFixed(2)}</p></div>
-      <div style={{padding:10}}>
-        <div style={{background:'white',borderRadius:20,padding:16,marginBottom:10,display:'flex',justifyContent:'space-between'}}><div><b>كشري وسط</b><div style={{fontSize:11,color:'#888'}}>أرز ومكرونة</div></div><div><b>35ج</b><button onClick={()=>setCartTotal(c=>c+35)} style={{marginRight:8,background:'#1A1A1A',color:'white',padding:'6px 12px',borderRadius:10,border:'none'}}> + إضافة</button></div></div>
-        {cartTotal>0 && <div style={{background:'#FFF0E5',border:'2px solid #FF6B00',borderRadius:20,padding:16}}><div style={{display:'flex',justifyContent:'space-between',fontWeight:800}}><span>الإجمالي</span><span>{cartTotal}ج</span></div><div style={{fontSize:11,color:'#888',marginTop:4}}>كود خصم: <input placeholder="SAVE20" style={{border:'1px solid #ddd',borderRadius:6,padding:4,width:80}} /></div><button onClick={()=>{setView('receipt')}} style={{background:'#FF6B00',color:'white',padding:'12px',borderRadius:14,border:'none',width:'100%',marginTop:12,fontWeight:700}}>طلب من المطعم 📤</button></div>}
-      </div>
-    </div>
-  )
-
-  if(view==='receipt') return (
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',padding:20,zIndex:100,fontFamily:'Cairo'}}>
-      <div style={{background:'white',borderRadius:24,padding:24,maxWidth:360,width:'100%',textAlign:'center'}}>
-        <div style={{fontSize:32}}>✅</div><h3>تم قبول الطلب من المطعم!</h3>
-        <div style={{background:'#F5F5F5',borderRadius:12,padding:12,margin:'12px 0',textAlign:'right',fontSize:13}}><b>الشيك:</b><br/>المطعم: {selectedRest?.name}<br/>رقم المطعم: {selectedRest?.phone}<br/>الأوردر: كشري وسط<br/>السعر: {cartTotal}ج<br/>موقعك الحقيقي: {location?.lat.toFixed(4)}, {location?.lng.toFixed(4)}<br/>الدفع: كاش / فودافون كاش / فوري</div>
-        <button onClick={()=>setView('deliveryRequest')} style={{background:'#FF6B00',color:'white',padding:'12px',borderRadius:14,border:'none',width:'100%',fontWeight:700}}>اطلب دليفري الآن 🏍️</button>
-      </div>
-    </div>
-  )
-
-  if(view==='deliveryRequest'){
-    return (
-      <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-        <div style={{background:'#1A1A1A',color:'white',padding:14,display:'flex',justifyContent:'space-between'}}><div>اختر أقرب دليفري</div><div style={{fontSize:11,background:'#FF6B00',padding:'4px 8px',borderRadius:10}}>GPS حقيقي</div></div>
-        <div id="realMap" style={{height:350,margin:12,borderRadius:24,border:'2px solid #FF6B00'}}></div>
-        <div style={{padding:10}}>
-          {driversMock.map((d,i)=>{
-            const dist=0.5+i*0.3; const fee=10+dist*5
-            return (
-              <div key={d.id} style={{background:'white',borderRadius:20,padding:16,marginBottom:10,border:i===0?'2px solid #FF6B00':'1px solid #eee'}}>
-                <div style={{display:'flex',justifyContent:'space-between'}}><div><b>{d.name} {i===0?'⭐ الأقرب':''}</b><div style={{fontSize:11,color:'#666'}}>📞 {d.phone}<br/>📍 {d.addr}<br/>🛣️ {dist.toFixed(1)} كم منك - محسوب بالـ GPS الحقيقي</div></div><div style={{textAlign:'left'}}><div style={{fontSize:11}}>سعر التوصيل:</div><div style={{fontWeight:800,color:'#FF6B00'}}>{fee.toFixed(0)}ج</div><div style={{fontSize:10,color:'#888'}}>10ج + {dist.toFixed(1)}×5</div></div></div>
-                <button onClick={()=>{setView('tracking'); setTrackingStep(0)}} style={{background:'#FF6B00',color:'white',padding:'12px',borderRadius:14,border:'none',width:'100%',marginTop:8,fontWeight:700}}>ارسال الطلب + اتصال تلقائي 📞</button>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
-
-  if(view==='tracking'){
-    const steps=['تم الاستلام - جاري التحرك للمطعم','وصل للمطعم','جاري التوصيل للعميل','تم التوصيل ✅']
-    return (
-      <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-        <div style={{background:'#1A1A1A',color:'white',padding:14,display:'flex',justifyContent:'space-between'}}><div>تتبع طلبك 🛰️ خريطة حقيقية</div><div style={{fontSize:11,background:'#10B981',padding:'4px 8px',borderRadius:10}}>{steps[trackingStep]}</div></div>
-        <div id="realMap" style={{height:380,margin:12,borderRadius:24,border:'2px solid #FF6B00'}}></div>
-        <div style={{background:'white',borderRadius:20,padding:16,margin:12}}>
-          <div style={{display:'flex',justifyContent:'space-between',fontSize:13}}><span>المسافة المتبقية:</span><b>{(2.5-trackingStep*0.6).toFixed(1)} كم - GPS حقيقي</b></div>
-          <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginTop:6}}><span>الوقت:</span><b>{8-trackingStep*2} دقائق</b></div>
-          <div style={{marginTop:12,background:'#F5F5F5',borderRadius:12,padding:8}}>{steps.map((s,i)=><div key={i} style={{fontSize:12,padding:4,color:i<=trackingStep?'#FF6B00':'#999',fontWeight:i<=trackingStep?'700':''}}>{i<=trackingStep?'✅':'⏳'} {s}</div>)}</div>
-          <div style={{marginTop:12,background:'#FFF0E5',borderRadius:12,padding:10}}>
-            <div style={{fontWeight:700,fontSize:13}}>💬 شات مع الدليفري</div>
-            <div style={{maxHeight:100,overflowY:'auto',marginTop:6}}>{chatMsgs.map((m,i)=><div key={i} style={{fontSize:12,padding:4,background:m.from==='me'?'#FF6B00':'#eee',color:m.from==='me'?'white':'black',borderRadius:8,margin:'4px 0',textAlign:m.from==='me'?'left':'right'}}>{m.text}</div>)}</div>
-            <div style={{display:'flex',gap:6,marginTop:6}}><input value={newMsg} onChange={e=>setNewMsg(e.target.value)} placeholder="اكتب رسالة..." style={{flex:1,padding:8,borderRadius:10,border:'1px solid #ddd'}} /><button onClick={()=>{if(newMsg){setChatMsgs([...chatMsgs,{from:'me',text:newMsg}]); setNewMsg('')}}} style={{background:'#1A1A1A',color:'white',padding:'8px 12px',borderRadius:10,border:'none'}}>ارسال</button></div>
-          </div>
-          <div style={{marginTop:12,background:'#F5F5F5',borderRadius:12,padding:10}}>
-            <div style={{fontWeight:700,fontSize:13}}>⭐ قيم التجربة بعد التوصيل</div>
-            <div style={{display:'flex',gap:4,marginTop:6}}>{[1,2,3,4,5].map(s=><span key={s} onClick={()=>setRating(s)} style={{fontSize:24,cursor:'pointer',color:s<=rating?'#FF6B00':'#ddd'}}>★</span>)}</div>
-          </div>
-          <button onClick={()=>{if(trackingStep<3)setTrackingStep(trackingStep+1); else {alert('تم التوصيل! شكرا لتقييمك ⭐'); setView('clientApp')}}} style={{background:'#FF6B00',color:'white',padding:'12px',borderRadius:14,border:'none',width:'100%',marginTop:12,fontWeight:700}}>{trackingStep<3?'تحديث الموقع الحقيقي 📍':'تأكيد الاستلام وتقييم'}</button>
-        </div>
-      </div>
-    )
-  }
-
-  if(view==='restaurantApp') return (
-    <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-      <div style={{background:'#1A1A1A',color:'white',padding:14,display:'flex',justifyContent:'space-between'}}><div style={{color:'#FF6B00',fontWeight:800}}>مطاعم مصر - مطعم</div><div style={{fontSize:11,background:'#10B981',padding:'4px 8px',borderRadius:10}}>مفتوح</div></div>
-      <div style={{padding:12}}>
-        <div style={{background:'white',borderRadius:20,padding:16}}><h4>📥 طلبات جديدة</h4><div style={{marginTop:10,background:'#FFF7F0',padding:10,borderRadius:12}}><b>عميل: أحمد - موقع حقيقي</b><br/><span style={{fontSize:12}}>كشري وسط - 35ج - {location?.lat.toFixed(3)}</span><div style={{display:'flex',gap:8,marginTop:8}}><button style={{flex:1,background:'#FF6B00',color:'white',padding:'10px',borderRadius:12,border:'none'}}>قبول ✅</button><button style={{flex:1,background:'#EF4444',color:'white',padding:'10px',borderRadius:12,border:'none'}}>رفض</button></div></div></div>
-        <div onClick={()=>setView('adRequest')} style={{background:'linear-gradient(135deg,#FF6B00,#FF8C42)',color:'white',borderRadius:20,padding:16,marginTop:12,cursor:'pointer'}}><h4>📢 اطلب اعلان لعروضك</h4><p style={{fontSize:12,opacity:0.9}}>يظهر في الخريطة الحقيقية وصفحة العروض</p><div style={{marginTop:10,display:'flex',gap:8}}><span style={{background:'white',color:'#FF6B00',padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>صورة 40ج / 15 يوم</span><span style={{background:'rgba(0,0,0,0.2)',padding:'4px 10px',borderRadius:20,fontSize:11}}>فيديو 80ج</span></div></div>
-        <div style={{background:'white',borderRadius:20,padding:16,marginTop:12}}><h4>💰 مبيعاتي</h4><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:10}}><div style={{background:'#F5F5F5',padding:10,borderRadius:12,textAlign:'center'}}><div style={{fontSize:20,fontWeight:800}}>89</div><div style={{fontSize:11}}>طلب</div></div><div style={{background:'#FFF0E5',padding:10,borderRadius:12,textAlign:'center'}}><div style={{fontSize:20,fontWeight:800,color:'#FF6B00'}}>3,200ج</div><div style={{fontSize:11}}>إجمالي</div></div></div></div>
-      </div>
-    </div>
-  )
-
-    if(view==='adRequest'){
-    const [adName, setAdName] = useState('');
-    const [adPrice, setAdPrice] = useState('');
-    const [adDesc, setAdDesc] = useState('');
-    return (
-    <div style={{fontFamily:'Cairo',background:'#0A0A0A',minHeight:'100vh',padding:20,color:'white'}}>
-      <div style={{maxWidth:420,margin:'0 auto'}}>
-        <div style={{display:'flex',justifyContent:'space-between',marginBottom:16,alignItems:'center'}}><div onClick={()=>setView('restaurantApp')} style={{cursor:'pointer',background:'white',color:'#0A0A0A',padding:'6px 12px',borderRadius:20,fontSize:12}}>← رجوع</div><div style={{fontWeight:800}}>طلب اعلان - المطعم يطلب</div><div></div></div>
-        <div style={{background:'white',color:'#0A0A0A',borderRadius:20,padding:20}}>
-          <div style={{background:'#FFF0E5',border:'1px solid #FF6B00',borderRadius:12,padding:10,marginBottom:12,fontSize:12,color:'#FF6B00'}}>📢 انت كمطعم بتطلب الإعلان - المالك هيوافق عليه في صفحته السرية</div>
-          <label style={{fontWeight:700,fontSize:13}}>اسم المطعم</label><input value={adName} onChange={e=>setAdName(e.target.value)} style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}} placeholder="كشري التحرير" />
-          <label style={{fontWeight:600,fontSize:13,marginTop:12,display:'block'}}>نوع الإعلان</label><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:8}}><div style={{border:'2px solid #FF6B00',borderRadius:12,padding:12,textAlign:'center',background:'#FFF7F0'}}><div style={{fontSize:24}}>🖼️</div><b>صورة 35ج</b></div><div style={{border:'2px solid #ddd',borderRadius:12,padding:12,textAlign:'center'}}><div style={{fontSize:24}}>🎬</div><b>فيديو 70ج</b></div></div>
-          <label style={{fontWeight:600,fontSize:13,marginTop:12,display:'block'}}>السعر والخصم</label><input value={adPrice} onChange={e=>setAdPrice(e.target.value)} style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6}} placeholder="كان 100 بقى 70 - خصم 30%" />
-          <label style={{fontWeight:600,fontSize:13,marginTop:10,display:'block'}}>وصف العرض</label><textarea value={adDesc} onChange={e=>setAdDesc(e.target.value)} style={{width:'100%',padding:'12px',borderRadius:12,border:'2px solid #FFE4CC',marginTop:6,height:80}} placeholder="تفاصيل العرض..." />
-          <div style={{border:'2px dashed #FF6B00',borderRadius:12,padding:20,textAlign:'center',marginTop:10,background:'#FFF7F0'}}>📤 رفع صورة / فيديو (اختياري) ✅</div>
-          <button onClick={()=>{
-              if(!adName) return alert('اكتب اسم المطعم');
-              const ads = JSON.parse(localStorage.getItem('adRequests')||'[]');
-              ads.push({id:Date.now(), restaurant:adName, price:adPrice||'35ج', desc:adDesc||'عرض جديد', type:'صورة', status:'pending', date:new Date().toLocaleString('ar-EG')});
-              localStorage.setItem('adRequests', JSON.stringify(ads));
-              alert('✅ طلب الإعلان راح للمالك - هيوصل في صفحة المالك فورا! العدد: '+ads.length);
-              setView('restaurantApp');
-            }} style={{background:'#FF6B00',color:'white',padding:'14px',borderRadius:14,border:'none',width:'100%',marginTop:16,fontWeight:800}}>ارسال طلب للمالك 📤</button>
-        </div>
-      </div>
-    </div>
-  )}
-
-  if(view==='deliveryApp') return (
-    <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-      <div style={{background:'#1A1A1A',color:'white',padding:14,display:'flex',justifyContent:'space-between'}}><div style={{color:'#FF6B00',fontWeight:800}}>مطاعم مصر - دليفري</div><div style={{fontSize:11,background:'#FFF0E5',color:'#FF6B00',padding:'4px 8px',borderRadius:10}}>127 توصيلة</div></div>
-      <div id="realMap" style={{height:300,margin:12,borderRadius:24,border:'2px solid #FF6B00'}}></div>
-      <div style={{padding:10}}>
-        <div style={{background:'white',borderRadius:20,padding:16,border:'2px solid #FF6B00'}}><h4>🔔 طلب جديد قريب - خريطة حقيقية</h4><div style={{fontSize:12,marginTop:8,lineHeight:1.7}}><b>المطعم:</b> كشري التحرير<br/><b>الأوردر:</b> كشري وسط<br/><b>السعر:</b> 35ج<br/><b>موقع العميل الحقيقي:</b> {location?.lat.toFixed(4)}, {location?.lng.toFixed(4)}<br/><b>المسافة:</b> 0.8 كم (GPS حقيقي)<br/><b>التوصيل:</b> 15 + 0.8×5 = <b style={{color:'#FF6B00'}}>19ج</b><br/><b>عمولة المالك 10%:</b> 1.9ج - صافي: 17.1ج<br/><b>الدفع:</b> فودافون كاش / كاش</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:12}}><button onClick={()=>alert('📞 اتصال بالعميل + تم الاستلام - جاري التحرك')} style={{background:'#FF6B00',color:'white',padding:'12px',borderRadius:12,border:'none',fontWeight:700}}>قبول + اتصال 📞</button><button style={{background:'#EF4444',color:'white',padding:'12px',borderRadius:12,border:'none'}}>رفض</button></div></div>
-        <div style={{background:'white',borderRadius:20,padding:16,marginTop:12}}><h4>💰 حسابي - شفاف</h4><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:10}}><div style={{background:'#F5F5F5',padding:10,borderRadius:12,textAlign:'center'}}><div style={{fontSize:20,fontWeight:800}}>127</div><div style={{fontSize:11}}>توصيلة بالظبط</div></div><div style={{background:'#FFF0E5',padding:10,borderRadius:12,textAlign:'center'}}><div style={{fontSize:20,fontWeight:800,color:'#FF6B00'}}>1,840ج</div><div style={{fontSize:11}}>صافي أرباحي</div></div></div><div style={{fontSize:11,color:'#888',marginTop:8}}>عمولة المالك واضحة: 10% من كل توصيلة - شفاف 100%</div></div>
-      </div>
-    </div>
-  )
-
-  if(view==='owner') return (
-    <div style={{fontFamily:'Cairo',background:'#0A0A0A',minHeight:'100vh',color:'white'}}>
-      <div style={{background:'linear-gradient(135deg,#1A1A1A,#2D1B0E)',borderBottom:'1px solid #FF6B00',padding:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <div style={{background:'#FF6B00',width:40,height:40,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>👑</div>
-          <div>
-            <div style={{fontWeight:900,fontSize:16}}>لوحة تحكم المالك - مطاعم مصر</div>
-            <div style={{fontSize:11,color:'#FFB380'}}>التسعيرة: 15ج + 5ج/كم • عمولة 10%</div>
-          </div>
-        </div>
-        <div style={{fontSize:11,background:'rgba(255,107,0,0.2)',border:'1px solid #FF6B00',padding:'6px 12px',borderRadius:20,color:'#FF6B00'}}>مخفية 🔒</div>
-      </div>
-      <div style={{padding:16}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
-          <div style={{background:'white',color:'#0A0A0A',borderRadius:20,padding:16,textAlign:'center',border:'1px solid #eee'}}>
-            <div style={{fontSize:28,fontWeight:900}}>342</div>
-            <div style={{fontSize:11,color:'#666'}}>إجمالي الطلبات</div>
-          </div>
-          <div style={{background:'linear-gradient(135deg,#FF6B00,#FF8C42)',borderRadius:20,padding:16,textAlign:'center',color:'white'}}>
-            <div style={{fontSize:28,fontWeight:900}}>1,280ج</div>
-            <div style={{fontSize:11,opacity:0.9}}>عمولتي 10% - التسعيرة الجديدة</div>
-          </div>
-          <div style={{background:'white',color:'#0A0A0A',borderRadius:20,padding:16,textAlign:'center',border:'1px solid #eee'}}>
-            <div style={{fontSize:28,fontWeight:900}}>560ج</div>
-            <div style={{fontSize:11,color:'#666'}}>أرباح الإعلانات</div>
-          </div>
-        </div>
-        <div style={{background:'white',color:'#0A0A0A',borderRadius:20,padding:16,marginTop:16,border:'1px solid #eee'}}><h4 style={{color:'#0A0A0A'}}>🏍️ السائقين - اسم ورقم وعنوان وتوصيلات بالظبط</h4><div style={{overflowX:'auto',marginTop:10}}><table style={{width:'100%',fontSize:11,borderCollapse:'collapse'}}><tr style={{background:'#1A1A1A',color:'white'}}><th style={{padding:6}}>الاسم</th><th>الرقم</th><th>العنوان</th><th>توصيلات</th><th>عمولتي</th></tr>{driversMock.map(d=><tr key={d.id} style={{borderBottom:'1px solid #eee'}}><td style={{padding:6}}><b>{d.name}</b></td><td>{d.phone}</td><td>{d.addr}</td><td style={{textAlign:'center',fontWeight:800,color:'#FF6B00'}}>{d.deliveries}</td><td>{(d.deliveries*1.3).toFixed(0)}ج</td></tr>)}</table></div></div>
-        <div style={{background:'white',color:'#0A0A0A',borderRadius:20,padding:16,marginTop:16,border:'1px solid #eee'}}>
-          <h4 style={{color:'#0A0A0A'}}>📢 طلبات الإعلانات من المطاعم - انت توافق بس</h4>
-          <div style={{fontSize:11,color:'#10B981',background:'#ECFDF5',padding:8,borderRadius:8,marginTop:6}}>✅ المطاعم هي اللي بتطلب - انت توافق أو ترفض فقط</div>
-          <div style={{marginTop:10}}>
-            {(() => {
-              const ads = JSON.parse(localStorage.getItem('adRequests')||'[]');
-              if(ads.length===0) return <div style={{textAlign:'center',padding:20,color:'#888',fontSize:13}}>لا يوجد طلبات إعلانات حاليا<br/><small>المطاعم لما تطلب اعلان هيظهر هنا</small><br/><button onClick={()=>{const demo=[{id:1,restaurant:'كشري التحرير - تجربة',type:'صورة',price:'35ج - خصم 30%',desc:'كان 100 بقى 70',status:'pending',date:new Date().toLocaleString()}]; localStorage.setItem('adRequests', JSON.stringify(demo)); alert('تم اضافة طلب تجريبي'); window.location.reload()}} style={{marginTop:10,background:'#FFF0E5',border:'1px solid #FF6B00',padding:'6px 12px',borderRadius:8,fontSize:11}}>اضافة طلب تجريبي للتجربة</button></div>;
-              return ads.map(ad=>(
-                <div key={ad.id} style={{background:'#FFF7F0',padding:10,borderRadius:12,border:'1px solid #FF6B00',marginBottom:8}}>
-                  <b>{ad.restaurant} - {ad.type} - {ad.price}</b>
-                  <div style={{fontSize:11,marginTop:4}}>{ad.desc}<br/>التاريخ: {ad.date}</div>
-                  <div style={{display:'flex',gap:8,marginTop:8}}>
-                    <button onClick={()=>{
-                      const all = JSON.parse(localStorage.getItem('adRequests')||'[]');
-                      const approved = JSON.parse(localStorage.getItem('approvedAds')||'[]');
-                      approved.push({...ad, status:'approved'});
-                      localStorage.setItem('approvedAds', JSON.stringify(approved));
-                      localStorage.setItem('adRequests', JSON.stringify(all.filter(a=>a.id!==ad.id)));
-                      alert('✅ تمت الموافقة ونشر الإعلان في الخريطة والعروض!');
-                      window.location.reload();
-                    }} style={{flex:1,background:'#FF6B00',color:'white',padding:'8px',borderRadius:10,border:'none'}}>موافقة ونشر ✅</button>
-                    <button onClick={()=>{
-                      const all = JSON.parse(localStorage.getItem('adRequests')||'[]');
-                      localStorage.setItem('adRequests', JSON.stringify(all.filter(a=>a.id!==ad.id)));
-                      alert('❌ تم الرفض');
-                      window.location.reload();
-                    }} style={{flex:1,background:'#EF4444',color:'white',padding:'8px',borderRadius:10,border:'none'}}>رفض ❌</button>
-                  </div>
-                </div>
-              ));
-            })()}
-          </div>
-          <div style={{marginTop:12,fontSize:11,color:'#888',background:'#F5F5F5',padding:8,borderRadius:8}}>
-            المنشور في العروض: {(JSON.parse(localStorage.getItem('approvedAds')||'[]')).length} اعلان
-          </div>
-        </div>
-        <div style={{background:'white',color:'#0A0A0A',borderRadius:20,padding:16,marginTop:16,border:'1px solid #eee'}}><h4 style={{color:'#0A0A0A'}}>🗺️ خريطة مصر كلها - خرائط حقيقية</h4><div id="realMap" style={{height:250,borderRadius:16,marginTop:8,border:'1px solid #ddd'}}></div><div style={{fontSize:11,color:'#888',marginTop:6}}>كل السائقين والمطاعم ظاهرين على الخريطة الحقيقية - شغال في مصر كلها</div></div>
-        <button onClick={()=>setView('landing')} style={{background:'white',color:'#0A0A0A',padding:'14px',borderRadius:14,border:'1px solid #eee',width:'100%',marginTop:16,fontWeight:700}}>خروج ← رجوع للرئيسية</button>
-      </div>
-    </div>
-  )
-
-  if(view==='offers') return (
-    <div style={{fontFamily:'Cairo',background:'#FFF7F0',minHeight:'100vh'}}>
-      <div style={{background:'#1A1A1A',color:'white',padding:14,display:'flex',justifyContent:'space-between'}}><div onClick={()=>setView('landing')} style={{cursor:'pointer'}}>← رجوع</div><div>🎁 العروض - للجميع</div><div style={{fontSize:11,background:'#FF6B00',padding:'4px 8px',borderRadius:10}}>صور وفيديو</div></div>
-      <div style={{padding:10,display:'flex',gap:8}}><button style={{flex:1,background:'#FF6B00',color:'white',padding:'8px',borderRadius:10,border:'none'}}>الكل</button><button style={{flex:1,background:'white',padding:'8px',borderRadius:10,border:'1px solid #ddd'}}>🖼️ صور</button><button style={{flex:1,background:'white',padding:'8px',borderRadius:10,border:'1px solid #ddd'}}>🎬 فيديو</button></div>
-      <div style={{padding:6}}>
-        <div style={{background:'white',borderRadius:20,overflow:'hidden',marginBottom:10}}><div style={{height:160,background:'linear-gradient(135deg,#FF6B00,#FFB380)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:48}}>🍛</div><div style={{padding:12}}><div style={{display:'flex',justifyContent:'space-between'}}><b>كشري التحرير</b><span style={{background:'#FFF0E5',color:'#FF6B00',padding:'4px 10px',borderRadius:20,fontSize:11}}>خصم 30%</span></div><div style={{fontSize:12,color:'#888'}}>كان 100ج بقى 70ج - يظهر على الخريطة الحقيقية</div><button style={{background:'#FF6B00',color:'white',padding:'8px',borderRadius:10,border:'none',width:'100%',marginTop:8}}>اطلب الآن 🛒</button></div></div>
-        <div style={{background:'white',borderRadius:20,overflow:'hidden'}}><div style={{height:160,background:'#1A1A1A',display:'flex',alignItems:'center',justifyContent:'center',position:'relative'}}><div style={{fontSize:32}}>▶️</div><div style={{position:'absolute',bottom:8,left:8,background:'rgba(0,0,0,0.7)',color:'white',padding:'2px 8px',borderRadius:10,fontSize:10}}>0:15 فيديو - 70ج</div></div><div style={{padding:12}}><div style={{display:'flex',justifyContent:'space-between'}}><b>بيتزا هت</b><span style={{background:'#FFF0E5',color:'#FF6B00',padding:'4px 10px',borderRadius:20,fontSize:11}}>خصم 50%</span></div><div style={{fontSize:12,color:'#888'}}>بيتزا لارج + بيبسي - كان 200 بقى 100ج</div></div></div>
-      </div>
-    </div>
-  )
-
-  return <div>جاري التحميل...</div>
+// ===== كود التحديث التلقائي المسيطر =====
+if('serviceWorker' in navigator){
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(refreshing) return; refreshing=true; window.location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js?v=17').then(reg=>{
+    setInterval(()=>reg.update(), 60000);
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) reg.update(); });
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      nw.addEventListener('statechange',()=>{
+        if(nw.state==='installed' && navigator.serviceWorker.controller){
+          nw.postMessage('SKIP_WAITING');
+          if(confirm('🎉 في تحديث جديد لمطاعم مصر الفخم!\n15+5 + أسود في أبيض\nتحدث الآن؟')) window.location.reload();
+        }
+      });
+    });
+  });
 }
+localStorage.setItem('app_version','v17-luxury-auto');
+</script>
+</body>
+</html>
