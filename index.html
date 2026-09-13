@@ -77,8 +77,14 @@ document.head.appendChild(lJs);
       if(!mapDiv){
         mapDiv=document.createElement('div');
         mapDiv.id='real-map';
-        mapDiv.style='position:fixed;bottom:80px;left:10px;right:10px;height:220px;z-index:99999;border-radius:15px;border:3px solid #ff7700;background:white;';
-        document.body.appendChild(mapDiv);
+        mapDiv.style.position='relative';
+mapDiv.style.width='95%';
+mapDiv.style.height='320px';
+mapDiv.style.margin='10px auto';
+mapDiv.style.display='block';
+mapDiv.style.borderRadius='15px';
+mapDiv.style.border='3px solid #ff7700';
+        let parent=document.querySelector('main')||document.body; parent.prepend(mapDiv);
       }
       function drawMap(){ if(window.L){ let map=L.map('real-map').setView([p.coords.latitude,p.coords.longitude],16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup("انت هنا 📍").openPopup(); } }
       lJs.onload=drawMap; setTimeout(drawMap,800);
