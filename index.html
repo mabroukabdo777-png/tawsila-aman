@@ -84,6 +84,7 @@ mapDiv.style.margin='10px auto';
 mapDiv.style.display='block';
 mapDiv.style.borderRadius='15px';
 mapDiv.style.border='3px solid #ff7700';
+        mapDiv.style.zIndex='1';
         let parent=document.querySelector('main')||document.body; parent.prepend(mapDiv);
       }
       function drawMap(){ if(window.L){ let map=L.map('real-map').setView([p.coords.latitude,p.coords.longitude],16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup("انت هنا 📍").openPopup(); } }
