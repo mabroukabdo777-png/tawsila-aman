@@ -57,68 +57,39 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 console.log("Firebase مربوط ✅");
-
-// ===== كود تفعيل الموقع والخرائط الحقيقية =====
-window.currentUserLocation = null;
-window.watchId = null;
-
-function requestLocation() {
-  if (!navigator.geolocation) {
-    alert("المتصفح لا يدعم تحديد الموقع");
-    return;
-  }
-
-  // أول مرة يطلب الموافقة
+// ===== كود موقع حقيقي + منع ترجمة =====
+document.documentElement.setAttribute('translate','no');
+document.documentElement.classList.add('notranslate');
+document.body.classList.add('notranslate');
+let lCss=document.createElement('link');
+lCss.rel='stylesheet'; lCss.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+document.head.appendChild(lCss);
+let lJs=document.createElement('script');
+lJs.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+document.head.appendChild(lJs);
+    function getRealLocation(){
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const loc = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        accuracy: pos.coords.accuracy
-      };
-      window.currentUserLocation = loc;
-      localStorage.setItem("userLocation", JSON.stringify(loc));
-      console.log("تم تحديد الموقع:", loc);
-
-      // متابعة الحركة طول ما التطبيق مفتوح
-      window.watchId = navigator.geolocation.watchPosition(
-        (p) => {
-          const newLoc = {
-            lat: p.coords.latitude,
-            lng: p.coords.longitude,
-            accuracy: p.coords.accuracy
-          };
-          window.currentUserLocation = newLoc;
-          localStorage.setItem("userLocation", JSON.stringify(newLoc));
-          // لو عندك خريطة في التطبيق هتتحدث تلقائي
-          window.dispatchEvent(new CustomEvent("locationUpdate", { detail: newLoc }));
-        },
-        (err) => console.log("خطأ في التتبع:", err),
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      );
-    },
-    (err) => {
-      if (err.code === 1) {
-        alert("لازم توافق على تفعيل الموقع عشان التطبيق يشتغل صح 🙏");
+    p=>{
+      window.currentUserLocation={lat:p.coords.latitude,lng:p.coords.longitude};
+      localStorage.setItem("userLocation",JSON.stringify(window.currentUserLocation));
+      console.log("✅ موقعك:",window.currentUserLocation);
+         let mapDiv=document.getElementById('real-map');
+      if(!mapDiv){
+        mapDiv=document.createElement('div');
+        mapDiv.id='real-map';
+        mapDiv.style='position:fixed;bottom:80px;left:10px;right:10px;height:220px;z-index:99999;border-radius:15px;border:3px solid #ff7700;background:white;';
+        document.body.appendChild(mapDiv);
       }
-      console.log("رفض الموقع:", err);
+      function drawMap(){ if(window.L){ let map=L.map('real-map').setView([p.coords.latitude,p.coords.longitude],16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup("انت هنا 📍").openPopup(); } }
+      lJs.onload=drawMap; setTimeout(drawMap,800);
     },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    e=>{console.log("Block - افتح القفل فوق واعمل Allow");},
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
   );
 }
+window.addEventListener("load",()=>setTimeout(getRealLocation,1000));
+// ===== نهاية =====
 
-// أول ما التطبيق يفتح يطلب الموقع فورا
-window.addEventListener("load", () => {
-  setTimeout(requestLocation, 1000);
-});
-
-// لو المستخدم قفل التتبع
-window.stopTracking = () => {
-  if (window.watchId) navigator.geolocation.clearWatch(window.watchId);
-};
-// ===== نهاية كود الموقع =====
-
-    
     var Dd=Object.create;var{getPrototypeOf:Fd,defineProperty:Vu,getOwnPropertyNames:Od}=Object;var Ld=Object.prototype.hasOwnProperty;var Fe=(e,n,t)=>{t=e!=null?Dd(Fd(e)):{};let r=n||!e||!e.__esModule?Vu(t,"default",{value:e,enumerable:!0}):t;for(let l of Od(e))if(!Ld.call(r,l))Vu(r,l,{get:()=>e[l],enumerable:!0});return r};var ll=(e,n)=>()=>(n||e((n={exports:{}}).exports,n),n.exports);var Rd=(e,n)=>{for(var t in n)Vu(e,t,{get:n[t],enumerable:!0,configurable:!0,set:(r)=>n[t]=()=>r})};var Md=(e,n)=>()=>(e&&(n=e(e=0)),n);var Iu=((e)=>typeof require<"u"?require:typeof Proxy<"u"?new Proxy(e,{get:(n,t)=>(typeof require<"u"?require:n)[t]}):e)(function(e){if(typeof require<"u")return require.apply(this,arguments);throw Error('Dynamic require of "'+e+'" is not supported')});var $n=ll((qd)=>{var Zt=Symbol.for("react.element"),Vd=Symbol.for("react.portal"),Id=Symbol.for("react.fragment"),$d=Symbol.for("react.strict_mode"),Hd=Symbol.for("react.profiler"),Qd=Symbol.for("react.provider"),Bd=Symbol.for("react.context"),Wd=Symbol.for("react.forward_ref"),Ud=Symbol.for("react.suspense"),Ad=Symbol.for("react.memo"),Xd=Symbol.for("react.lazy"),Ea=Symbol.iterator;function Kd(e){if(e===null||typeof e!=="object")return null;return e=Ea&&e[Ea]||e["@@iterator"],typeof e==="function"?e:null}var Na={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},Pa=Object.assign,za={};function at(e,n,t){this.props=e,this.context=n,this.refs=za,this.updater=t||Na}at.prototype.isReactComponent={};at.prototype.setState=function(e,n){if(typeof e!=="object"&&typeof e!=="function"&&e!=null)throw Error("setState(...): takes an object of state variables to update or a function which returns an object of state variables.");this.updater.enqueueSetState(this,e,n,"setState")};at.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,"forceUpdate")};function Ta(){}Ta.prototype=at.prototype;function Hu(e,n,t){this.props=e,this.context=n,this.refs=za,this.updater=t||Na}var Qu=Hu.prototype=new Ta;Qu.constructor=Hu;Pa(Qu,at.prototype);Qu.isPureReactComponent=!0;var _a=Array.isArray,Da=Object.prototype.hasOwnProperty,Bu={current:null},Fa={key:!0,ref:!0,__self:!0,__source:!0};function Oa(e,n,t){var r,l={},u=null,i=null;if(n!=null)for(r in n.ref!==void 0&&(i=n.ref),n.key!==void 0&&(u=""+n.key),n)Da.call(n,r)&&!Fa.hasOwnProperty(r)&&(l[r]=n[r]);var f=arguments.length-2;if(f===1)l.children=t;else if(1<f){for(var a=Array(f),p=0;p<f;p++)a[p]=arguments[p+2];l.children=a}if(e&&e.defaultProps)for(r in f=e.defaultProps,f)l[r]===void 0&&(l[r]=f[r]);return{$$typeof:Zt,type:e,key:u,ref:i,props:l,_owner:Bu.current}}function Zd(e,n){return{$$typeof:Zt,type:e.type,key:n,ref:e.ref,props:e.props,_owner:e._owner}}function Wu(e){return typeof e==="object"&&e!==null&&e.$$typeof===Zt}function Yd(e){var n={"=":"=0",":":"=2"};return"$"+e.replace(/[=:]/g,function(t){return n[t]})}var Ca=/\/+/g;function $u(e,n){return typeof e==="object"&&e!==null&&e.key!=null?Yd(""+e.key):n.toString(36)}function il(e,n,t,r,l){var u=typeof e;if(u==="undefined"||u==="boolean")e=null;var i=!1;if(e===null)i=!0;else switch(u){case"string":case"number":i=!0;break;case"object":switch(e.$$typeof){case Zt:case Vd:i=!0}}if(i)return i=e,l=l(i),e=r===""?"."+$u(i,0):r,_a(l)?(t="",e!=null&&(t=e.replace(Ca,"$&/")+"/"),il(l,n,t,"",function(p){return p})):l!=null&&(Wu(l)&&(l=Zd(l,t+(!l.key||i&&i.key===l.key?"":(""+l.key).replace(Ca,"$&/")+"/")+e)),n.push(l)),1;if(i=0,r=r===""?".":r+":",_a(e))for(var f=0;f<e.length;f++){u=e[f];var a=r+$u(u,f);i+=il(u,n,t,a,l)}else if(a=Kd(e),typeof a==="function")for(e=a.call(e),f=0;!(u=e.next()).done;)u=u.value,a=r+$u(u,f++),i+=il(u,n,t,a,l);else if(u==="object")throw n=String(e),Error("Objects are not valid as a React child (found: "+(n==="[object Object]"?"object with keys {"+Object.keys(e).join(", ")+"}":n)+"). If you meant to render a collection of children, use an array instead.");return i}function ul(e,n,t){if(e==null)return e;var r=[],l=0;return il(e,r,"","",function(u){return n.call(t,u,l++)}),r}function Gd(e){if(e._status===-1){var n=e._result;n=n(),n.then(function(t){if(e._status===0||e._status===-1)e._status=1,e._result=t},function(t){if(e._status===0||e._status===-1)e._status=2,e._result=t}),e._status===-1&&(e._status=0,e._result=n)}if(e._status===1)return e._result.default;throw e._result}var de={current:null},ol={transition:null},Jd={ReactCurrentDispatcher:de,ReactCurrentBatchConfig:ol,ReactCurrentOwner:Bu};function La(){throw Error("act(...) is not supported in production builds of React.")}qd.Children={map:ul,forEach:function(e,n,t){ul(e,function(){n.apply(this,arguments)},t)},count:function(e){var n=0;return ul(e,function(){n++}),n},toArray:function(e){return ul(e,function(n){return n})||[]},only:function(e){if(!Wu(e))throw Error("React.Children.only expected to receive a single React element child.");return e}};qd.Component=at;qd.Fragment=Id;qd.Profiler=Hd;qd.PureComponent=Hu;qd.StrictMode=$d;qd.Suspense=Ud;qd.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED=Jd;qd.act=La;qd.cloneElement=function(e,n,t){if(e===null||e===void 0)throw Error("React.cloneElement(...): The argument must be a React element, but you passed "+e+".");var r=Pa({},e.props),l=e.key,u=e.ref,i=e._owner;if(n!=null){if(n.ref!==void 0&&(u=n.ref,i=Bu.current),n.key!==void 0&&(l=""+n.key),e.type&&e.type.defaultProps)var f=e.type.defaultProps;for(a in n)Da.call(n,a)&&!Fa.hasOwnProperty(a)&&(r[a]=n[a]===void 0&&f!==void 0?f[a]:n[a])}var a=arguments.length-2;if(a===1)r.children=t;else if(1<a){f=Array(a);for(var p=0;p<a;p++)f[p]=arguments[p+2];r.children=f}return{$$typeof:Zt,type:e.type,key:l,ref:u,props:r,_owner:i}};qd.createContext=function(e){return e={$$typeof:Bd,_currentValue:e,_currentValue2:e,_threadCount:0,Provider:null,Consumer:null,_defaultValue:null,_globalName:null},e.Provider={$$typeof:Qd,_context:e},e.Consumer=e};qd.createElement=Oa;qd.createFactory=function(e){var n=Oa.bind(null,e);return n.type=e,n};qd.createRef=function(){return{current:null}};qd.forwardRef=function(e){return{$$typeof:Wd,render:e}};qd.isValidElement=Wu;qd.lazy=function(e){return{$$typeof:Xd,_payload:{_status:-1,_result:e},_init:Gd}};qd.memo=function(e,n){return{$$typeof:Ad,type:e,compare:n===void 0?null:n}};qd.startTransition=function(e){var n=ol.transition;ol.transition={};try{e()}finally{ol.transition=n}};qd.unstable_act=La;qd.useCallback=function(e,n){return de.current.useCallback(e,n)};qd.useContext=function(e){return de.current.useContext(e)};qd.useDebugValue=function(){};qd.useDeferredValue=function(e){return de.current.useDeferredValue(e)};qd.useEffect=function(e,n){return de.current.useEffect(e,n)};qd.useId=function(){return de.current.useId()};qd.useImperativeHandle=function(e,n,t){return de.current.useImperativeHandle(e,n,t)};qd.useInsertionEffect=function(e,n){return de.current.useInsertionEffect(e,n)};qd.useLayoutEffect=function(e,n){return de.current.useLayoutEffect(e,n)};qd.useMemo=function(e,n){return de.current.useMemo(e,n)};qd.useReducer=function(e,n,t){return de.current.useReducer(e,n,t)};qd.useRef=function(e){return de.current.useRef(e)};qd.useState=function(e){return de.current.useState(e)};qd.useSyncExternalStore=function(e,n,t){return de.current.useSyncExternalStore(e,n,t)};qd.useTransition=function(){return de.current.useTransition()};qd.version="18.3.1"});var Qa=ll((Mp)=>{function Au(e,n){var t=e.length;e.push(n);e:for(;0<t;){var r=t-1>>>1,l=e[r];if(0<al(l,n))e[r]=n,e[t]=l,t=r;else break e}}function Qe(e){return e.length===0?null:e[0]}function dl(e){if(e.length===0)return null;var n=e[0],t=e.pop();if(t!==n){e[0]=t;e:for(var r=0,l=e.length,u=l>>>1;r<u;){var i=2*(r+1)-1,f=e[i],a=i+1,p=e[a];if(0>al(f,t))a<l&&0>al(p,f)?(e[r]=p,e[a]=t,r=a):(e[r]=f,e[i]=t,r=i);else if(a<l&&0>al(p,t))e[r]=p,e[a]=t,r=a;else break e}}return n}function al(e,n){var t=e.sortIndex-n.sortIndex;return t!==0?t:e.id-n.id}if(typeof performance==="object"&&typeof performance.now==="function")Xu=performance,Mp.unstable_now=function(){return Xu.now()};else fl=Date,Ku=fl.now(),Mp.unstable_now=function(){return fl.now()-Ku};var Xu,fl,Ku,Ge=[],sn=[],Rp=1,Oe=null,ie=3,pl=!1,Hn=!1,Gt=!1,Ma=typeof setTimeout==="function"?setTimeout:null,Va=typeof clearTimeout==="function"?clearTimeout:null,Ra=typeof setImmediate<"u"?setImmediate:null;typeof navigator<"u"&&navigator.scheduling!==void 0&&navigator.scheduling.isInputPending!==void 0&&navigator.scheduling.isInputPending.bind(navigator.scheduling);function Zu(e){for(var n=Qe(sn);n!==null;){if(n.callback===null)dl(sn);else if(n.startTime<=e)dl(sn),n.sortIndex=n.expirationTime,Au(Ge,n);else break;n=Qe(sn)}}function Gu(e){if(Gt=!1,Zu(e),!Hn)if(Qe(Ge)!==null)Hn=!0,qu(Ju);else{var n=Qe(sn);n!==null&&xu(Gu,n.startTime-e)}}function Ju(e,n){Hn=!1,Gt&&(Gt=!1,Va(Jt),Jt=-1),pl=!0;var t=ie;try{Zu(n);for(Oe=Qe(Ge);Oe!==null&&(!(Oe.expirationTime>n)||e&&!Ha());){var r=Oe.callback;if(typeof r==="function"){Oe.callback=null,ie=Oe.priorityLevel;var l=r(Oe.expirationTime<=n);n=Mp.unstable_now(),typeof l==="function"?Oe.callback=l:Oe===Qe(Ge)&&dl(Ge),Zu(n)}else dl(Ge);Oe=Qe(Ge)}if(Oe!==null)var u=!0;else{var i=Qe(sn);i!==null&&xu(Gu,i.startTime-n),u=!1}return u}finally{Oe=null,ie=t,pl=!1}}var yl=!1,cl=null,Jt=-1,Ia=5,$a=-1;function Ha(){return Mp.unstable_now()-$a<Ia?!1:!0}function Uu(){if(cl!==null){var e=Mp.unstable_now();$a=e;var n=!0;try{n=cl(!0,e)}finally{n?Yt():(yl=!1,cl=null)}}else yl=!1}var Yt;if(typeof Ra==="function")Yt=function(){Ra(Uu)};else if(typeof MessageChannel<"u")sl=new MessageChannel,Yu=sl.port2,sl.port1.onmessage=Uu,Yt=function(){Yu.postMessage(null)};else Yt=function(){Ma(Uu,0)};var sl,Yu;function qu(e){cl=e,yl||(yl=!0,Yt())}function xu(e,n){Jt=Ma(function(){e(Mp.unstable_now())},n)}Mp.unstable_IdlePriority=5;Mp.unstable_ImmediatePriority=1;Mp.unstable_LowPriority=4;Mp.unstable_NormalPriority=3;Mp.unstable_Profiling=null;Mp.unstable_UserBlockingPriority=2;Mp.unstable_cancelCallback=function(e){e.callback=null};Mp.unstable_continueExecution=function(){Hn||pl||(Hn=!0,qu(Ju))};Mp.unstable_forceFrameRate=function(e){0>e||125<e?console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"):Ia=0<e?Math.floor(1000/e):5};Mp.unstable_getCurrentPriorityLevel=function(){return ie};Mp.unstable_getFirstCallbackNode=function(){return Qe(Ge)};Mp.unstable_next=function(e){switch(ie){case 1:case 2:case 3:var n=3;break;default:n=ie}var t=ie;ie=n;try{return e()}finally{ie=t}};Mp.unstable_pauseExecution=function(){};Mp.unstable_requestPaint=function(){};Mp.unstable_runWithPriority=function(e,n){switch(e){case 1:case 2:case 3:case 4:case 5:break;default:e=3}var t=ie;ie=e;try{return n()}finally{ie=t}};Mp.unstable_scheduleCallback=function(e,n,t){var r=Mp.unstable_now();switch(typeof t==="object"&&t!==null?(t=t.delay,t=typeof t==="number"&&0<t?r+t:r):t=r,e){case 1:var l=-1;break;case 2:l=250;break;case 5:l=1073741823;break;case 4:l=1e4;break;default:l=5000}return l=t+l,e={id:Rp++,callback:n,priorityLevel:e,startTime:t,expirationTime:l,sortIndex:-1},t>r?(e.sortIndex=t,Au(sn,e),Qe(Ge)===null&&e===Qe(sn)&&(Gt?(Va(Jt),Jt=-1):Gt=!0,xu(Gu,t-r))):(e.sortIndex=l,Au(Ge,e),Hn||pl||(Hn=!0,qu(Ju))),e};Mp.unstable_shouldYield=Ha;Mp.unstable_wrapCallback=function(e){var n=ie;return function(){var t=ie;ie=n;try{return e.apply(this,arguments)}finally{ie=t}}}});var la={};Rd(la,{version:()=>ed,unstable_renderSubtreeIntoContainer:()=>bs,unstable_batchedUpdates:()=>js,unmountComponentAtNode:()=>xs,render:()=>qs,hydrateRoot:()=>Js,hydrate:()=>Gs,flushSync:()=>Ys,findDOMNode:()=>Zs,createRoot:()=>Ks,createPortal:()=>Xs,__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:()=>As});function E(e){for(var n="https://reactjs.org/docs/error-decoder.html?invariant="+e,t=1;t<arguments.length;t++)n+="&args[]="+encodeURIComponent(arguments[t]);return"Minified React error #"+e+"; visit "+n+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function jn(e,n){Ft(e,n),Ft(e+"Capture",n)}function Ft(e,n){Sr[e]=n;for(e=0;e<n.length;e++)Zf.add(n[e])}function e0(e){if(ki.call(Wa,e))return!0;if(ki.call(Ba,e))return!1;if(bp.test(e))return Wa[e]=!0;return Ba[e]=!0,!1}function n0(e,n,t,r){if(t!==null&&t.type===0)return!1;switch(typeof n){case"function":case"symbol":return!0;case"boolean":if(r)return!1;if(t!==null)return!t.acceptsBooleans;return e=e.toLowerCase().slice(0,5),e!=="data-"&&e!=="aria-";default:return!1}}function t0(e,n,t,r){if(n===null||typeof n>"u"||n0(e,n,t,r))return!0;if(r)return!1;if(t!==null)switch(t.type){case 3:return!n;case 4:return n===!1;case 5:return isNaN(n);case 6:return isNaN(n)||1>n}return!1}function he(e,n,t,r,l,u,i){this.acceptsBooleans=n===2||n===3||n===4,this.attributeName=r,this.attributeNamespace=l,this.mustUseProperty=t,this.propertyName=e,this.type=n,this.sanitizeURL=u,this.removeEmptyString=i}function ho(e){return e[1].toUpperCase()}function vo(e,n,t,r){var l=ue.hasOwnProperty(n)?ue[n]:null;if(l!==null?l.type!==0:r||!(2<n.length)||n[0]!=="o"&&n[0]!=="O"||n[1]!=="n"&&n[1]!=="N")t0(n,t,l,r)&&(t=null),r||l===null?e0(n)&&(t===null?e.removeAttribute(n):e.setAttribute(n,""+t)):l.mustUseProperty?e[l.propertyName]=t===null?l.type===3?!1:"":t:(n=l.attributeName,r=l.attributeNamespace,t===null?e.removeAttribute(n):(l=l.type,t=l===3||l===4&&t===!0?"":""+t,r?e.setAttributeNS(r,n,t):e.setAttribute(n,t)))}function qt(e){if(e===null||typeof e!=="object")return null;return e=Ua&&e[Ua]||e["@@iterator"],typeof e==="function"?e:null}function rr(e){if(ju===void 0)try{throw Error()}catch(t){var n=t.stack.trim().match(/\n( *(at )?)/);ju=n&&n[1]||""}return`
 `+ju+e}function ei(e,n){if(!e||bu)return"";bu=!0;var t=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{if(n)if(n=function(){throw Error()},Object.defineProperty(n.prototype,"props",{set:function(){throw Error()}}),typeof Reflect==="object"&&Reflect.construct){try{Reflect.construct(n,[])}catch(p){var r=p}Reflect.construct(e,[],n)}else{try{n.call()}catch(p){r=p}e.call(n.prototype)}else{try{throw Error()}catch(p){r=p}e()}}catch(p){if(p&&r&&typeof p.stack==="string"){for(var l=p.stack.split(`
 `),u=r.stack.split(`
