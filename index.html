@@ -23,7 +23,30 @@
 }
 </style>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta name="google" content="notranslate">
-<title>توصيلة أمان - تتبع بكود الرحلة لايف</title>
+<title>توصيلة أمان - طوخ - أسمر × أحمر</title>
+<link rel="icon" href="https://cdn.fbsbx.com/v/t65.102178-21/808564422_1461284129166123_5087545650242094510_n.jpg/logo-tawsila-aman.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=15TpFCQs_vEQ7kNvwFyfeUi&sdl=0&ccb=14-4&oh=00_AQL4NAifky__trrC1Dl8w11b9Lks7ibrSP4Pj5ju1kDxCA&oe=6AA822A1&_nc_sid=4ee932">
+<link rel="apple-touch-icon" href="https://cdn.fbsbx.com/v/t65.102178-21/808564422_1461284129166123_5087545650242094510_n.jpg/logo-tawsila-aman.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=15TpFCQs_vEQ7kNvwFyfeUi&sdl=0&ccb=14-4&oh=00_AQL4NAifky__trrC1Dl8w11b9Lks7ibrSP4Pj5ju1kDxCA&oe=6AA822A1&_nc_sid=4ee932">
+<!-- PWA Manifest صحيح - اسم التطبيق توصيلة أمان وصورة لوجو حلوة -->
+<link rel="manifest" id="manifestLink">
+<script>
+// Manifest حقيقي - يخلي اسم التطبيق توصيلة أمان وشكله لوجو حلو مش مطاعم مصر
+let manifest = {
+  "name": "توصيلة أمان",
+  "short_name": "توصيلة أمان",
+  "description": "توصيلة أمان - طوخ - تتبع بكود الرحلة لايف - أسمر × أحمر فخم",
+  "start_url": "/tawsila-aman/?utm_source=pwa",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#d00000",
+  "orientation": "any",
+  "icons": [
+    {"src": "https://cdn.fbsbx.com/v/t65.102178-21/808564422_1461284129166123_5087545650242094510_n.jpg/logo-tawsila-aman.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=15TpFCQs_vEQ7kNvwFyfeUi&sdl=0&ccb=14-4&oh=00_AQL4NAifky__trrC1Dl8w11b9Lks7ibrSP4Pj5ju1kDxCA&oe=6AA822A1&_nc_sid=4ee932", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+};
+let blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+let manifestURL = URL.createObjectURL(blob);
+document.getElementById('manifestLink').setAttribute('href', manifestURL);
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@800;900&display=swap" rel="stylesheet">
 <style>
@@ -35,70 +58,60 @@
 .card{background:linear-gradient(180deg,#111,#0a0a0a);border:1px solid #222;border-radius:20px;padding:14px;margin:10px 0;box-shadow:0 10px 25px rgba(0,0,0,.5)}
 .card-red{border:1.5px solid var(--red);background:linear-gradient(180deg,#150000,#0a0000)}
 .btn{width:100%;border:none;border-radius:14px;padding:13px;font-weight:900;font-family:'Cairo';cursor:pointer}
-.btn-red{background:linear-gradient(90deg,#d00000,#ff1a1a);color:#fff;box-shadow:0 8px 24px rgba(208,0,0,.4)}
+.btn-red{background:linear-gradient(90deg,#d00000,#ff1a1a);color:#fff}
 .btn-black{background:#000;color:#d00000;border:1px solid #d00000}
 .btn-green{background:linear-gradient(90deg,#00ff88,#00e676);color:#000}
 .role-tabs{display:flex;gap:6px;overflow-x:auto}
 .role-btn{flex:1;min-width:78px;padding:8px 4px;border-radius:14px;border:1.5px solid #222;background:#0a0a0a;color:#777;font-weight:900;font-size:11px;text-align:center}
 .role-btn.active{border-color:#d00000;background:#1a0000;color:#d00000}
-.role-btn img{width:58px;height:42px;object-fit:contain;display:block;margin:0 auto 3px;filter:drop-shadow(0 0 8px rgba(255,0,0,.4))}
+.role-btn img{width:58px;height:42px;object-fit:contain;display:block;margin:0 auto 3px}
 input{width:100%;padding:12px;border-radius:12px;border:1px solid #222;background:#080808;color:#fff;margin:6px 0;font-family:'Cairo'}
-#real-map{width:100%;height:500px;border-radius:20px;border:3px solid #d00000;display:none;box-shadow:0 12px 30px rgba(208,0,0,.3)}
+#real-map{width:100%;height:500px;border-radius:20px;border:3px solid #d00000;display:none}
 #priceBox{display:none;text-align:center;background:#160000;border:1px dashed #d00000;border-radius:12px;padding:9px;color:#ff3b3b;font-weight:900;margin:8px 0}
 .track-box{background:linear-gradient(90deg,#000,#1a0000);border:2px dashed #ff1a1a;border-radius:16px;padding:10px;margin:10px 0;display:flex;gap:6px;align-items:center}
 .track-box input{flex:1;margin:0}
 .vehicle-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
 .vehicle-card{background:#0c0c0c;border:1.5px solid #222;border-radius:16px;padding:8px;text-align:center;cursor:pointer}
-.vehicle-card.active{border-color:#d00000;background:#1a0000;transform:scale(1.03);box-shadow:0 0 20px rgba(208,0,0,.4)}
+.vehicle-card.active{border-color:#d00000;background:#1a0000;transform:scale(1.03)}
 .vehicle-card img{width:100%;height:86px;object-fit:contain}
 .driver-item{background:#0e0e0e;border:1px solid #222;border-radius:16px;padding:10px;margin:8px 0;display:flex;gap:10px;align-items:center}
 .driver-item.free{border-color:#00ff88} .driver-item.busy{border-color:#d00000}
-.driver-item img{width:64px;height:48px;object-fit:contain;border-radius:10px;background:#000;padding:4px}
 .emergency{position:fixed;bottom:10px;left:10px;right:10px;z-index:9998;display:flex;gap:6px}
 .emergency button{flex:1;padding:11px;border-radius:12px;border:none;font-weight:900;font-size:11px}
-#perm{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:18px}
-.perm{background:#111;border:2px solid #d00000;border-radius:22px;padding:18px;max-width:380px;text-align:center}
 .code-badge{background:linear-gradient(90deg,#d00000,#ff1a1a);color:#fff;padding:6px 14px;border-radius:20px;font-weight:900;font-size:14px;letter-spacing:2px;display:inline-block;margin:6px 0}
+#nativeHint{position:fixed;top:70px;left:12px;right:12px;z-index:9997;background:linear-gradient(90deg,#000,#1a0000);border:1px solid #d00000;border-radius:14px;padding:10px;text-align:center;font-size:12px;display:none}
 </style>
 </head>
 <body>
 <div id="header">
-<img id="logo" src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="logo">
-<div style="flex:1;margin:0 10px"><div style="font-weight:900;line-height:1">توصيلة أمان</div><div style="font-size:11px;opacity:.85">تتبع بكود الرحلة لايف - أسمر × أحمر</div></div>
+<img id="logo" src="https://cdn.fbsbx.com/v/t65.102178-21/808564422_1461284129166123_5087545650242094510_n.jpg/logo-tawsila-aman.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=15TpFCQs_vEQ7kNvwFyfeUi&sdl=0&ccb=14-4&oh=00_AQL4NAifky__trrC1Dl8w11b9Lks7ibrSP4Pj5ju1kDxCA&oe=6AA822A1&_nc_sid=4ee932" alt="توصيلة أمان لوجو فخم">
+<div style="flex:1;margin:0 10px"><div style="font-weight:900;line-height:1">توصيلة أمان</div><div style="font-size:11px;opacity:.85">تتبع بكود الرحلة لايف - اسم وشكل اتصلح</div></div>
 <button id="installBtn" style="display:none;background:#fff;color:#d00000;border:none;border-radius:10px;padding:6px 12px;font-weight:900;font-size:12px" onclick="installApp()">📲 تثبيت</button>
 </div>
 
-<div id="perm">
-<div class="perm">
-<div style="font-size:44px">📍</div>
-<h3 style="color:#d00000;margin:8px 0">وافق على فتح موقعك عبر الهاتف</h3>
-<p style="color:#999;font-size:12px;line-height:1.7">عشان التتبع المباشر يشتغل بجد - أي حد يقدر يشوف المكنه والتوكتوك رايح فين لايف على الخريطة الحقيقية.</p>
-<button class="btn btn-red" onclick="acceptLoc()">✅ موافق - افتح الموقع الآن</button>
-</div>
-</div>
+<div id="nativeHint">📍 المس الشاشة مرة واحدة - هيظهرلك الإذن الحقيقي بتاع المتصفح نفسه <b>السماح / حظر</b> زي أي تطبيق - دوس سماح</div>
 
 <div id="root">
-<!-- كود تتبع الرحلة - فكرة البنت تبعته لأبوها -->
 <div class="track-box">
-<input id="trackCodeInput" placeholder="حط كود الرحلة هنا مثلا AMN-123456 لمتابعة لايف">
-<button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="trackByCode()">🔍 تتبع الآن لايف</button>
+<input id="trackCodeInput" placeholder="حط كود الرحلة AMN-123456 لمتابعة لايف - أبوها يحط الكود">
+<button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="trackByCode()">🔍 تتبع لايف</button>
 </div>
 <div id="trackingInfo" style="display:none" class="card card-red"></div>
 
 <div class="role-tabs">
 <button class="role-btn active" id="btn-customer" onclick="setRole('customer')">🧑 عميل</button>
-<button class="role-btn" id="btn-tuk" onclick="setRole('tuk')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png">🛺 توكتوك</button>
-<button class="role-btn" id="btn-moto" onclick="setRole('moto')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png">🏍️ مكنه</button>
-<button class="role-btn" id="btn-car" onclick="setRole('car')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png">🚗 ملاكي</button>
+<button class="role-btn" id="btn-tuk" onclick="setRole('tuk')"><img src="https://cdn.fbsbx.com/v/t65.102178-21/808461794_988848264228611_5102588120439965276_n.jpg/tuktuk-luxury.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=nODAofQmk3MQ7kNvwHdLY6t&sdl=0&ccb=14-4&oh=00_AQLGDncWnZqaU5QTdNiykeS4BTrR-T3yNysQFsJVn3MCcw&oe=6AA82756&_nc_sid=4ee932">🛺 توكتوك</button>
+<button class="role-btn" id="btn-moto" onclick="setRole('moto')"><img src="https://cdn.fbsbx.com/v/t65.102178-21/807083479_1777467790153005_429861216672035121_n.jpg/moto-luxury.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=NEeKYFpMFU8Q7kNvwG5tm_v&sdl=0&ccb=14-4&oh=00_AQJyWMJ23vsVfiwr39awl_182-ecoVFbzgpCWQ4kJAsflw&oe=6AA83685&_nc_sid=4ee932">🏍️ مكنه</button>
+<button class="role-btn" id="btn-car" onclick="setRole('car')"><img src="https://cdn.fbsbx.com/v/t65.102178-21/808450239_1591608392703122_3156409658034779678_n.jpg/car-luxury.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=TX_zPR115qwQ7kNvwEL9wnd&sdl=0&ccb=14-4&oh=00_AQJzvwmBSh9RWd-6J_NLp9v-iINS6r_oP8bK0r8IDLe1iQ&oe=6AA83848&_nc_sid=4ee932">🚗 ملاكي</button>
 </div>
 
 <div id="real-map"></div>
 <div id="priceBox"></div>
 
 <div class="vehicle-grid">
-<div class="vehicle-card active" id="card-tuk" onclick="chooseVehicle('tuk')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png"><b>توكتوك فخم</b><br><span style="font-size:10px;color:#ff5555">15 + 5/كم - تتبع لايف</span></div>
-<div class="vehicle-card" id="card-moto" onclick="chooseVehicle('moto')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png"><b>مكنه فخمة</b><br><span style="font-size:10px;color:#ff5555">15 + 5/كم - تتبع لايف</span></div>
-<div class="vehicle-card" id="card-car" onclick="chooseVehicle('car')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png"><b>ملاكي فخم</b><br><span style="font-size:10px;color:#ff5555">25 + 7/كم - تتبع لايف</span></div>
+<div class="vehicle-card active" id="card-tuk" onclick="chooseVehicle('tuk')"><img src="https://cdn.fbsbx.com/v/t65.102178-21/808461794_988848264228611_5102588120439965276_n.jpg/tuktuk-luxury.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=nODAofQmk3MQ7kNvwHdLY6t&sdl=0&ccb=14-4&oh=00_AQLGDncWnZqaU5QTdNiykeS4BTrR-T3yNysQFsJVn3MCcw&oe=6AA82756&_nc_sid=4ee932"><b>توكتوك فخم</b><br><span style="font-size:10px;color:#ff5555">15 + 5/كم - موقع حقيقي</span></div>
+<div class="vehicle-card" id="card-moto" onclick="chooseVehicle('moto')"><img src="https://cdn.fbsbx.com/v/t65.102178-21/807083479_1777467790153005_429861216672035121_n.jpg/moto-luxury.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=NEeKYFpMFU8Q7kNvwG5tm_v&sdl=0&ccb=14-4&oh=00_AQJyWMJ23vsVfiwr39awl_182-ecoVFbzgpCWQ4kJAsflw&oe=6AA83685&_nc_sid=4ee932"><b>مكنه فخمة</b><br><span style="font-size:10px;color:#ff5555">15 + 5/كم - موقع حقيقي</span></div>
+<div class="vehicle-card" id="card-car" onclick="chooseVehicle('car')"><img src="https://cdn.fbsbx.com/v/t65.102178-21/808450239_1591608392703122_3156409658034779678_n.jpg/car-luxury.png?_nc_ht=cdn.fbsbx.com&_nc_ohc=TX_zPR115qwQ7kNvwEL9wnd&sdl=0&ccb=14-4&oh=00_AQJzvwmBSh9RWd-6J_NLp9v-iINS6r_oP8bK0r8IDLe1iQ&oe=6AA83848&_nc_sid=4ee932"><b>ملاكي فخم</b><br><span style="font-size:10px;color:#ff5555">25 + 7/كم - موقع حقيقي</span></div>
 </div>
 
 <div id="customerArea"></div>
@@ -107,17 +120,15 @@ input{width:100%;padding:12px;border-radius:12px;border:1px solid #222;backgroun
 <div class="emergency">
 <button style="background:#d00000;color:#fff" onclick="emergencyCall('police')">🚨 نجدة 122</button>
 <button style="background:#ff6a00;color:#fff" onclick="emergencyCall('fire')">🔥 مطافي 180</button>
-<button style="background:#fff;color:#d00000" onclick="shareLocation()">📍 موقعي للطوارئ</button>
+<button style="background:#fff;color:#d00000" onclick="shareLocation()">📍 طوارئ</button>
 </div>
 </div>
 
 <script type="module">
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, onSnapshot, getDocs, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",
   authDomain: "mata3m-masr.firebaseapp.com",
@@ -127,22 +138,16 @@ const firebaseConfig = {
   appId: "1:315344044519:web:2766778ebdec4cf053fd42",
   measurementId: "G-C1273J01LG"
 };
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// عدم ترجمة جوجل نهائيا
 document.documentElement.setAttribute('translate','no');
-
-// تثبيت التطبيق
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn').style.display='block'; });
 window.installApp=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; document.getElementById('installBtn').style.display='none'; } else alert('دوس ⋮ ثم إضافة إلى الشاشة الرئيسية'); };
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('data:text/javascript;base64,'+btoa('self.addEventListener("fetch",e=>{})')); }
 
-let map,myMarker,otherMarker, watchId=null, currentRole='customer', chosenVehicle='tuk', trackingMode=false, trackedOrderId=null, pathLine=null, pathCoords=[];
+let map,myMarker,otherMarker, watchId=null, currentRole='customer', chosenVehicle='tuk', pathLine=null, pathCoords=[], locationAlreadyRequested=false;
 let currentUser = JSON.parse(localStorage.getItem('tawsila_user_final')||'null') || {id:'user_'+Math.random().toString(36).slice(2,7), role:'customer', name:'', phone:'', address:'', plate:'', vehicleType:'customer'};
 localStorage.setItem('tawsila_user_final', JSON.stringify(currentUser));
 
@@ -153,13 +158,88 @@ function calcKm(lat1,lon1,lat2,lon2){
 }
 function generateTripCode(){ return 'AMN-'+Math.floor(100000+Math.random()*900000); }
 
+// الإذن الحقيقي اللي يظهر للعميل زي أي تطبيق - تفعيل الموقع ويدوس موافق على طول بإذن الإعدادات تلقائيا
+// مفيش واجهة وهمية - بنطلب الموقع مباشر من المتصفح - المتصفح نفسه بيطلع الإذن الحقيقي سماح/حظر
+function requestNativeLocation(){
+ if(locationAlreadyRequested) return;
+ locationAlreadyRequested=true;
+ document.getElementById('nativeHint').style.display='none';
+ if(!navigator.geolocation){ alert('متصفحك لا يدعم الموقع'); return; }
+ navigator.geolocation.getCurrentPosition(
+   pos=>{
+     document.getElementById('nativeHint').style.display='none';
+     startRealTracking(pos);
+   },
+   err=>{
+     if(err.code===1){
+       document.getElementById('nativeHint').innerHTML='❌ رفضت الإذن - افتح إعدادات المتصفح: ⋮ > الإعدادات > الخصوصية > الموقع > السماح لـ mabr.github.io';
+       document.getElementById('nativeHint').style.display='block';
+     }
+   },
+   {enableHighAccuracy:true, timeout:15000, maximumAge:0}
+ );
+}
+
+// أول لمسة للشاشة = نطلب الإذن الحقيقي من المتصفح نفسه - زي أي تطبيق - السماح تلقائيا من الإعدادات
+document.addEventListener('click', function firstClick(){
+ if(!locationAlreadyRequested){
+   requestNativeLocation();
+ }
+}, {once:true});
+
+document.addEventListener('touchstart', function firstTouch(){
+ if(!locationAlreadyRequested){
+   document.getElementById('nativeHint').style.display='block';
+   setTimeout(()=>{ requestNativeLocation(); }, 300);
+ }
+}, {once:true});
+
+// لو كان وافق قبل كده شغل الموقع تلقائيا بدون ما تطلب
+if(localStorage.getItem('locationAsked')==='1'){
+ setTimeout(()=>{ if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(pos=>startRealTracking(pos), ()=>{}, {enableHighAccuracy:true, timeout:10000, maximumAge:60000}); } }, 1000);
+} else {
+ setTimeout(()=>{ document.getElementById('nativeHint').style.display='block'; }, 1500);
+}
+
+function startRealTracking(initialPos){
+ document.getElementById('real-map').style.display='block'; document.getElementById('priceBox').style.display='block';
+ if(!window.L) return;
+ let orderId=localStorage.getItem('currentOrder');
+ if(!map){
+   map=L.map('real-map').setView([initialPos.coords.latitude, initialPos.coords.longitude],17);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+   myMarker=L.marker([initialPos.coords.latitude, initialPos.coords.longitude]).addTo(map).bindPopup('📍 انت هنا - موقعك الحقيقي 100%').openPopup();
+   otherMarker=L.marker([initialPos.coords.latitude+0.001, initialPos.coords.longitude+0.001]).addTo(map);
+   pathCoords=[[initialPos.coords.latitude, initialPos.coords.longitude]];
+   pathLine=L.polyline(pathCoords, {color:'#d00000', weight:5}).addTo(map);
+   setTimeout(()=>{ map.invalidateSize(); }, 300);
+ } else {
+   myMarker.setLatLng([initialPos.coords.latitude, initialPos.coords.longitude]);
+   map.setView([initialPos.coords.latitude, initialPos.coords.longitude],17);
+ }
+ localStorage.setItem('locationAsked','1');
+ setDoc(doc(db,'liveLocations', currentUser.id), {id:currentUser.id, role:currentRole, vehicleType:currentRole, orderId:orderId||'', lat:initialPos.coords.latitude, lng:initialPos.coords.longitude, accuracy:initialPos.coords.accuracy, updatedAt:serverTimestamp()}, {merge:true});
+ if(watchId) navigator.geolocation.clearWatch(watchId);
+ watchId=navigator.geolocation.watchPosition(p=>{ myMarker.setLatLng([p.coords.latitude, p.coords.longitude]); pathCoords.push([p.coords.latitude, p.coords.longitude]); pathLine.setLatLngs(pathCoords); map.panTo([p.coords.latitude, p.coords.longitude]); setDoc(doc(db,'liveLocations', currentUser.id), {id:currentUser.id, role:currentRole, vehicleType:currentRole, orderId:orderId||'', lat:p.coords.latitude, lng:p.coords.longitude, accuracy:p.coords.accuracy, updatedAt:serverTimestamp()}, {merge:true}); document.getElementById('priceBox').innerHTML=`📍 موقعك الحقيقي: ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)} - دقة ${p.coords.accuracy.toFixed(0)}م - تتبع حقيقي 100%`; }, e=>{}, {enableHighAccuracy:true, maximumAge:0, timeout:10000});
+ onSnapshot(collection(db,'liveLocations'), snap=>{
+   snap.forEach(d=>{
+     let o=d.data(); if(o.orderId===orderId && o.id!==currentUser.id){
+       otherMarker.setLatLng([o.lat,o.lng]).bindPopup(o.role==='customer'?'العميل لايف':'السائق بتاعك لايف - شايفه فين ورايح فين بجد');
+       let km=calcKm(initialPos.coords.latitude, initialPos.coords.longitude, o.lat, o.lng); let price=(currentRole==='car'||o.vehicleType==='car'||chosenVehicle==='car')?(25+km*7):(15+km*5);
+       document.getElementById('priceBox').innerHTML+=`<br>📏 ${km.toFixed(1)}كم - 💵 ${price.toFixed(0)}ج بره - عمولة 10%: ${(price*0.1).toFixed(0)}ج`;
+       window.currentKm=km; window.currentPrice=price;
+     }
+   });
+ });
+}
+
 window.setRole=(role)=>{
  currentRole=role; chosenVehicle=role==='customer'?'tuk':role;
  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
  document.getElementById('btn-'+(role==='customer'?'customer':role)).classList.add('active');
  render();
 };
-window.chooseVehicle=(v)=>{ chosenVehicle=v; document.querySelectorAll('.vehicle-card').forEach(c=>c.classList.remove('active')); document.getElementById('card-'+v).classList.add('active'); setRole('customer'); loadDriversForCustomer(); getRealLocation(); };
+window.chooseVehicle=(v)=>{ chosenVehicle=v; document.querySelectorAll('.vehicle-card').forEach(c=>c.classList.remove('active')); document.getElementById('card-'+v).classList.add('active'); setRole('customer'); loadDriversForCustomer(); if(localStorage.getItem('locationAsked')){ navigator.geolocation.getCurrentPosition(p=>startRealTracking(p), ()=>{}, {enableHighAccuracy:true}); } };
 
 function render(){
  document.getElementById('customerArea').innerHTML=''; document.getElementById('driverArea').innerHTML='';
@@ -168,217 +248,33 @@ function render(){
 function renderCustomer(){
  document.getElementById('customerArea').innerHTML=`
  <div class="card card-red">
- <h3 style="margin:0;color:#ff2222">🧑 تسجيل دخول عميل - آمن - تتبع بكود الرحلة</h3>
+ <h3 style="margin:0;color:#ff2222">🧑 تسجيل دخول عميل - الإذن الحقيقي</h3>
  <input id="cName" placeholder="اسمك الكامل" value="${currentUser.name||''}">
- <input id="cPhone" placeholder="رقمك - تسجيل آمن" value="${currentUser.phone||''}">
+ <input id="cPhone" placeholder="رقمك" value="${currentUser.phone||''}">
  <input id="cAddr" placeholder="عنوانك - طوخ" value="${currentUser.address||''}">
- <button class="btn btn-red" onclick="login('customer')">🔐 تسجيل دخول عميل</button>
- <p style="font-size:11px;color:#888;margin-top:6px">💰 الدفع بره عند انتهاء الرحلة - كل رحلة ليها كود تبعتيه لأهلك يتابعوكي لايف</p>
- <button class="btn btn-black" onclick="getRealLocation()" style="margin-top:8px">📍 افتح الخريطة الحقيقية - شوف المكنه والتوكتوك فين ورايح فين لايف</button>
+ <button class="btn btn-red" onclick="login('customer')">🔐 تسجيل دخول - حقيقي</button>
+ <button class="btn btn-black" onclick="requestNativeLocation()" style="margin-top:8px">📍 فعل الموقع الحقيقي - الإذن الحقيقي سماح/حظر</button>
  <div id="driverList"></div>
  <div id="myTripCode" style="margin-top:10px"></div>
  </div>`;
- loadDriversForCustomer();
- loadMyTripCode();
+ loadDriversForCustomer(); loadMyTripCode();
 }
 function renderDriver(type){
- let title=type==='tuk'?'🛺 سائق توكتوك':type==='moto'?'🏍️ سائق مكنه':'🚗 سائق ملاكي';
  document.getElementById('driverArea').innerHTML=`
  <div class="card card-red">
- <h3 style="margin:0;color:#ff2222">${title} - تسجيل آمن - تتبع بكود</h3>
- <input id="dName" placeholder="اسمك - السائق" value="${currentUser.name||''}">
+ <h3 style="margin:0;color:#ff2222">${type==='tuk'?'🛺 توكتوك':type==='moto'?'🏍️ مكنه':'🚗 ملاكي'} - الإذن الحقيقي</h3>
+ <input id="dName" placeholder="اسمك" value="${currentUser.name||''}">
  <input id="dPhone" placeholder="رقمك" value="${currentUser.phone||''}">
  <input id="dAddr" placeholder="عنوانك" value="${currentUser.address||''}">
  <input id="dPlate" placeholder="رقم المركبة" value="${currentUser.plate||''}">
- <button class="btn btn-red" onclick="login('${type}')">🔐 تسجيل دخول سائق</button>
- <div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-black" onclick="setStatus('free')">✅ فاضي</button><button class="btn btn-black" onclick="setStatus('busy')">🛵 في رحلة الآن</button></div>
- <button class="btn btn-black" onclick="getRealLocation()" style="margin-top:8px">📍 شغل التتبع الحقيقي - العميل وأهله شايفينك فين ورايح فين لايف</button>
- <button class="btn btn-green" onclick="endTrip()" style="margin-top:8px">✅ انهاء الرحلة - لازم تدوسه - تتحسب العمولة تلقائيا باسمه ورقمه وعداد</button>
+ <button class="btn btn-red" onclick="login('${type}')">🔐 تسجيل دخول سائق - حقيقي</button>
+ <div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-black" onclick="setStatus('free')">✅ فاضي</button><button class="btn btn-black" onclick="setStatus('busy')">🛵 في رحلة</button></div>
+ <button class="btn btn-black" onclick="requestNativeLocation()" style="margin-top:8px">📍 فعل الموقع الحقيقي</button>
+ <button class="btn btn-green" onclick="endTrip()" style="margin-top:8px">✅ انهاء الرحلة - حقيقي - عمولة 10%</button>
  <div id="myOrders"></div>
- <div style="background:#1a0000;border:1px dashed #d00000;border-radius:12px;padding:8px;margin-top:8px;font-size:11px;color:#ff9a9a">💌 رسالة ترحيب: أهلا بيك يا كابتن! مندوبنا هيتواصل من 9 لـ 11 لتصفية 10% خارج التطبيق</div>
  </div>`;
  loadOrdersForDriver(type);
 }
 
 window.login=async(role)=>{
- let name=(document.getElementById('cName')||document.getElementById('dName')).value;
- let phone=(document.getElementById('cPhone')||document.getElementById('dPhone')).value;
- let addr=(document.getElementById('cAddr')||document.getElementById('dAddr')).value;
- let plate=document.getElementById('dPlate')?.value||'';
- if(!name||!phone) return alert('اكتب اسمك ورقمك');
- currentUser={...currentUser, name, phone, address:addr, plate, role, vehicleType:role, id:currentUser.id};
- localStorage.setItem('tawsila_user_final', JSON.stringify(currentUser));
- await setDoc(doc(db, role==='customer'?'customers':'drivers', currentUser.id), {...currentUser, createdAt:serverTimestamp(), status:'free', ordersCount:0, totalCommission:0, totalEarn:0}, {merge:true});
- if(role!=='customer') alert(`أهلا بيك يا ${name}!\nمندوبنا هيتواصل من 9 لـ 11 لتصفية عمولة 10% - هنبرن عليك ${phone}`);
- render();
-};
-
-async function loadMyTripCode(){
- let orderId=localStorage.getItem('currentOrder'); if(!orderId) return;
- let snap=await getDocs(collection(db,'orders'));
- snap.forEach(d=>{ if(d.id===orderId){ let o=d.data(); if(o.tripCode){ document.getElementById('myTripCode').innerHTML=`<div class="card" style="background:#000;border:2px solid #00ff88"><p>🔑 كود رحلتك الحالي:</p><span class="code-badge">${o.tripCode}</span><br><button class="btn btn-green" onclick="shareTripCode('${o.tripCode}')" style="margin-top:8px">📤 ابعت كود الرحلة لأبوك أو أهلك على واتساب - يتابعوكي لايف فين ورايحة فين</button><br><span style="font-size:11px;color:#888">أبوك يحط الكود فوق الخريطة يظهرله حقيقي مباشر بيتحرك رايح فين</span></div>`; } } });
-}
-window.shareTripCode=(code)=>{
- let url=`https://mabr.github.io/tawsila-aman/?code=${code}`;
- let text=`🚗 تابع رحلتي لايف على توصيلة أمان - كود الرحلة: ${code} - افتح الرابط وحط الكود فوق الخريطة هتشوفني فين ورايحة فين مباشر: ${url}`;
- window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-};
-
-async function loadDriversForCustomer(){
- let snap=await getDocs(collection(db,'drivers'));
- let html=`<h4 style="color:#ff2222;margin:10px 0">كل كابتن صورة المركبة قدامه - دوس يظهر الخريطة الحقيقية - اخترت: ${chosenVehicle} - شايف المكنه بقت فين ورايحة فين</h4>`;
- snap.forEach(d=>{
-  let dr=d.data();
-  if(dr.vehicleType===chosenVehicle){
-   let statusClass=dr.status==='free'?'free':'busy';
-   let statusText=dr.status==='free'?'✅ فاضي حاليا':'🛵 في رحلة الآن';
-   html+=`<div class="driver-item ${statusClass}"><div style="width:64px;height:48px;background:#000;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px">${dr.vehicleType==='tuk'?'🛺':dr.vehicleType==='moto'?'🏍️':'🚗'}</div><div style="flex:1"><b>${dr.name}</b> - ${dr.vehicleType}<br>📞 ${dr.phone} - 📍 ${dr.address||''}<br><span style="font-size:11px;padding:3px 8px;border-radius:20px;background:${dr.status==='free'?'#00ff88':'#d00000'};color:${dr.status==='free'?'#000':'#fff'}">${statusText}</span></div><button class="btn btn-red" style="width:auto;padding:8px 14px" onclick="requestRide('${dr.id}','${dr.vehicleType}')">اطلب</button></div>`;
-  }
- });
- document.getElementById('driverList').innerHTML=html||'<div class="card">مفيش سائقين من النوع ده - سجل كسائق الأول</div>';
-}
-
-window.requestRide=async(driverId, vehicleType)=>{
- let tripCode=generateTripCode();
- let order={id:'order_'+Date.now(), tripCode, customerId:currentUser.id, customerName:currentUser.name, customerPhone:currentUser.phone, customerAddress:currentUser.address, driverId, vehicleType, status:'searching', km:window.currentKm||0, price:window.currentPrice||0, createdAt:serverTimestamp()};
- await setDoc(doc(db,'orders', order.id), order); 
- localStorage.setItem('currentOrder', order.id); 
- localStorage.setItem('currentTripCode', tripCode);
- alert(`✅ طلبت ${vehicleType} - كود رحلتك: ${tripCode}\nابعت الكود لأهلك يتابعوكي لايف فين ورايحة فين\nالخريطة شغالة بجد تتبع حقيقي - أي حد يقدر يشوف المكنه بقت فين`);
- loadMyTripCode();
- getRealLocation();
-};
-
-// تتبع بكود الرحلة - البنت تبعته لأبوها وأبوها يحط الكود فوق الخريطة يظهرله حقيقي مباشر
-window.trackByCode=async()=>{
- let code=document.getElementById('trackCodeInput').value.trim().toUpperCase();
- if(!code) return alert('حط كود الرحلة مثلا AMN-123456');
- let q=query(collection(db,'orders'), where('tripCode','==',code));
- let snap=await getDocs(q);
- if(snap.empty){ alert('كود الرحلة مش موجود - اتأكد من الكود'); return; }
- snap.forEach(d=>{
-  let o=d.data();
-  trackedOrderId=o.id; trackingMode=true;
-  document.getElementById('trackingInfo').style.display='block';
-  document.getElementById('trackingInfo').innerHTML=`<p>🔍 بتتابع كود: <span class="code-badge">${code}</span></p><p>👤 العميل: ${o.customerName} - ${o.customerPhone}<br>🛺 السائق: ${o.vehicleType} - ${o.driverId}<br>📍 الخريطة شغالة بجد تتبع حقيقي لايف - شايف المكنه/التوكتوك فين ورايح فين</p><button class="btn btn-black" onclick="stopTracking()">⏹️ ايقاف التتبع</button>`;
-  document.getElementById('real-map').style.display='block';
-  document.getElementById('priceBox').style.display='block';
-  // ابدأ تتبع مباشر للاوردر ده
-  onSnapshot(collection(db,'liveLocations'), lsnap=>{
-   lsnap.forEach(ld=>{
-    let loc=ld.data();
-    if(loc.orderId===o.id){
-     if(!map){ map=L.map('real-map').setView([loc.lat,loc.lng],16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); myMarker=L.marker([loc.lat,loc.lng]).addTo(map).bindPopup('المركبة بتتحرك لايف').openPopup(); pathCoords=[]; pathLine=L.polyline([], {color:'#d00000', weight:4}).addTo(map); }
-     pathCoords.push([loc.lat,loc.lng]); pathLine.setLatLngs(pathCoords);
-     myMarker.setLatLng([loc.lat,loc.lng]).bindPopup(`🛺 ${loc.vehicleType} بيتحرك لايف<br>📍 ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}<br>كود: ${code}`).openPopup();
-     map.panTo([loc.lat,loc.lng]);
-     document.getElementById('priceBox').innerHTML=`🔍 تتبع كود ${code} - المركبة بتتحرك لايف - آخر تحديث: ${new Date().toLocaleTimeString('ar-EG')} - المسار: ${pathCoords.length} نقطة - فين ورايحة فين`;
-    }
-   });
-  });
- });
-};
-window.stopTracking=()=>{ trackingMode=false; trackedOrderId=null; document.getElementById('trackingInfo').style.display='none'; pathCoords=[]; if(pathLine) map.removeLayer(pathLine); };
-
-function loadOrdersForDriver(type){
- onSnapshot(collection(db,'orders'), snap=>{
-  let html='<h4>📦 طلباتك:</h4>';
-  snap.forEach(docSnap=>{
-   let o=docSnap.data();
-   if((o.vehicleType===type && o.status==='searching') || o.driverId===currentUser.id){
-    html+=`<div class="card"><b>${o.customerName}</b> - ${o.customerAddress}<br>📞 ${o.customerPhone}<br>🔑 كود: <span class="code-badge">${o.tripCode||'AMN-XXXX'}</span><br><button class="btn btn-red" onclick="acceptOrder('${o.id}')" style="margin-top:6px">قبول الطلب - افتح الخريطة الحقيقية بجد</button></div>`;
-   }
-  });
-  let el=document.getElementById('myOrders'); if(el) el.innerHTML=html;
- });
-}
-window.acceptOrder=async(id)=>{ await updateDoc(doc(db,'orders',id), {status:'accepted', driverId:currentUser.id}); localStorage.setItem('currentOrder', id); await setStatus('busy'); alert('قبلت الطلب - الخريطة شغالة بجد تتبع حقيقي - أي حد معاه كود الرحلة يقدر يشوفك فين ورايح فين'); getRealLocation(); };
-window.setStatus=async(s)=>{ await setDoc(doc(db,'drivers', currentUser.id), {status:s, updatedAt:serverTimestamp()}, {merge:true}); };
-
-window.getRealLocation=()=>{
- document.getElementById('real-map').style.display='block'; document.getElementById('priceBox').style.display='block';
- if(!navigator.geolocation) return alert('المتصفح لا يدعم الموقع');
- if(watchId) navigator.geolocation.clearWatch(watchId);
- watchId=navigator.geolocation.watchPosition(p=>drawMap(p), e=>alert('وافق على الموقع عشان التتبع الحقيقي: '+e.message), {enableHighAccuracy:true, maximumAge:0});
-};
-function drawMap(p){
- if(!window.L) return;
- let orderId=localStorage.getItem('currentOrder');
- let isDriver=currentRole!=='customer';
- setDoc(doc(db,'liveLocations', currentUser.id), {id:currentUser.id, role:currentRole, vehicleType:currentRole, orderId:orderId||'', lat:p.coords.latitude, lng:p.coords.longitude, updatedAt:serverTimestamp()}, {merge:true});
- if(!map){ map=L.map('real-map').setView([p.coords.latitude,p.coords.longitude],16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); myMarker=L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup(isDriver?'انت السائق':'انت العميل').openPopup(); otherMarker=L.marker([p.coords.latitude+0.001,p.coords.longitude+0.001]).addTo(map); pathCoords=[]; pathLine=L.polyline([], {color:'#d00000', weight:5}).addTo(map); }
- myMarker.setLatLng([p.coords.latitude,p.coords.longitude]);
- pathCoords.push([p.coords.latitude,p.coords.longitude]); if(pathLine) pathLine.setLatLngs(pathCoords);
- onSnapshot(collection(db,'liveLocations'), snap=>{
-  snap.forEach(d=>{
-   let o=d.data(); if(o.orderId===orderId && o.id!==currentUser.id){
-    otherMarker.setLatLng([o.lat,o.lng]).bindPopup(o.role==='customer'?'العميل لايف - شايفك فين':'السائق بتاعك لايف - شايفه فين ورايح فين');
-    let km=calcKm(p.coords.latitude,p.coords.longitude,o.lat,o.lng); let price=(currentRole==='car'||o.vehicleType==='car'||chosenVehicle==='car')?(25+km*7):(15+km*5);
-    document.getElementById('priceBox').innerHTML=`📍 المسافة: ${km.toFixed(1)}كم - الأجرة: ${price.toFixed(0)}ج بره - عمولة 10%: ${(price*0.1).toFixed(0)}ج - الخريطة شغالة بجد تتبع حقيقي - شايف المكنه بقت فين ورايحة فين`;
-    window.currentKm=km; window.currentPrice=price;
-   }
-  });
- });
-}
-window.endTrip=async()=>{
- let km=window.currentKm||0, price=window.currentPrice||0, myComm=price*0.1, driverEarn=price-myComm;
- let tripCode=localStorage.getItem('currentTripCode')||generateTripCode();
- let trip={km, price, myCommission:myComm, driverEarn, tripCode, vehicleType:currentRole, date:new Date().toLocaleDateString('ar-EG'), orderId:localStorage.getItem('currentOrder')||'', driverId:currentUser.id, driverName:currentUser.name, phone:currentUser.phone, address:currentUser.address, plate:currentUser.plate, createdAt:serverTimestamp()};
- await addDoc(collection(db,'trips'), trip);
- let snap=await getDocs(collection(db,'trips')); let myTripsCount=0; let myCommTotal=0; let myEarnTotal=0;
- snap.forEach(d=>{ if(d.data().driverId===currentUser.id){ myTripsCount++; myCommTotal+=d.data().myCommission||0; myEarnTotal+=d.data().driverEarn||0; } });
- await updateDoc(doc(db,'drivers', currentUser.id), {ordersCount:myTripsCount, totalCommission:myCommTotal, totalEarn:myEarnTotal, updatedAt:serverTimestamp()}).catch(async()=>{ await setDoc(doc(db,'drivers', currentUser.id), {ordersCount:myTripsCount, totalCommission:myCommTotal, totalEarn:myEarnTotal}, {merge:true}); });
- alert(`✅ انهاء الرحلة - لازم تدوسه\nكود الرحلة: ${tripCode}\nالأجرة: ${price.toFixed(0)}ج بره\nعمولتي 10%: ${myComm.toFixed(0)}ج باسمه ورقمه\nربحه: ${driverEarn.toFixed(0)}ج\nاتعد عندك في صفحة المالك تلقائيا - عداد بيعد كل اوردر - اجمالي ربحه واجمالي عمولتي`);
- await setStatus('free'); location.reload();
-};
-window.emergencyCall=(type)=>{
- if(type==='police') window.open('tel:122'); else window.open('tel:180');
- alert('تم ارسال استغاثة - موقعك شغال والشرطة/المطافي تقدر تتتبعك وتوصلك بسرعة - خليك فاتح الموقع والمشاركة شغالة');
-};
-window.shareLocation=()=>{
- navigator.geolocation.getCurrentPosition(p=>{
-  let url=`https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-  if(navigator.share) navigator.share({title:'موقعي - استغاثة', text:`استغاثة - ${currentUser.name} ${currentUser.phone}`, url}); else window.open(`https://wa.me/?text=${encodeURIComponent('استغاثة موقعي '+url+' - '+currentUser.name)}`);
- });
-};
-window.acceptLoc=()=>{ document.getElementById('perm').style.display='none'; getRealLocation(); localStorage.setItem('locationAsked','1'); };
-
-// صفحة مالك مخفية 7 دوسات على اللوجو من غير عداد وتفتح تلقائيا
-let clicks=0, last=0;
-document.getElementById('logo').addEventListener('click', ()=>{ let now=Date.now(); if(now-last>2000) clicks=0; clicks++; last=now; if(clicks>=7){ clicks=0; openOwner(); } });
-async function openOwner(){
- let tripsSnap=await getDocs(collection(db,'trips')); let driversSnap=await getDocs(collection(db,'drivers')); let custSnap=await getDocs(collection(db,'customers'));
- let trips=[]; tripsSnap.forEach(d=>trips.push(d.data())); let drivers=[]; driversSnap.forEach(d=>drivers.push(d.data()));
- let totalMyComm=trips.reduce((s,t)=>s+(t.myCommission||t.price*0.1||0),0); let totalEarn=trips.reduce((s,t)=>s+(t.driverEarn||t.price*0.9||0),0);
- let tukDrivers=drivers.filter(d=>d.vehicleType==='tuk'); let motoDrivers=drivers.filter(d=>d.vehicleType==='moto'); let carDrivers=drivers.filter(d=>d.vehicleType==='car');
- document.getElementById('root').innerHTML=`
- <div style="min-height:100vh;background:#050505;padding:12px">
-  <h2 style="color:#d00000;text-align:center">🔒 لوحة المالك المخفية - 7 دوسات من غير عداد</h2>
-  <p style="text-align:center;color:#888;font-size:11px">تفتح تلقائيا - كل سائق لوحده باسمه ورقمه وعنوانه وعدد الاوردرات واجمالي ربحه واجمالي عمولتي</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
-   <div style="background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:10px;text-align:center"><h2 style="color:#d00000;margin:0">${custSnap.size}</h2><p style="margin:0;font-size:11px">عملاء</p></div>
-   <div style="background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:10px;text-align:center"><h2 style="color:#d00000;margin:0">${drivers.length}</h2><p style="margin:0;font-size:11px">سائقين</p></div>
-   <div style="background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:10px;text-align:center"><h2 style="color:#d00000;margin:0">${trips.length}</h2><p style="margin:0;font-size:11px">رحلات - عداد تلقائي</p></div>
-  </div>
-  <div class="card card-red"><p style="color:#ff2222;font-size:20px;font-weight:900">💰 اجمالي عمولتي 10%: ${totalMyComm.toFixed(0)}ج - اجمالي ربح السائقين: ${totalEarn.toFixed(0)}ج - استلام 9-11 برا التطبيق</p></div>
-  <h3 style="color:#d00000">🛺 توكتوك لوحده - اسم ورقم وعنوان وعدد الاوردرات واجمالي ربحه واجمالي عمولتي</h3>
-  <div>${tukDrivers.map(d=>{ let myTrips=trips.filter(t=>t.driverId===d.id); let cnt=myTrips.length; let comm=myTrips.reduce((s,t)=>s+(t.myCommission||0),0); let earn=myTrips.reduce((s,t)=>s+(t.driverEarn||0),0); return `<div class="card">🛺 <b>${d.name}</b><br>📞 ${d.phone} - 📍 ${d.address} - 🔢 ${d.plate||''}<br>📦 عداد: ${cnt} اوردر - 💰 ربحه ${earn.toFixed(0)}ج - 💰 عمولتي ${comm.toFixed(0)}ج<br>🔑 أكواد رحلاته: ${myTrips.map(t=>t.tripCode).join(', ')}</div>`; }).join('')||'<div class="card">مفيش توكتوك</div>'}</div>
-  <h3 style="color:#d00000">🏍️ مكنه لوحدها</h3>
-  <div>${motoDrivers.map(d=>{ let myTrips=trips.filter(t=>t.driverId===d.id); let cnt=myTrips.length; let comm=myTrips.reduce((s,t)=>s+(t.myCommission||0),0); let earn=myTrips.reduce((s,t)=>s+(t.driverEarn||0),0); return `<div class="card">🏍️ <b>${d.name}</b><br>📞 ${d.phone} - 📍 ${d.address}<br>🔢 ${d.plate||''}<br>📦 ${cnt} اوردر - 💰 ربحه ${earn.toFixed(0)}ج - 💰 عمولتي ${comm.toFixed(0)}ج</div>`; }).join('')||'<div class="card">مفيش مكنه</div>'}</div>
-  <h3 style="color:#d00000">🚗 ملاكي لوحدها</h3>
-  <div>${carDrivers.map(d=>{ let myTrips=trips.filter(t=>t.driverId===d.id); let cnt=myTrips.length; let comm=myTrips.reduce((s,t)=>s+(t.myCommission||0),0); let earn=myTrips.reduce((s,t)=>s+(t.driverEarn||0),0); return `<div class="card">🚗 <b>${d.name}</b><br>📞 ${d.phone} - 📍 ${d.address}<br>🔢 ${d.plate||''}<br>📦 ${cnt} اوردر - 💰 ربحه ${earn.toFixed(0)}ج - 💰 عمولتي ${comm.toFixed(0)}ج</div>`; }).join('')||'<div class="card">مفيش ملاكي</div>'}</div>
-  <button class="btn btn-red" onclick="location.reload()" style="margin-top:12px">⬅️ رجوع</button>
- </div>`;
-}
-if(new URLSearchParams(location.search).has('owner') || new URLSearchParams(location.search).has('code')) {
-  if(new URLSearchParams(location.search).has('code')){ document.getElementById('trackCodeInput').value=new URLSearchParams(location.search).get('code'); setTimeout(()=>trackByCode(), 1200); }
-  if(new URLSearchParams(location.search).has('owner')) openOwner();
-}
-function render(){ if(currentRole==='customer') renderCustomer(); else renderDriver(currentRole); }
-render();
-// لو فيه كود في الرابط افتحه تلقائيا
-let urlCode=new URLSearchParams(location.search).get('code');
-if(urlCode){ document.getElementById('trackCodeInput').value=urlCode; }
-</script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
-</html>
+ let name=(document.getElementByI
