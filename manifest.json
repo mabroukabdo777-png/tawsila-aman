@@ -1,0 +1,17 @@
+{
+  "name": "توصيلة Tawsila",
+  "short_name": "توصيلة Tawsila",
+  "description": "توصيلة - خدمة نقل ذكية في جميع انحاء مصر",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B0000",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
