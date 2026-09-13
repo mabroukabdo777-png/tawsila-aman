@@ -14,45 +14,99 @@
 body{background:#080808}
 .glass{background:rgba(20,20,20,.92);border:1px solid rgba(255,255,255,.08)}
 .red-black{background:linear-gradient(135deg,#C70000,#5A0000)}
-#map{height:250px!important;width:100%;border-radius:18px}
+#map{height:250px!important;width:100%;border-radius:18px;z-index:1}
+.upload{border:2px dashed #333;border-radius:14px}
+.leaflet-control-attribution{display:none!important}
 </style>
 </head>
-<body class="text-white notranslate" translate="no">
-<div class="p-5 text-center">
-<h1 class="text-[32px] font-black"><span class="text-[#C70000]">Tawsila</span> Aman</h1>
-<p class="text-xs opacity-60">توصيلة أمان - أحمر × أسمر شيك</p>
-<button id="installBtn" class="hidden mt-3 bg-white text-black text-xs font-black px-4 py-2 rounded-full">📲 ثبّت التطبيق</button>
-</div>
-<div class="p-3">
-<div class="glass p-2 rounded-[20px]">
-<div id="map"></div>
-<p class="text-[10px] text-center opacity-40 mt-2">خريطة حقيقية 100% - 250 - تفعيل تلقائي لايف</p>
-</div>
-</div>
-<script>
-document.documentElement.setAttribute('translate','no');
-let deferredPrompt;
-const installBtn=document.getElementById('installBtn');
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.classList.remove('hidden');});
-installBtn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;installBtn.classList.add('hidden');}});
+<body class="text-white" translate="no">
 
-let map=L.map('map',{zoomControl:false}).setView([30.0444,31.2357],13);
+<!-- رسالة العمولة 10% -->
+<div id="welcome" class="hidden fixed inset-0 z-[5000] bg-black/90 flex items-center justify-center p-6">
+<div class="glass rounded-[24px] p-6 w-full max-w-sm text-center">
+<div class="w-16 h-16 red-black rounded-full flex items-center justify-center text-2xl mx-auto mb-3">👋</div>
+<h2 class="text-xl font-black">أهلا بيك يا كابتن</h2>
+<p class="mt-4 text-sm leading-7">نورت <b class="text-[#FF3333]">توصيلة أمان</b><br>
+<span class="inline-block mt-3 bg-white text-black px-4 py-1 rounded-full font-black">عمولة الشركة 10% فقط</span><br><br>دفع العمولة من 9 لـ 11 مساء كل يوم<br><span class="text-xs opacity-60">Tawsila Aman</span></p>
+<button onclick="closeWelcome()" class="w-full red-black py-4 rounded-xl font-black mt-6">موافق ✅</button>
+</div>
+</div>
+
+<div id="login" class="min-h-screen p-5 pb-20">
+<div class="text-center mt-4">
+<h1 class="text-[34px] font-black"><span class="text-[#C70000]">Tawsila</span> Aman</h1>
+<p class="text-xs opacity-60">توصيلة أمان - أحمر × أسمر شيك</p>
+<!-- زرار التثبيت ظاهر على طول -->
+<button id="installBtn" class="mt-4 bg-white text-black text-xs font-black px-6 py-3 rounded-full">📲 ثبّت التطبيق على موبايلك الآن</button>
+<p class="mt-2 text-[10px] opacity-40">للأندرويد دوس تثبيت - للأيفون دوس مشاركة ثم إضافة للشاشة الرئيسية</p>
+</div>
+
+<p class="mt-6 text-xs font-bold">اختار نوع حسابك:</p>
+<div class="grid grid-cols-2 gap-2 mt-2">
+<button onclick="pick('client')" data-r="client" class="role bg-zinc-900 border-2 border-transparent p-3 rounded-2xl"><div class="text-xl">👤</div><p class="text-sm font-bold">العميل</p></button>
+<button onclick="pick('toktok')" data-r="toktok" class="role bg-zinc-900 border-2 border-transparent p-3 rounded-2xl"><div class="text-xl">🛺</div><p class="text-sm font-bold">كابتن توكتوك</p></button>
+<button onclick="pick('bike')" data-r="bike" class="role bg-zinc-900 border-2 border-transparent p-3 rounded-2xl"><div class="text-xl">🏍️</div><p class="text-sm font-bold">كابتن مكنة</p></button>
+<button onclick="pick('car')" data-r="car" class="role bg-zinc-900 border-2 border-transparent p-3 rounded-2xl"><div class="text-xl">🚗</div><p class="text-sm font-bold">كابتن ملاكي</p></button>
+</div>
+
+<div id="form" class="hidden mt-5 space-y-3">
+<input id="name" placeholder="الاسم الحقيقي ثلاثي" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-4 text-sm">
+<input id="phone" type="tel" placeholder="رقمك الحقيقي 01xxxxxxxxx" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-4 text-sm">
+<input id="address" placeholder="عنوانك بالتفصيل" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-4 text-sm">
+
+<div id="f_tokbike" class="hidden space-y-3">
+<label class="upload p-3 flex flex-col items-center gap-2"><span class="text-xs">📸 صورة البطاقة</span><input type="file" id="img_id" accept="image/*" capture="environment"></label>
+<label class="upload p-3 flex flex-col items-center gap-2"><span class="text-xs">🛺 صورة التوكتوك / المكنة</span><input type="file" id="img_vehicle" accept="image/*" capture="environment"></label>
+</div>
+
+<div id="f_car" class="hidden space-y-3">
+<label class="upload p-3 flex flex-col items-center gap-2"><span class="text-xs">🪪 صورة البطاقة</span><input type="file" id="img_id_car" accept="image/*" capture="environment"></label>
+<label class="upload p-3 flex flex-col items-center gap-2"><span class="text-xs">🚗 صورة رخصتك</span><input type="file" id="img_license" accept="image/*" capture="environment"></label>
+<label class="upload p-3 flex flex-col items-center gap-2"><span class="text-xs">📄 صورة رخصة العربية</span><input type="file" id="img_car_license" accept="image/*" capture="environment"></label>
+<label class="upload p-3 flex flex-col items-center gap-2"><span class="text-xs">📸 صورة العربية</span><input type="file" id="img_car" accept="image/*" capture="environment"></label>
+</div>
+
+<button onclick="register()" class="w-full red-black py-4 rounded-xl font-black">تسجيل دخول وتفعيل الموقع تلقائيا 📍</button>
+</div>
+</div>
+
+<div id="app" class="hidden">
+<header class="sticky top-0 z-50 glass px-4 py-3 flex justify-between"><div><h1 class="font-black text-sm"><span class="text-[#C70000]">Tawsila</span> Aman</h1><p id="uInfo" class="text-[10px] opacity-60"></p></div><div class="flex gap-2 items-center"><span id="live" class="text-[10px] bg-green-600 px-2 py-1 rounded-full">● مباشر</span><button onclick="logout()" class="bg-zinc-800 text-[10px] px-3 py-1 rounded-full">خروج</button></div></header>
+<div class="p-3 space-y-3"><div class="glass p-2 rounded-[20px]"><div id="map2"></div></div><div class="glass rounded-[20px] p-4"><input id="toPlace" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-sm" placeholder="إلى أين؟"><div id="priceBox" class="hidden mt-3 red-black rounded-xl p-3 flex justify-between items-center"><div><p class="text-xs">المسافة <span id="dist">0</span> كم</p><p class="text-lg font-black"><span id="price">0</span> جنيه</p></div><button class="bg-white text-black font-black px-5 py-2 rounded-full text-sm">اطلب</button></div></div></div>
+</div>
+
+<script>
+let deferredPrompt; const installBtn=document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+installBtn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;}});
+
+let map,map2,userMarker,line,watchId=null,current=null,role=null;
+map=L.map('map',{zoomControl:false}).setView([30.0444,31.2357],13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-let userMarker=null;
-// تفعيل موقع المستخدم تلقائيا من غير اعدادات
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(p=>{
-let ll=[p.coords.latitude,p.coords.longitude];
-userMarker=L.marker(ll).addTo(map);
-map.setView(ll,16);
-});
-navigator.geolocation.watchPosition(p=>{
-let ll=[p.coords.latitude,p.coords.longitude];
-if(userMarker) map.removeLayer(userMarker);
-userMarker=L.marker(ll).addTo(map);
-map.setView(ll,16);
-},null,{enableHighAccuracy:true});
+if(navigator.geolocation){navigator.geolocation.watchPosition(p=>{current=[p.coords.latitude,p.coords.longitude];},null,{enableHighAccuracy:true});}
+
+function pick(r){role=r;document.querySelectorAll('.role').forEach(b=>b.classList.remove('border-[#C70000]'));document.querySelector(`[data-r="${r}"]`).classList.add('border-[#C70000]');document.getElementById('form').classList.remove('hidden');document.getElementById('f_tokbike').classList.add('hidden');document.getElementById('f_car').classList.add('hidden');if(r==='toktok'||r==='bike')document.getElementById('f_tokbike').classList.remove('hidden');if(r==='car')document.getElementById('f_car').classList.remove('hidden');}
+
+function register(){
+let n=document.getElementById('name').value.trim();let p=document.getElementById('phone').value.trim();let a=document.getElementById('address').value.trim();
+if(!role||!n||p.length<11||!a){alert('كمل الاسم والرقم والعنوان');return;}
+if((role==='toktok'||role==='bike')&&(!img_id.files[0]||!img_vehicle.files[0])){alert('حمل صورة البطاقة وصورة المركبة');return;}
+if(role==='car'&&(!img_id_car.files[0]||!img_license.files[0]||!img_car_license.files[0]||!img_car.files[0])){alert('حمل البطاقة والرخصتين وصورة العربية');return;}
+localStorage.setItem('role',role);localStorage.setItem('name',n);
+if(role!=='client'){document.getElementById('welcome').classList.remove('hidden');}else{goApp();}
 }
+function closeWelcome(){document.getElementById('welcome').classList.add('hidden');goApp();}
+function goApp(){
+document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
+document.getElementById('uInfo').innerText=role+' - '+localStorage.getItem('name')+' - عمولة 10%';
+setTimeout(()=>{
+map2=L.map('map2',{zoomControl:false}).setView(current||[30.0444,31.2357],15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map2);
+if(current){userMarker=L.marker(current).addTo(map2);map2.setView(current,16);}
+navigator.geolocation.watchPosition(p=>{current=[p.coords.latitude,p.coords.longitude];if(userMarker)map2.removeLayer(userMarker);userMarker=L.marker(current).addTo(map2);map2.setView(current,16);document.getElementById('live').innerText='● مباشر لايف';},null,{enableHighAccuracy:true});
+},300);
+}
+function logout(){localStorage.clear();location.reload();}
 </script>
 </body>
 </html>
