@@ -75,38 +75,60 @@ body{background:#080808}
 <div class="p-3 space-y-3"><div class="glass p-2 rounded-[20px]"><div id="map2"></div></div><div class="glass rounded-[20px] p-4"><input id="toPlace" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-sm" placeholder="إلى أين؟"><div id="priceBox" class="hidden mt-3 red-black rounded-xl p-3 flex justify-between items-center"><div><p class="text-xs">المسافة <span id="dist">0</span> كم</p><p class="text-lg font-black"><span id="price">0</span> جنيه</p></div><button class="bg-white text-black font-black px-5 py-2 rounded-full text-sm">اطلب</button></div></div></div>
 </div>
 
-<script>
-let deferredPrompt; const installBtn=document.getElementById('installBtn');
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
-installBtn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;}});
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",
+  authDomain: "mata3m-masr.firebaseapp.com",
+  databaseURL: "https://mata3m-masr-default-rtdb.firebaseio.com",
+  projectId: "mata3m-masr",
+  storageBucket: "mata3m-masr.firebasestorage.app",
+  messagingSenderId: "315344044519",
+  appId: "1:315344044519:web:2766778ebdec4cf053fd42"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-let map,map2,userMarker,line,watchId=null,current=null,role=null;
-map=L.map('map',{zoomControl:false}).setView([30.0444,31.2357],13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-if(navigator.geolocation){navigator.geolocation.watchPosition(p=>{current=[p.coords.latitude,p.coords.longitude];},null,{enableHighAccuracy:true});}
+let map2, current=null, role=null, driversMarkers={};
+window.map = L.map('map',{zoomControl:false}).setView([30.3,31.1],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
 
-function pick(r){role=r;document.querySelectorAll('.role').forEach(b=>b.classList.remove('border-[#C70000]'));document.querySelector(`[data-r="${r}"]`).classList.add('border-[#C70000]');document.getElementById('form').classList.remove('hidden');document.getElementById('f_tokbike').classList.add('hidden');document.getElementById('f_car').classList.add('hidden');if(r==='toktok'||r==='bike')document.getElementById('f_tokbike').classList.remove('hidden');if(r==='car')document.getElementById('f_car').classList.remove('hidden');}
-
-function register(){
-let n=document.getElementById('name').value.trim();let p=document.getElementById('phone').value.trim();let a=document.getElementById('address').value.trim();
-if(!role||!n||p.length<11||!a){alert('كمل الاسم والرقم والعنوان');return;}
-if((role==='toktok'||role==='bike')&&(!img_id.files[0]||!img_vehicle.files[0])){alert('حمل صورة البطاقة وصورة المركبة');return;}
-if(role==='car'&&(!img_id_car.files[0]||!img_license.files[0]||!img_car_license.files[0]||!img_car.files[0])){alert('حمل البطاقة والرخصتين وصورة العربية');return;}
-localStorage.setItem('role',role);localStorage.setItem('name',n);
-if(role!=='client'){document.getElementById('welcome').classList.remove('hidden');}else{goApp();}
+window.pick = function(r){ role=r; document.querySelectorAll('.role').forEach(b=>b.classList.remove('border-[#C70000]')); document.querySelector(`[data-r="${r}"]`).classList.add('border-[#C70000]'); document.getElementById('form').classList.remove('hidden'); }
+window.register = function(){
+let n=document.getElementById('name').value.trim(); let p=document.getElementById('phone').value.trim(); let a=document.getElementById('address').value.trim();
+if(!role||!n||p.length<11||!a){alert('كمل بياناتك');return;}
+localStorage.setItem('role',role); localStorage.setItem('name',n); localStorage.setItem('phone',p);
+goApp();
 }
-function closeWelcome(){document.getElementById('welcome').classList.add('hidden');goApp();}
-function goApp(){
-document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
-document.getElementById('uInfo').innerText=role+' - '+localStorage.getItem('name')+' - عمولة 10%';
+window.goApp = function(){
+document.getElementById('login').classList.add('hidden'); document.getElementById('app').classList.remove('hidden');
+document.getElementById('uInfo').innerText=role+' - '+localStorage.getItem('name');
 setTimeout(()=>{
-map2=L.map('map2',{zoomControl:false}).setView(current||[30.0444,31.2357],15);
+map2=L.map('map2',{zoomControl:false}).setView([30.3,31.1],15);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map2);
-if(current){userMarker=L.marker(current).addTo(map2);map2.setView(current,16);}
-navigator.geolocation.watchPosition(p=>{current=[p.coords.latitude,p.coords.longitude];if(userMarker)map2.removeLayer(userMarker);userMarker=L.marker(current).addTo(map2);map2.setView(current,16);document.getElementById('live').innerText='● مباشر لايف';},null,{enableHighAccuracy:true});
-},300);
+if(role!=='client'){
+navigator.geolocation.watchPosition(pos=>{
+current=[pos.coords.latitude,pos.coords.longitude];
+set(ref(db,'drivers/'+localStorage.getItem('phone')),{name:localStorage.getItem('name'),role:role,lat:current[0],lng:current[1]});
+L.marker(current).addTo(map2); map2.setView(current,16);
+},{enableHighAccuracy:true});
 }
-function logout(){localStorage.clear();location.reload();}
+if(role==='client'){
+onValue(ref(db,'drivers'), snap=>{
+Object.values(driversMarkers).forEach(m=>map2.removeLayer(m)); driversMarkers={};
+let data=snap.val(); if(!data) return;
+Object.keys(data).forEach(k=>{
+let d=data[k]; let ic=d.role==='toktok'?'🛺':d.role==='bike'?'🏍️':'🚗';
+let html=L.divIcon({html:`<div style="font-size:26px;background:white;border-radius:50%;padding:4px;border:3px solid red">${ic}</div>`,className:''});
+driversMarkers[k]=L.marker([d.lat,d.lng],{icon:html}).addTo(map2).bindPopup(d.name+' - '+d.role);
+});
+});
+navigator.geolocation.getCurrentPosition(p=>{current=[p.coords.latitude,p.coords.longitude]; map2.setView(current,15);});
+}
+},600);
+}
+window.logout=function(){localStorage.clear();location.reload();}
 </script>
 </body>
 </html>
