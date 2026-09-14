@@ -1,16 +1,14 @@
 {
   "name": "Tawsila Aman - توصيلة أمان",
   "short_name": "Tawsila Aman",
-  "start_url": "/",
+  "start_url": "/?v=10",
   "display": "standalone",
-  "background_color": "#0A0A0A",
-  "theme_color": "#C70000",
-  "icons": [
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+  "background_color": "#000000",
+  "theme_color": "#8B0000",
+  "icons": [{
+    "src": "/logo.png?v=10",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }]
 }
