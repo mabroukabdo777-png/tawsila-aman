@@ -39,7 +39,7 @@ body{background:#080808}
 <div id="login" class="min-h-screen p-5 pb-20">
 <div class="text-center mt-4">
 <h1 class="text-[34px] font-black"><span class="text-[#C70000]">Tawsila</span> Aman</h1>
-<p class="text-xs opacity-60"> توصيلة أمان   ×  </p>
+<p class="text-xs opacity-60"></p>
 <!-- زرار التثبيت ظاهر على طول -->
 <button id="installBtn" class="mt-4 bg-white text-black text-xs font-black px-6 py-3 rounded-full">📲 ثبّت التطبيق على موبايلك الآن</button>
 <p class="mt-2 text-[10px] opacity-40"> </p>
@@ -133,47 +133,71 @@ navigator.geolocation.getCurrentPosition(p=>{current=[p.coords.latitude,p.coords
 },600);
 }
 window.logout=function(){localStorage.clear();location.reload();}
-</script>
   <!-- زرار تثبيت التطبيق -->
-<button id="installBtn" style="display:none;" class="mt-4 bg-white text-black font-black px-6 py-3 rounded-full w-full">📱 ثبّت التطبيق على موبايلك الآن</button>
+  <button id="installBtn" style="display:none;" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99] bg-white text-black font-black px-6 py-3 rounded-full shadow-xl">📲 ثبّت التطبيق</button>
+
+  <div id="iosModal" class="hidden fixed inset-0 z-[100] bg-black/80 p-6 flex items-end justify-center">
+    <div class="bg-[#1a1a1a] rounded-[24px] p-5 w-full max-w-sm text-center space-y-3 border border-white/10">
+      <p class="font-black text-lg">تثبيت على الآيفون 📱</p>
+      <p class="text-sm opacity-80">دوس على زر المشاركة ⎙ تحت في سفاري<br>وبعدين اختار <b>إضافة إلى الشاشة الرئيسية</b></p>
+      <button onclick="document.getElementById('iosModal').classList.add('hidden')" class="w-full bg-white text-black rounded-full py-3 font-black">فهمت</button>
+    </div>
+  </div>
 
 <script>
-let deferredPrompt;
+let role = null;
+let deferredPrompt = null;
 const installBtn = document.getElementById('installBtn');
-
+const iosModal = document.getElementById('iosModal');
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 function isInApp(){
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
-
-// لو جوه التطبيق المتثبت - اخفيه فورا ومش هنسمع لاي حاجة تاني
+window.pick = function(r){
+  role = r;
+  document.querySelectorAll('[data-r]').forEach(b=>b.classList.remove('ring-2','ring-white'));
+  const sel = document.querySelector(`[data-r="${r}"]`);
+  if(sel) sel.classList.add('ring-2','ring-white');
+  const form = document.getElementById('form');
+  if(form){
+    form.classList.remove('hidden');
+    form.style.display = 'block';
+    setTimeout(()=>form.scrollIntoView({behavior:'smooth'}),100);
+  }
+  document.getElementById('f_tokbike')?.classList.toggle('hidden',!(r==='toktok' || r==='bike'));
+  document.getElementById('f_car')?.classList.toggle('hidden', r!=='car');
+};
 if(isInApp()){
-  installBtn.style.display = 'none';
+  if(installBtn) installBtn.style.display = 'none';
 } else {
-  // احنا في كروم بس - استنى اشارة التثبيت
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'block'; // يظهر في كروم بس
-  });
-
-  installBtn.addEventListener('click', async () => {
-    if(deferredPrompt){
-      deferredPrompt.prompt();
-      const {outcome} = await deferredPrompt.userChoice;
-      if(outcome === 'accepted'){
-        installBtn.style.display = 'none';
-      }
-      deferredPrompt = null;
+  if(isIOS){
+    if(installBtn){
+      installBtn.style.display = 'block';
+      installBtn.onclick = ()=>{ if(iosModal) iosModal.classList.remove('hidden'); else alert('دوس مشاركة ثم إضافة للشاشة الرئيسية'); };
     }
-  });
+  } else {
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault();
+      deferredPrompt = e;
+      if(installBtn) installBtn.style.display = 'block';
+    });
+    if(installBtn){
+      installBtn.addEventListener('click', async ()=>{
+        if(deferredPrompt){
+          deferredPrompt.prompt();
+          const {outcome} = await deferredPrompt.userChoice;
+          if(outcome === 'accepted') installBtn.style.display = 'none';
+          deferredPrompt = null;
+        }
+      });
+    }
+  }
 }
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js?v=101');
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js?v=105');
 }
-
-window.addEventListener('appinstalled', () => {
-  installBtn.style.display = 'none';
+window.addEventListener('appinstalled', ()=>{
+  if(installBtn) installBtn.style.display = 'none';
   deferredPrompt = null;
 });
 </script>
