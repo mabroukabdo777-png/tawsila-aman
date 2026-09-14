@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" translate="no" class="notranslate">
+<html lang="ar" dir="rtl">
 <head><style>
 @font-face {
   font-family: "Optimistic";
@@ -24,143 +24,133 @@
 </style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="google" content="notranslate">
-<title>Tawsila Aman PRO</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#000000">
+<title>Tawsila Aman - رقم 1 في مصر</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body{background:#000;color:#fff;font-family:system-ui}
-#map,#map2{height:420px;border-radius:22px}
-.leaflet-marker-icon{transition: all 1s linear !important}
-@media(display-mode:standalone){#installBtn{display:none!important}}
-.input-pro{background:#151515;border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:14px 20px;width:100%;font-size:14px;outline:none}
-.back-btn{background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);border-radius:9999px;padding:8px 16px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:6px}
+body{background:#050507;color:#fff;font-family:system-ui}
+#mainMap{height:300px !important; width:100% !important; border-radius:24px; background:#0a0a0a; border:1px solid rgba(255,255,255,0.08); display:block !important; z-index:10}
+.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:10px 20px;font-size:12px;font-weight:900}
+.input-pro{background:#151515;border:1px solid #333;border-radius:9999px;padding:14px 20px;width:100%;font-size:13px;outline:none}
+.pro-card{background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:28px}
 </style>
 </head>
-<body class="notranslate min-h-screen flex flex-col items-center px-4 py-6">
-<div class="w-full max-w-md space-y-5">
-  <div class="text-center pt-2">
-    <div class="flex justify-between items-center mb-2">
-      <button onclick="goBack()" class="back-btn">← رجوع</button>
-      <button onclick="logout()" class="back-btn opacity-60">خروج</button>
-    </div>
-    <h1 id="logo" class="text-[40px] font-black select-none cursor-pointer active:scale-95"> <span style="color:#ff1a1a">Tawsila</span> Aman <span class="text-[10px] bg-white text-black rounded-full px-2 py-0.5 align-super">PRO</span></h1>
-    <p id="netStatus" class="text-[10px] mt-1 opacity-60">جاري فحص الاتصال...</p>
+<body class="min-h-screen flex justify-center px-4 py-5">
+<div class="w-full max-w-[420px] space-y-4">
+
+  <div class="text-center pt-3">
+    <h1 id="logo" class="text-[38px] font-black"><span style="color:#ff1a1a">Tawsila</span> Aman</h1>
+    <p class="text-[10px] font-bold opacity-50">🛰️ خريطة حقيقية - تتبع مباشر - حساب بالكيلو</p>
+    <p class="text-[9px] opacity-30 mt-1">توكتوك 15+5 / مكنة 15+5 / ملاكي 25+7</p>
   </div>
 
-  <!-- اختيار النوع -->
-  <div id="roleBox" class="bg-[#111] rounded-[30px] p-5 border border-white/10">
-    <p class="text-center text-xs opacity-60 mb-3">اختار نوع حسابك</p>
+  <div class="pro-card p-3">
+    <p class="text-xs font-black mb-2 text-center">🗺️ دوس على الخريطة تحدد وجهتك</p>
+    <div id="mainMap"></div>
+  </div>
+
+  <div id="pricingBox" class="hidden pro-card p-4 space-y-2 border-[#ff1a1a]/20">
+    <div class="bg-[#000] rounded-2xl p-4 space-y-2">
+      <div class="flex justify-between"><span class="text-xs opacity-60">📏 المسافة:</span><b id="distText" class="text-[#22ff88]">0.00 كم</b></div>
+      <div class="flex justify-between"><span class="text-xs opacity-60">🚗 النوع:</span><b id="typeText">-</b></div>
+      <div class="flex justify-between"><span class="text-xs opacity-60">🧮 المعادلة:</span><b id="formulaText" class="text-xs"></b></div>
+      <div class="h-px bg-white/10"></div>
+      <div class="flex justify-between items-center"><span class="font-black text-sm">السعر:</span><b id="priceText" class="text-xl text-[#ff1a1a]">0 جنيه</b></div>
+    </div>
+    <button onclick="clearDest()" class="w-full bg-white/10 rounded-full py-2 text-xs">مسح الوجهة</button>
+  </div>
+
+  <div id="roleBox" class="pro-card p-5">
+    <p class="text-center text-xs font-black mb-4">اختار نوع حسابك</p>
     <div class="grid grid-cols-2 gap-3">
-      <button data-r="toktok" onclick="pick('toktok')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center active:scale-95"><div class="text-2xl">🛺</div><div class="font-black text-xs mt-1">كابتن توكتوك</div></button>
-      <button data-r="client" onclick="pick('client')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center active:scale-95"><div class="text-2xl">👤</div><div class="font-black text-xs mt-1">العميل</div></button>
-      <button data-r="car" onclick="pick('car')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center active:scale-95"><div class="text-2xl">🚗</div><div class="font-black text-xs mt-1">كابتن ملاكي</div></button>
-      <button data-r="bike" onclick="pick('bike')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center active:scale-95"><div class="text-2xl">🏍️</div><div class="font-black text-xs mt-1">كابتن مكنة</div></button>
+      <button data-r="toktok" onclick="pick('toktok')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">🛺</div><div class="font-black text-xs mt-1">توكتوك 15+5</div></button>
+      <button data-r="client" onclick="pick('client')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">👤</div><div class="font-black text-xs mt-1">عميل</div></button>
+      <button data-r="car" onclick="pick('car')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">🚗</div><div class="font-black text-xs mt-1">ملاكي 25+7</div></button>
+      <button data-r="bike" onclick="pick('bike')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">🏍️</div><div class="font-black text-xs mt-1">مكنة 15+5</div></button>
     </div>
+    <p class="text-center text-[9px] opacity-30 mt-4">دوس 7 مرات على اللوجو للمالك 👑</p>
   </div>
 
-  <!-- تسجيل دخول -->
-  <div id="authBox" class="hidden bg-[#111] rounded-[30px] p-6 border border-white/10 space-y-4">
-    <div class="flex justify-between items-center">
-      <button onclick="goBackToRoles()" class="back-btn">← رجوع لاختيار النوع</button>
-      <span class="text-[11px] opacity-50" id="pickedRoleLabel"></span>
-    </div>
-    <div class="flex bg-[#0f0f0f] rounded-full p-1">
-      <button id="tabLogin" onclick="switchAuth('login')" class="flex-1 bg-white text-black rounded-full py-2.5 font-black text-sm">دخول</button>
-      <button id="tabRegister" onclick="switchAuth('register')" class="flex-1 text-white/60 rounded-full py-2.5 font-bold text-sm">حساب جديد</button>
-    </div>
-    <div class="space-y-3">
-      <input id="name" placeholder="الاسم بالكامل" class="input-pro">
-      <input id="phone" placeholder="رقم الموبايل (010...)" class="input-pro" inputmode="numeric">
-      <input id="address" placeholder="العنوان - المنطقة - الشارع" class="input-pro">
-      <input id="password" type="password" placeholder="كلمة السر (6 حروف على الأقل)" class="input-pro">
-      <div id="vehicleFields" class="space-y-3 hidden">
-        <input id="vehicleNum" placeholder="رقم التوكتوك / المكنة / رخصة العربية" class="input-pro">
-      </div>
-    </div>
-    <button id="authBtn" onclick="handleAuth()" class="w-full bg-white text-black font-black rounded-full py-4 active:scale-95">دخول آمن 🔐</button>
+  <div id="authBox" class="hidden pro-card p-6 space-y-4">
+    <button onclick="goBackToRoles()" class="back-btn">← رجوع</button>
+    <div class="flex bg-[#0a0a0a] rounded-full p-1 mt-2"><button id="tabLogin" onclick="switchAuth('login')" class="flex-1 bg-white text-black rounded-full py-2.5 font-black text-xs">دخول</button><button id="tabRegister" onclick="switchAuth('register')" class="flex-1 text-white/50 rounded-full py-2.5 font-bold text-xs">حساب جديد</button></div>
+    <div class="space-y-3"><input id="name" placeholder="الاسم" class="input-pro"><input id="phone" placeholder="الموبايل" class="input-pro"><input id="address" placeholder="العنوان" class="input-pro"><input id="password" type="password" placeholder="كلمة السر" class="input-pro"></div>
+    <button onclick="handleAuth()" id="authBtn" class="w-full bg-white text-black font-black rounded-full py-4">دخول آمن 🔐</button>
     <p id="authMsg" class="text-xs text-center text-red-400"></p>
   </div>
 
-  <!-- لوحة التحكم -->
-  <div id="dashboard" class="hidden space-y-4">
-    <div class="bg-[#111] rounded-[28px] p-5 border border-white/10">
-      <div class="flex justify-between items-center">
-        <button onclick="goBackToAuth()" class="back-btn">← رجوع</button>
-        <p class="text-[10px] opacity-40">لوحة التحكم</p>
-      </div>
-      <div class="flex justify-between items-center mt-3">
-        <div><p class="font-black text-sm" id="dashName">-</p><p class="text-[11px] opacity-50" id="dashInfo">-</p></div>
-        <button onclick="logout()" class="bg-[#1a1a1a] border border-white/10 rounded-full px-4 py-2 text-xs">خروج نهائي</button>
-      </div>
-    </div>
-    <div id="map" class="hidden"></div>
-    <div id="map2" class="hidden"></div>
-
-    <div id="pricingBox" class="hidden bg-[#0f0f0f] rounded-[22px] p-4 border border-white/10 space-y-2">
-      <div class="flex justify-between items-center">
-        <p class="font-black text-xs">📍 حدد وجهتك</p>
-        <button onclick="clearDest()" class="text-[10px] bg-[#1a1a1a] rounded-full px-3 py-1">مسح</button>
-      </div>
-      <div class="flex justify-between text-xs"><span>المسافة:</span><b id="distText">0 كم</b></div>
-      <div class="flex justify-between text-xs"><span>النوع:</span><b id="typeText">-</b></div>
-      <div class="flex justify-between text-sm font-black text-[#ff1a1a]"><span>السعر:</span><b id="priceText">0 جنيه</b></div>
-      <div class="flex justify-between text-[10px] opacity-50"><span>سرعة التتبع:</span><b id="speedText">- كم/س</b></div>
-    </div>
-
-    <div id="clientActions" class="hidden space-y-2">
-      <div class="flex justify-between items-center"><button onclick="goBackToAuth()" class="back-btn">← رجوع</button><p class="text-xs opacity-60">اطلب توصيلة</p></div>
+  <div id="dashboard" class="hidden space-y-3">
+    <div class="pro-card p-4"><button onclick="goBackToAuth()" class="back-btn">← رجوع</button><div class="mt-3"><p class="font-black text-sm" id="dashName">-</p><p class="text-[11px] opacity-50" id="dashInfo">-</p></div></div>
+    <div id="clientActions" class="hidden space-y-3">
+      <button onclick="goBackToAuth()" class="back-btn">← رجوع</button>
       <div class="grid grid-cols-3 gap-2">
-        <button onclick="sendRequest('toktok')" class="bg-[#1e1e1e] border border-white/10 rounded-2xl py-3 font-bold text-xs">🛺<br>توكتوك</button>
-        <button onclick="sendRequest('car')" class="bg-[#1e1e1e] border border-white/10 rounded-2xl py-3 font-bold text-xs">🚗<br>ملاكي</button>
-        <button onclick="sendRequest('bike')" class="bg-[#1e1e1e] border border-white/10 rounded-2xl py-3 font-bold text-xs">🏍️<br>مكنة</button>
+        <button onclick="sendRequest('toktok')" class="bg-[#1e1e1e] border border-white/10 rounded-2xl py-3 font-black text-xs">🛺<br>15+5</button>
+        <button onclick="sendRequest('car')" class="bg-[#1e1e1e] border border-white/10 rounded-2xl py-3 font-black text-xs">🚗<br>25+7</button>
+        <button onclick="sendRequest('bike')" class="bg-[#1e1e1e] border border-white/10 rounded-2xl py-3 font-black text-xs">🏍️<br>15+5</button>
       </div>
+      <p id="reqStatus" class="text-xs text-center font-black"></p>
     </div>
-    <p id="reqStatus" class="text-xs text-center opacity-70"></p>
-
     <div id="driverActions" class="hidden space-y-3">
-      <div class="flex justify-between items-center"><button onclick="goBackToAuth()" class="back-btn">← رجوع</button><p class="text-xs opacity-60">وضع الكابتن</p></div>
-      <div id="activeTripBox" class="hidden bg-gradient-to-br from-[#1a2a1a] to-[#111] rounded-2xl p-4 border border-green-500/40">
-        <p class="font-black text-sm">🚀 رحلة نشطة - تتبع مباشر</p>
-        <p id="activeTripInfo" class="text-xs opacity-70 mt-2 leading-5"></p>
-        <div class="grid grid-cols-2 gap-2 mt-3">
-          <button onclick="endTrip()" class="bg-green-400 text-black font-black rounded-full py-3 text-sm">✅ إنهاء</button>
-          <button onclick="cancelActiveTrip()" class="bg-[#222] text-white font-bold rounded-full py-3 text-sm border border-white/10">إلغاء</button>
-        </div>
-      </div>
-      <div class="bg-[#111] rounded-2xl p-4 border border-white/10"><p class="font-black text-center text-sm">📥 الطلبات الحية</p><div id="requestsList" class="space-y-2 max-h-[350px] overflow-auto mt-3"></div></div>
+      <button onclick="goBackToAuth()" class="back-btn">← رجوع</button>
+      <div class="pro-card p-3 flex justify-between items-center"><p class="text-xs font-black">🛰️ تتبع مباشر - خريطة واحدة</p><button onclick="toggleOnline()" id="onlineBtn" class="bg-[#22ff88] text-black rounded-full px-4 py-1.5 text-xs font-black">● متصل</button></div>
+      <div id="activeTripBox" class="hidden pro-card p-4 border-green-500/30"><p class="font-black text-xs">🚀 رحلة نشطة</p><div class="grid grid-cols-3 gap-2 mt-2"><div class="bg-black rounded-xl p-2 text-center"><p class="text-[9px] opacity-40">المسافة</p><b id="activeDist" class="text-xs">-</b></div><div class="bg-black rounded-xl p-2 text-center"><p class="text-[9px] opacity-40">السعر</p><b id="activePrice" class="text-xs text-[#ff1a1a]">-</b></div><div class="bg-black rounded-xl p-2 text-center"><p class="text-[9px] opacity-40">عمولة</p><b id="activeComm" class="text-xs text-[#22ff88]">-</b></div></div><button onclick="endTrip()" class="w-full mt-3 bg-[#22ff88] text-black font-black rounded-full py-3">✅ إنهاء الرحلة</button></div>
+      <div class="pro-card p-4"><p class="font-black text-center text-xs">📥 طلبات حية</p><div id="requestsList" class="space-y-2 max-h-[300px] overflow-auto mt-3"></div></div>
     </div>
   </div>
 </div>
 
-<!-- صفحة المالك -->
-<div id="ownerPanel" class="hidden fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl p-4 overflow-auto">
-  <div class="max-w-3xl mx-auto space-y-4">
-    <div class="flex justify-between items-center pt-2">
-      <button onclick="goBackFromOwner()" class="back-btn">← رجوع للتطبيق</button>
-      <h2 class="text-sm font-black">👑 لوحة المالك PRO</h2>
-      <button onclick="document.getElementById('ownerPanel').classList.add('hidden')" class="bg-white text-black rounded-full px-4 py-2 font-black text-xs">X</button>
+<!-- لوحة المالك الجديدة بالإحصائيات الكاملة -->
+<div id="ownerPanel" class="hidden fixed inset-0 z-[200] bg-black p-4 overflow-auto">
+  <div class="max-w-md mx-auto space-y-4">
+    <button onclick="goBackFromOwner()" class="back-btn">← رجوع</button>
+    <h2 class="text-center font-black">👑 لوحة المالك - الإحصائيات الكاملة</h2>
+    
+    <!-- إحصائيات المستخدمين -->
+    <div class="pro-card p-5">
+      <p class="font-black text-xs mb-4">👥 إحصائيات المستخدمين</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-[#0a0a0a] rounded-2xl p-4 text-center border border-white/5"><p class="text-[9px] opacity-40">إجمالي المسجلين</p><p id="statTotalUsers" class="font-black text-xl">0</p></div>
+        <div class="bg-[#0a0a0a] rounded-2xl p-4 text-center border border-white/5"><p class="text-[9px] opacity-40">عدد العملاء</p><p id="statClients" class="font-black text-xl text-[#22ff88]">0</p></div>
+        <div class="bg-[#0a0a0a] rounded-2xl p-4 text-center border border-white/5"><p class="text-[9px] opacity-40">عدد الكباتن</p><p id="statDrivers" class="font-black text-xl">0</p></div>
+        <div class="bg-[#0a0a0a] rounded-2xl p-4 text-center border border-white/5"><p class="text-[9px] opacity-40">متصل الآن</p><p id="statOnline" class="font-black text-xl text-[#ff1a1a]">0</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mt-3">
+        <div class="bg-[#1a1a1a] rounded-xl p-3 text-center"><p class="text-[8px] opacity-40">🛺 توكتوك</p><p id="statToktok" class="font-black">0</p></div>
+        <div class="bg-[#1a1a1a] rounded-xl p-3 text-center"><p class="text-[8px] opacity-40">🚗 ملاكي</p><p id="statCar" class="font-black">0</p></div>
+        <div class="bg-[#1a1a1a] rounded-xl p-3 text-center"><p class="text-[8px] opacity-40">🏍️ مكنة</p><p id="statBike" class="font-black">0</p></div>
+      </div>
     </div>
-    <div class="grid grid-cols-3 gap-2">
-      <button onclick="showOwnerTab('toktok')" id="tab-toktok" class="bg-[#1e1e1e] border-2 border-white rounded-full py-2 font-bold text-xs">🛺 توكتوك</button>
-      <button onclick="showOwnerTab('car')" id="tab-car" class="bg-[#1e1e1e] border border-white/20 rounded-full py-2 font-bold text-xs">🚗 ملاكي</button>
-      <button onclick="showOwnerTab('bike')" id="tab-bike" class="bg-[#1e1e1e] border border-white/20 rounded-full py-2 font-bold text-xs">🏍️ مكنة</button>
+
+    <!-- إحصائيات الرحلات والعمولة -->
+    <div class="pro-card p-5">
+      <p class="font-black text-xs mb-4">💰 إحصائيات الرحلات والعمولة</p>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="bg-[#0a0a0a] rounded-2xl p-4 border border-white/5"><p class="text-[9px] opacity-40">الرحلات</p><p id="ownerTotalTrips" class="font-black text-lg">0</p></div>
+        <div class="bg-[#0a0a0a] rounded-2xl p-4 border border-white/5"><p class="text-[9px] opacity-40">المبيعات</p><p id="ownerTotalSales" class="font-black text-lg">0ج</p></div>
+        <div class="bg-[#ff1a1a]/15 rounded-2xl p-4 border border-[#ff1a1a]/20"><p class="text-[9px] text-[#ff1a1a]">عمولتك 10%</p><p id="ownerTotalComm" class="font-black text-lg text-[#ff1a1a]">0ج</p></div>
+      </div>
     </div>
-    <div class="bg-[#111] rounded-3xl p-5 border border-white/10">
-      <div class="grid grid-cols-3 gap-3 text-center mb-4">
-        <div class="bg-[#1a1a1a] rounded-2xl p-3"><p class="text-[10px] opacity-50">الرحلات</p><p id="ownerTotalTrips" class="font-black text-lg">0</p></div>
-        <div class="bg-[#1a1a1a] rounded-2xl p-3"><p class="text-[10px] opacity-50">المبيعات</p><p id="ownerTotalSales" class="font-black text-lg">0ج</p></div>
-        <div class="bg-[#ff1a1a]/20 rounded-2xl p-3 border border-[#ff1a1a]/30"><p class="text-[10px] opacity-70">عمولتك 10%</p><p id="ownerTotalComm" class="font-black text-lg text-[#ff1a1a]">0ج</p></div>
+
+    <!-- تفاصيل الكباتن -->
+    <div class="pro-card p-5">
+      <div class="flex justify-between items-center mb-4">
+        <p class="font-black text-xs">📋 تفاصيل الكباتن</p>
+        <div class="flex gap-2">
+          <button onclick="showOwnerTab('toktok')" id="tab-toktok" class="bg-white text-black rounded-full px-3 py-1.5 font-black text-[10px]">🛺</button>
+          <button onclick="showOwnerTab('car')" id="tab-car" class="bg-[#1a1a1a] border border-white/10 rounded-full px-3 py-1.5 font-bold text-[10px]">🚗</button>
+          <button onclick="showOwnerTab('bike')" id="tab-bike" class="bg-[#1a1a1a] border border-white/10 rounded-full px-3 py-1.5 font-bold text-[10px]">🏍️</button>
+        </div>
       </div>
       <div id="ownerList" class="space-y-2"></div>
     </div>
+
+    <!-- قائمة العملاء -->
+    <div class="pro-card p-5">
+      <p class="font-black text-xs mb-4">👤 قائمة العملاء المسجلين</p>
+      <div id="clientsList" class="space-y-2 max-h-[300px] overflow-auto"></div>
+    </div>
   </div>
 </div>
-
-<button id="installBtn" style="display:none;" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99] bg-white text-black font-black px-8 py-3.5 rounded-full shadow-xl">📲 ثبّت التطبيق</button>
-<div id="iosModal" class="hidden fixed inset-0 z-[100] bg-black/80 p-6 flex items-end justify-center"><div class="bg-[#151515] rounded-[28px] p-6 w-full max-w-sm text-center space-y-3 border border-white/10"><div class="flex justify-between"><button onclick="document.getElementById('iosModal').classList.add('hidden')" class="back-btn">← رجوع</button><p class="font-black text-sm">تثبيت</p></div><p class="text-xs opacity-70">مشاركة ⎙ ثم إضافة للشاشة الرئيسية</p><button onclick="document.getElementById('iosModal').classList.add('hidden')" class="w-full bg-white text-black rounded-full py-3 font-black">فهمت</button></div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -180,103 +170,108 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let currentRole=null, authMode='login', myLocation=null, destLocation=null, destMarker=null, line=null, watchId=null, myMarker=null, currentMap=null;
-let driversLiveMarkers={}, activeRequestId=null;
-const PRICING={toktok:{base:10,perKm:6,label:'توكتوك'}, bike:{base:8,perKm:5,label:'مكنة'}, car:{base:15,perKm:8,label:'ملاكي'}};
+const PRICING={
+  toktok:{base:15, perKm:5, label:'توكتوك', formula:'15 + 5×الكيلو'},
+  bike:{base:15, perKm:5, label:'مكنة', formula:'15 + 5×الكيلو'},
+  car:{base:25, perKm:7, label:'ملاكي', formula:'25 + 7×الكيلو'}
+};
+
+let currentRole=null, authMode='login', myLocation=[30.0444,31.2357], destLocation=null, destMarker=null, line=null, watchId=null, myMarker=null;
+let driversLiveMarkers={}, activeRequestId=null, isOnline=true;
 
 function haversine(lat1,lon1,lat2,lon2){ const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180; const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
-function calcPrice(type,km){ return Math.round(PRICING[type].base+km*PRICING[type].perKm); }
-window.updatePricingUI=(type)=>{
-  if(!myLocation||!destLocation) return {km:0,price:0};
-  const km=haversine(myLocation[0],myLocation[1],destLocation[0],destLocation[1]);
+function calcPrice(type,km){ return Math.round(PRICING[type].base + (km * PRICING[type].perKm)); }
+
+const mainMap = L.map('mainMap').setView([30.0444,31.2357], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OSM', maxZoom:19}).addTo(mainMap);
+let mainPricingType='toktok';
+
+mainMap.on('click', function(e){
+  destLocation=[e.latlng.lat, e.latlng.lng];
+  if(destMarker) mainMap.removeLayer(destMarker);
+  if(line) mainMap.removeLayer(line);
+  destMarker=L.marker([e.latlng.lat, e.latlng.lng], {icon:L.divIcon({html:'<div style="font-size:28px">📍</div>', className:''})}).addTo(mainMap);
+  line=L.polyline([myLocation, destLocation], {color:'#ff1a1a', weight:4, dashArray:'8,8'}).addTo(mainMap);
+  updatePricingUI(mainPricingType, myLocation, destLocation);
+});
+
+navigator.geolocation.getCurrentPosition(pos=>{
+  myLocation=[pos.coords.latitude, pos.coords.longitude];
+  mainMap.setView(myLocation, 15);
+  if(myMarker) mainMap.removeLayer(myMarker);
+  myMarker=L.marker(myLocation, {icon:L.divIcon({html:'<div style="background:#fff;width:18px;height:18px;border-radius:50%;border:3px solid #ff1a1a"></div>', className:''})}).addTo(mainMap).bindPopup("انت هنا").openPopup();
+}, ()=>{}, {enableHighAccuracy:true});
+
+onValue(ref(db,'drivers'), snap=>{
+  const data=snap.val(); if(!data) { document.getElementById('statOnline').innerText='0'; return; }
+  document.getElementById('statOnline').innerText=Object.keys(data).length;
+  Object.keys(data).forEach(k=>{
+    const d=data[k]; if(!d.lat) return;
+    if(!driversLiveMarkers[k]){
+      const ic=d.role==='toktok'?'🛺':d.role==='bike'?'🏍️':'🚗';
+      driversLiveMarkers[k]=L.marker([d.lat,d.lng], {icon:L.divIcon({html:`<div style="font-size:22px;background:#000;border-radius:50%;padding:4px;border:1px solid #fff">${ic}</div>`, className:''})}).addTo(mainMap).bindPopup(`${d.name} - ${d.role}<br>📞 ${d.phone}`);
+    } else {
+      driversLiveMarkers[k].setLatLng([d.lat,d.lng]);
+    }
+  });
+});
+
+window.updatePricingUI=(type, fromLoc, toLoc)=>{
+  if(!fromLoc || !toLoc) return {km:0,price:0};
+  const km=haversine(fromLoc[0],fromLoc[1],toLoc[0],toLoc[1]);
   const price=calcPrice(type,km);
+  const p=PRICING[type];
   document.getElementById('distText').innerText=km.toFixed(2)+' كم';
-  document.getElementById('typeText').innerText=PRICING[type]?.label||type;
+  document.getElementById('typeText').innerText=p.label;
+  document.getElementById('formulaText').innerText=p.formula;
   document.getElementById('priceText').innerText=price+' جنيه';
   document.getElementById('pricingBox').classList.remove('hidden');
   return {km,price};
 }
-window.clearDest=()=>{ destLocation=null; if(destMarker) currentMap.removeLayer(destMarker); if(line) currentMap.removeLayer(line); document.getElementById('pricingBox').classList.add('hidden'); }
+window.clearDest=()=>{ destLocation=null; if(destMarker) mainMap.removeLayer(destMarker); if(line) mainMap.removeLayer(line); document.getElementById('pricingBox').classList.add('hidden'); }
 
-// نظام الرجوع
-window.goBack=()=>{
-  if(!document.getElementById('ownerPanel').classList.contains('hidden')){ goBackFromOwner(); return; }
-  if(!document.getElementById('dashboard').classList.contains('hidden')){ goBackToAuth(); return; }
-  if(!document.getElementById('authBox').classList.contains('hidden')){ goBackToRoles(); return; }
-}
-window.goBackToRoles=()=>{
-  document.getElementById('authBox').classList.add('hidden');
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('roleBox').classList.remove('hidden');
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-window.goBackToAuth=()=>{
-  if(localStorage.getItem('tawsila_id')){
-    // لو مسجل دخول، رجوع للداشبورد يفضل موجود، بس لو عايز يرجع لتغيير النوع نعمل logout خفيف
-    if(document.getElementById('dashboard').classList.contains('hidden')){
-      document.getElementById('dashboard').classList.remove('hidden');
-      document.getElementById('authBox').classList.add('hidden');
-      return;
-    }
-  }
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('authBox').classList.remove('hidden');
-  document.getElementById('roleBox').classList.add('hidden');
-}
-window.goBackFromOwner=()=>{ document.getElementById('ownerPanel').classList.add('hidden'); }
-window.cancelActiveTrip=()=>{ if(activeRequestId){ update(ref(db,'requests/'+activeRequestId), {status:'pending', driverId:null}); localStorage.removeItem('activeRequestId'); activeRequestId=null; document.getElementById('activeTripBox').classList.add('hidden'); } }
+window.goBackToRoles=()=>{ document.getElementById('authBox').classList.add('hidden'); document.getElementById('dashboard').classList.add('hidden'); document.getElementById('roleBox').classList.remove('hidden'); setTimeout(()=>mainMap.invalidateSize(),300); }
+window.goBackToAuth=()=>{ document.getElementById('dashboard').classList.add('hidden'); document.getElementById('authBox').classList.remove('hidden'); }
+window.goBackFromOwner=()=>document.getElementById('ownerPanel').classList.add('hidden');
 
 window.switchAuth=(mode)=>{
   authMode=mode;
-  document.getElementById('tabLogin').className=mode==='login'?'flex-1 bg-white text-black rounded-full py-2.5 font-black text-sm':'flex-1 text-white/60 rounded-full py-2.5 font-bold text-sm';
-  document.getElementById('tabRegister').className=mode==='register'?'flex-1 bg-white text-black rounded-full py-2.5 font-black text-sm':'flex-1 text-white/60 rounded-full py-2.5 font-bold text-sm';
-  document.getElementById('authBtn').innerText=mode==='login'?'دخول آمن 🔐':'إنشاء حساب آمن ✨';
+  document.getElementById('tabLogin').className=mode==='login'?'flex-1 bg-white text-black rounded-full py-2.5 font-black text-xs':'flex-1 text-white/50 rounded-full py-2.5 font-bold text-xs';
+  document.getElementById('tabRegister').className=mode==='register'?'flex-1 bg-white text-black rounded-full py-2.5 font-black text-xs':'flex-1 text-white/50 rounded-full py-2.5 font-bold text-xs';
+  document.getElementById('authBtn').innerText=mode==='login'?'دخول آمن 🔐':'إنشاء حساب ✨';
   document.getElementById('name').style.display=mode==='register'?'block':'none';
   document.getElementById('address').style.display=mode==='register'?'block':'none';
-  document.getElementById('vehicleFields').style.display=(mode==='register' && currentRole!=='client')?'block':'none';
 }
 window.pick=(r)=>{
-  currentRole=r;
-  localStorage.setItem('picked_role', r);
+  currentRole=r; mainPricingType=r;
   document.querySelectorAll('[data-r]').forEach(b=>b.classList.remove('ring-2','ring-white'));
   document.querySelector(`[data-r="${r}"]`)?.classList.add('ring-2','ring-white');
-  document.getElementById('roleBox').classList.add('hidden');
-  document.getElementById('authBox').classList.remove('hidden');
-  document.getElementById('pickedRoleLabel').innerText=PRICING[r]?.label||r;
-  document.getElementById('authBox').scrollIntoView({behavior:'smooth'});
-  switchAuth('register');
-  if(r!=='client'){ document.getElementById('vehicleFields').classList.remove('hidden'); }
+  setTimeout(()=>{ document.getElementById('roleBox').classList.add('hidden'); document.getElementById('authBox').classList.remove('hidden'); switchAuth('register'); },200);
 }
 window.handleAuth=async()=>{
   const phone=document.getElementById('phone').value.trim();
   const pass=document.getElementById('password').value.trim();
   const name=document.getElementById('name').value.trim();
   const address=document.getElementById('address').value.trim();
-  const vehicle=document.getElementById('vehicleNum').value.trim();
   const msg=document.getElementById('authMsg');
-  if(!phone||!pass){ msg.innerText='اكتب رقم الموبايل والباسورد'; return; }
-  if(!navigator.onLine){ msg.innerText='لازم إنترنت'; return; }
-  if(pass.length<6){ msg.innerText='الباسورد 6 حروف على الأقل'; return; }
-  msg.innerText='جاري التحقق...';
+  if(!phone||!pass){ msg.innerText='اكتب الموبايل والباسورد'; return; }
+  msg.innerText='جاري...';
   const userRef=ref(db,'users/'+phone);
   try{
     if(authMode==='register'){
       if(!name){ msg.innerText='اكتب اسمك'; return; }
       const snap=await get(userRef);
-      if(snap.exists()){ msg.innerText='الرقم ده متسجل قبل كده - دوس دخول'; return; }
-      const hashed=btoa(pass);
-      await set(userRef,{ name, phone, address:address||'', vehicle:vehicle||'', role:currentRole, password:hashed, createdAt:Date.now(), trips:0 });
-      msg.innerText='تم إنشاء الحساب ✅';
+      if(snap.exists()){ msg.innerText='متسجل قبل كده'; return; }
+      await set(userRef,{ name, phone, address:address||'', role:currentRole, password:btoa(pass), createdAt:Date.now() });
       completeLogin({name, phone, address, role:currentRole});
     } else {
       const snap=await get(userRef);
-      if(!snap.exists()){ msg.innerText='مفيش حساب بالرقم ده'; return; }
-      const data=snap.val();
-      if(btoa(pass)!==data.password){ msg.innerText='الباسورد غلط'; return; }
-      currentRole=data.role;
-      completeLogin(data);
+      if(!snap.exists()){ msg.innerText='مفيش حساب'; return; }
+      if(btoa(pass)!==snap.val().password){ msg.innerText='الباسورد غلط'; return; }
+      currentRole=snap.val().role;
+      completeLogin(snap.val());
     }
-  }catch(e){ msg.innerText='خطأ: '+e.message; }
+  }catch(e){ msg.innerText=e.message; }
 }
 function completeLogin(userData){
   localStorage.setItem('tawsila_id', userData.phone);
@@ -288,26 +283,25 @@ function completeLogin(userData){
   document.getElementById('roleBox').classList.add('hidden');
   document.getElementById('dashboard').classList.remove('hidden');
   document.getElementById('dashName').innerText=userData.name;
-  document.getElementById('dashInfo').innerText=`${PRICING[userData.role]?.label||userData.role} - ${userData.phone} - ${userData.address||''}`;
-  currentRole=userData.role;
-  startLocationPRO();
+  document.getElementById('dashInfo').innerText=`${PRICING[userData.role]?.label||userData.role} - ${userData.phone}`;
+  currentRole=userData.role; mainPricingType=userData.role;
+  setTimeout(()=>{ mainMap.invalidateSize(); startLocationPRO(); }, 500);
 }
 window.startLocationPRO=()=>{
   const id=localStorage.getItem('tawsila_id');
   const roleLocal=localStorage.getItem('tawsila_role')||currentRole;
   if(!id) return;
-  const mapEl=document.getElementById(roleLocal==='client'?'map2':'map');
-  mapEl.classList.remove('hidden');
-  navigator.geolocation.getCurrentPosition(pos=>{
-    myLocation=[pos.coords.latitude, pos.coords.longitude];
-    const m=L.map(mapEl, {zoomControl:false}).setView(myLocation, 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png').addTo(m);
-    currentMap=m;
-    myMarker=L.marker(myLocation, {icon:L.divIcon({html:'<div style="background:#fff;width:16px;height:16px;border-radius:50%;border:3px solid #ff1a1a;box-shadow:0 0 15px #ff1a1a"></div>', className:''})}).addTo(m).bindPopup("انت هنا - تتبع مباشر").openPopup();
-    if(roleLocal==='client'){ document.getElementById('clientActions').classList.remove('hidden'); document.getElementById('pricingBox').classList.remove('hidden');
-      m.on('click', e=>{
-        destLocation=[e.latlng.lat, e.latlng.lng];
-        if(destMarker) m.removeLayer(destMarker);
-        if(line) m.removeLayer(line);
-        destMarker=L.marker(destLocation, {icon:L.divIcon({html:'<div style="font-size:30px">📍</div>', className:''})}).addTo(m);
-        line=L.polyline([myLocation, destLocation], {color:'#ff1a1a', weight:4, 
+  if(roleLocal==='client') document.getElementById('clientActions').classList.remove('hidden');
+  else {
+    document.getElementById('driverActions').classList.remove('hidden');
+    if(watchId) navigator.geolocation.clearWatch(watchId);
+    watchId=navigator.geolocation.watchPosition(p=>{
+      myLocation=[p.coords.latitude, p.coords.longitude];
+      if(myMarker) myMarker.setLatLng(myLocation);
+      mainMap.setView(myLocation, 15);
+      set(ref(db,'drivers/'+id),{ name:localStorage.getItem('tawsila_name'), phone:id, address:localStorage.getItem('tawsila_address')||'', role:roleLocal, lat:p.coords.latitude, lng:p.coords.longitude, t:Date.now() });
+    }, null, {enableHighAccuracy:true, maximumAge:0});
+    onDisconnect(ref(db,'drivers/'+id)).remove();
+  }
+  onValue(ref(db,'requests'), snap=>{
+    const list=document.getElementById('requestsList'); if(!li
