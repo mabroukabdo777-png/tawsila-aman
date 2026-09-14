@@ -135,34 +135,46 @@ navigator.geolocation.getCurrentPosition(p=>{current=[p.coords.latitude,p.coords
 window.logout=function(){localStorage.clear();location.reload();}
 </script>
   <!-- زرار تثبيت التطبيق -->
-<button id="installBtn" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#8B0000; color:gold; border:2px solid gold; padding:14px 28px; border-radius:30px; font-weight:bold; font-size:16px; z-index:9999; box-shadow:0 4px 15px rgba(0,0,0,0.3);">📲 ثبّت تطبيق توصيلة</button>
+<button id="installBtn" style="display:none;" class="mt-4 bg-white text-black font-black px-6 py-3 rounded-full w-full">📱 ثبّت التطبيق على موبايلك الآن</button>
 
 <script>
 let deferredPrompt;
 const installBtn = document.getElementById('installBtn');
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'block';
-});
+function isInApp(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+}
 
-installBtn.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') installBtn.style.display = 'none';
-    deferredPrompt = null;
-  }
-});
+// لو جوه التطبيق المتثبت - اخفيه فورا ومش هنسمع لاي حاجة تاني
+if(isInApp()){
+  installBtn.style.display = 'none';
+} else {
+  // احنا في كروم بس - استنى اشارة التثبيت
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block'; // يظهر في كروم بس
+  });
 
-// تسجيل الـ Service Worker
+  installBtn.addEventListener('click', async () => {
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      const {outcome} = await deferredPrompt.userChoice;
+      if(outcome === 'accepted'){
+        installBtn.style.display = 'none';
+      }
+      deferredPrompt = null;
+    }
+  });
+}
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker.register('/sw.js?v=101');
 }
 
 window.addEventListener('appinstalled', () => {
   installBtn.style.display = 'none';
+  deferredPrompt = null;
 });
 </script>
 </body>
