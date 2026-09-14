@@ -1,14 +1,13 @@
 {
-  "name": "توصيلة Tawsila",
-  "short_name": "توصيلة Tawsila",
-  "description": "توصيلة - خدمة نقل ذكية في جميع انحاء مصر",
+  "name": "Tawsila Aman - توصيلة أمان",
+  "short_name": "Tawsila Aman",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#8B0000",
+  "background_color": "#0A0A0A",
+  "theme_color": "#C70000",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
