@@ -1,240 +1,289 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#ff1a1a">
-<link rel="manifest" href="manifest.json">
-<title>Tawsila Aman - رقم 1 في مصر</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="manifest" href="./manifest.json">
+<title>Tawsila Aman - شركة كاملة - زراير شغالة 100%</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
-*{ -webkit-tap-highlight-color: transparent; }
-body{background:#050507;color:#fff;font-family:system-ui; overflow-x:hidden}
-#mainMap{height:360px!important; min-height:360px!important; width:100%!important; border-radius:24px; background:#0a0a0a; border:1px solid rgba(255,255,255,0.08); display:block!important; position:relative!important; z-index:1!important}
-.leaflet-container{touch-action: pan-x pan-y!important;}
-.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:10px 20px;font-size:12px;font-weight:900}
-.input-pro{background:#151515;border:1px solid #333;border-radius:9999px;padding:14px 20px;width:100%;font-size:13px;outline:none}
-.pro-card{background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:28px; overflow:hidden}
-.live-dot{width:10px;height:10px;background:#22ff88;border-radius:50%;display:inline-block}
-.sos-btn{background:linear-gradient(135deg,#ff0000,#cc0000); border-radius:20px; padding:12px; border:3px solid #ff0000; animation:pulse-red 1.2s infinite}
-@keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(255,0,0,0.8)}70%{box-shadow:0 0 0 12px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}}
-.credit-badge{background:linear-gradient(135deg,#22ff88,#00cc66); color:#000; border-radius:9999px; padding:4px 10px; font-size:10px; font-weight:900}
-.chat-box{max-height:180px; overflow:auto; background:#000; border-radius:16px; padding:10px}
-.star{font-size:22px; cursor:pointer}
-.star.active{color:#fbbf24}
+*{ -webkit-tap-highlight-color:transparent; }
+body{background:#08080a;color:#fff;font-family:system-ui; overflow-x:hidden}
+#mainMap{height:460px !important;width:100% !important;border-radius:28px;background:#111;border:2px solid rgba(255,26,26,0.3);display:block !important;z-index:1}
+#trackingMap{height:70vh;width:100%;border-radius:28px;border:2px solid #22ff88}
+.leaflet-container{background:#121214 !important}
+.card{background:#121214;border:1px solid rgba(255,255,255,0.08);border-radius:26px}
+.btn{border-radius:9999px;padding:13px 18px;font-weight:900;font-size:12px;cursor:pointer;user-select:none}
+.btn:active{transform:scale(0.96)}
+.input{background:#151518;border:1.5px solid #2a2a2e;border-radius:9999px;padding:14px 18px;width:100%;font-size:12px;outline:none;color:#fff}
+.glass{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:10px 20px;font-size:11px;font-weight:900}
+.live-dot{width:9px;height:9px;background:#22ff88;border-radius:50%;display:inline-block;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,255,136,.7)}70%{box-shadow:0 0 0 8px rgba(34,255,136,0)}100%{box-shadow:0 0 0 0 rgba(34,255,136,0)}}
 </style>
 </head>
-<body class="min-h-screen flex justify-center px-4 py-4">
-<div class="w-full max-w-[420px] space-y-3">
+<body class="min-h-screen flex justify-center px-3 py-3">
+<div class="w-full max-w-[410px] space-y-3">
 
-  <div id="installBanner" class="hidden bg-[#ff1a1a] rounded-2xl p-3 text-center">
-    <p class="font-black text-xs">📲 نزل التطبيق على موبايلك زي أوبر حقيقي</p>
-    <button onclick="installApp()" class="w-full bg-white text-black rounded-full py-2 font-black text-xs mt-2">📥 نزّل توصيلة أمان</button>
-  </div>
-
-  <div class="text-center pt-2">
-    <h1 id="logo" class="text-[34px] font-black" style="cursor:pointer"><span style="color:#ff1a1a">Tawsila</span> Aman</h1>
-    <p class="text-[10px] font-bold"><span class="bg-[#22ff88] text-black rounded-full px-3 py-1">✅ رقم 1 في مصر - رصيد الإحالة بيدفع للكابتن</span></p>
-  </div>
-
-  <div class="pro-card p-3" style="position:relative; height:366px;">
-    <div id="mainMap"></div>
-    <div class="absolute bottom-3 left-3 right-3 bg-black/85 rounded-full px-3 py-2 text-[10px] flex justify-between z-[400]">
-      <span>📏 <b id="realDistText" class="text-[#22ff88]">0 كم طريق حقيقي</b></span>
-      <span>⏱️ <b id="etaText">-- د</b></span>
-      <span>💰 <b id="realPriceText" class="text-[#ff1a1a]">0ج</b></span>
-    </div>
-  </div>
-
-  <div id="roleBox" class="pro-card p-5">
-    <p class="text-center text-xs font-black mb-4">اختار نوع حسابك</p>
-    <div class="grid grid-cols-2 gap-3">
-      <button onclick="pick('toktok')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">🛺</div><div class="font-black text-xs mt-1">توكتوك</div></button>
-      <button onclick="pick('client')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">👤</div><div class="font-black text-xs mt-1">عميل</div></button>
-      <button onclick="pick('car')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">🚗</div><div class="font-black text-xs mt-1">ملاكي</div></button>
-      <button onclick="pick('bike')" class="bg-[#1a1a1a] border border-white/10 rounded-[20px] p-4 text-center"><div class="text-xl">🏍️</div><div class="font-black text-xs mt-1">مكنة</div></button>
-    </div>
-  </div>
-
-  <div id="authBox" class="hidden pro-card p-6 space-y-4">
-    <button onclick="goBackToRoles()" class="back-btn">← رجوع</button>
-    <div class="flex bg-[#0a0a0a] rounded-full p-1 mt-2"><button id="tabLogin" onclick="switchAuth('login')" class="flex-1 bg-white text-black rounded-full py-2.5 font-black text-xs">دخول</button><button id="tabRegister" onclick="switchAuth('register')" class="flex-1 text-white/50 rounded-full py-2.5 font-bold text-xs">حساب جديد</button></div>
-    <div class="space-y-3">
-      <input id="name" placeholder="الاسم الحقيقي" class="input-pro">
-      <input id="phone" placeholder="الموبايل الحقيقي" class="input-pro">
-      <input id="address" placeholder="العنوان الحقيقي" class="input-pro">
-      <input id="referralInput" placeholder="كود دعوة صديق (اختياري)" class="input-pro">
-      <div id="verificationBox" class="hidden space-y-3 bg-[#ff1a1a]/10 border border-[#ff1a1a]/30 rounded-2xl p-4">
-        <p class="font-black text-xs text-[#ff1a1a]">🔒 توثيق حقيقي مطلوب</p>
-        <input id="idNumber" placeholder="رقم البطاقة 14 رقم" class="input-pro">
-        <input id="vehicleNumber" placeholder="رقم المركبة" class="input-pro">
-      </div>
-      <input id="password" type="password" placeholder="كلمة السر" class="input-pro">
-    </div>
-    <button onclick="handleAuth()" class="w-full bg-white text-black font-black rounded-full py-4">دخول آمن 🔐</button>
-    <p id="authMsg" class="text-xs text-center text-red-400"></p>
-  </div>
-
-  <div id="dashboard" class="hidden space-y-3">
-    <div class="pro-card p-4">
-      <button onclick="goBackToAuth()" class="back-btn">← رجوع</button>
-      <div class="mt-3 flex justify-between">
-        <div><p class="font-black text-sm" id="dashName">-</p><p class="text-[11px] opacity-50" id="dashInfo">-</p><p id="verifyStatus" class="text-[10px] mt-1"></p></div>
-        <span class="credit-badge" id="myCreditBadge">0ج رصيد</span>
-      </div>
-      <div class="bg-[#22ff88]/10 border border-[#22ff88]/30 rounded-2xl p-3 mt-3">
-        <p class="font-black text-xs">🎁 كود دعوتك: <b id="myReferralCode">---</b></p>
-        <p class="text-[10px] opacity-60 mt-1">رصيد الإحالة بيدفع للكابتن جوه التطبيق - بيتخصم من مديونيتك عند المالك</p>
-        <button onclick="shareReferral()" class="bg-white text-black rounded-full px-4 py-1.5 text-[10px] font-black mt-2">📤 شارك كودك واكسب 10ج</button>
-      </div>
-    </div>
-
-    <div id="clientActions" class="hidden space-y-3">
-      <div class="pro-card p-3 border-[#ff0000]/30 bg-[#ff0000]/5">
-        <button onclick="sendSOS()" class="sos-btn w-full font-black text-[14px]">🆘 SOS طوارئ</button>
-      </div>
-      <div id="chatBox" class="hidden pro-card p-3">
-        <p class="font-black text-xs mb-2">💬 شات حقيقي مع الكابتن</p>
-        <div id="chatMessages" class="chat-box text-xs space-y-1"></div>
-        <div class="flex gap-2 mt-2">
-          <input id="chatInput" placeholder="انا لابس احمر..." class="input-pro flex-1 text-xs">
-          <button onclick="sendChat()" class="bg-[#22ff88] text-black rounded-full px-4 py-2 font-black text-xs">إرسال</button>
-        </div>
-        <button onclick="shareTrip()" class="w-full bg-[#3b82f6]/20 border border-[#3b82f6]/30 rounded-full py-2 text-xs font-black mt-2">📍 شارك رحلتك مع أهلك</button>
-        <p id="shareLink" class="text-[9px] mt-2 break-all text-[#3b82f6]"></p>
-      </div>
-      <div class="pro-card p-4">
-        <div class="flex gap-2 bg-[#0a0a0a] rounded-full p-1 mb-3">
-          <button onclick="showClientTab('toktok')" id="c-tab-toktok" class="flex-1 bg-white text-black rounded-full py-2 font-black text-xs">🛺 توكتوك</button>
-          <button onclick="showClientTab('car')" id="c-tab-car" class="flex-1 text-white/50 rounded-full py-2 font-bold text-xs">🚗 ملاكي</button>
-          <button onclick="showClientTab('bike')" id="c-tab-bike" class="flex-1 text-white/50 rounded-full py-2 font-bold text-xs">🏍️ مكنة</button>
-        </div>
-        <div id="clientCaptainsList" class="space-y-2 max-h-[360px] overflow-auto"></div>
-      </div>
-      <div id="activeClientTrip" class="hidden pro-card p-4 border-[#22ff88]/30">
-        <p class="font-black text-xs">🚀 رحلتك شغالة</p>
-        <div id="activeClientInfo" class="text-[11px] mt-2"></div>
-      </div>
-      <p id="reqStatus" class="text-xs text-center font-black"></p>
-      <p class="text-[10px] text-center text-[#22ff88]" id="creditUsedTextFull"></p>
-    </div>
-
-    <div id="driverActions" class="hidden space-y-3">
-      <div class="pro-card p-3 flex justify-between items-center"><p class="text-xs font-black"><span class="live-dot"></span> <span id="onlineStatusText">متصل</span></p><button onclick="toggleOnline()" id="onlineBtn" class="bg-[#22ff88] text-black rounded-full px-4 py-1.5 text-xs font-black">● متصل</button></div>
-      <div id="driverChatBox" class="hidden pro-card p-3">
-        <p class="font-black text-xs mb-2">💬 شات مع العميل</p>
-        <div id="driverChatMessages" class="chat-box text-xs space-y-1"></div>
-        <div class="flex gap-2 mt-2">
-          <input id="driverChatInput" placeholder="جايلك..." class="input-pro flex-1 text-xs">
-          <button onclick="sendDriverChat()" class="bg-[#22ff88] text-black rounded-full px-4 py-2 font-black text-xs">إرسال</button>
-        </div>
-      </div>
-      <div class="pro-card p-4">
-        <p class="font-black text-xs">💰 محفظتك - 15% - تعويض رصيد تلقائي</p>
-        <div class="grid grid-cols-3 gap-2 mt-3 text-center">
-          <div class="bg-black rounded-xl p-2"><p class="text-[8px] opacity-40">عمولة</p><b id="walletTotalDebt" class="text-xs text-[#ff1a1a]">0ج</b></div>
-          <div class="bg-[#22ff88]/10 rounded-xl p-2"><p class="text-[8px] opacity-60">تعويض رصيد</p><b id="walletCreditComp" class="text-xs text-[#22ff88]">0ج</b></div>
-          <div class="bg-[#ff1a1a]/20 rounded-xl p-2"><p class="text-[8px] text-[#ff1a1a]">المتبقي</p><b id="walletRemaining" class="text-sm text-[#ff1a1a]">0ج</b></div>
-        </div>
-        <div id="walletHistory" class="text-[10px] mt-3 max-h-[100px] overflow-auto bg-black/50 rounded-xl p-2"></div>
-      </div>
-      <div id="activeTripBox" class="hidden pro-card p-4 border-[#22ff88]/30">
-        <p class="font-black text-xs">🚀 رحلة نشطة</p>
-        <div id="activeTripInfo" class="text-[11px] mt-2"></div>
-        <div class="grid grid-cols-2 gap-2 mt-3">
-          <a id="callClientBtn" href="#" class="bg-[#3b82f6] text-white rounded-full py-3 text-center font-black text-xs">📞 رن</a>
-          <button onclick="endTrip()" class="bg-[#22ff88] text-black rounded-full py-3 font-black text-xs">✅ إنهاء</button>
-        </div>
-      </div>
-      <div class="pro-card p-4"><p class="font-black text-center text-xs">📥 طلبات حقيقية</p><div id="requestsList" class="space-y-2 max-h-[400px] overflow-auto mt-3"></div></div>
-    </div>
-  </div>
+<div id="installBanner" style="display:none" class="card bg-[#ff1a1a] border-[#ff1a1a] p-3 text-center">
+<p class="font-black text-[12px]">📲 نزّل التطبيق - يشتغل زي أوبر - PWA حقيقي</p>
+<button onclick="window.installApp()" class="btn bg-white text-black w-full mt-2 text-[12px]">📥 تثبيت مباشر - جوجل كروم</button>
 </div>
 
-<div id="ownerPanel" class="hidden fixed inset-0 z-[200] bg-black p-4 overflow-auto">
-  <div class="max-w-md mx-auto space-y-4">
-    <button onclick="goBackFromOwner()" class="back-btn">← رجوع</button>
-    <h2 class="text-center font-black">👑 لوحة المالك - رقم 1 في مصر</h2>
-    <div class="pro-card p-4 bg-[#fbbf24]/10 border-[#fbbf24]/30"><p class="font-black text-xs mb-3">💰 مديونيات - تلمها 9-11</p><div id="ownerDebtsList" class="space-y-2 max-h-[300px] overflow-auto"></div></div>
-    <div id="sosAlerts" class="pro-card p-4 border-[#ff0000]/50 bg-[#ff0000]/10"><p class="font-black text-xs text-[#ff4444]">🆘 SOS</p><div id="sosList" class="space-y-2 mt-3"></div></div>
-    <div class="pro-card p-4 border-[#ff1a1a]/30"><p class="font-black text-xs mb-3">🔒 طلبات توثيق</p><div id="pendingVerifications" class="space-y-3"></div></div>
-    <div class="pro-card p-4"><p class="font-black text-xs mb-3">👥 إحصائيات</p><div class="grid grid-cols-4 gap-2 text-center"><div class="bg-[#0a0a0a] rounded-xl p-2"><p class="text-[8px] opacity-40">الكل</p><p id="statTotalUsers" class="font-black text-sm">0</p></div><div class="bg-[#0a0a0a] rounded-xl p-2"><p class="text-[8px] opacity-40">عملاء</p><p id="statClients" class="font-black text-sm">0</p></div><div class="bg-[#0a0a0a] rounded-xl p-2"><p class="text-[8px] opacity-40">كباتن</p><p id="statDrivers" class="font-black text-sm">0</p></div><div class="bg-[#22ff88]/20 rounded-xl p-2"><p class="text-[8px] opacity-60">موثق</p><p id="statVerified" class="font-black text-sm">0</p></div></div></div>
-    <div class="flex gap-2 bg-[#0a0a0a] rounded-full p-1"><button onclick="showOwnerTab('toktok')" id="tab-toktok" class="flex-1 bg-white text-black rounded-full py-3 font-black text-xs">🛺 توكتوك</button><button onclick="showOwnerTab('car')" id="tab-car" class="flex-1 text-white/50 rounded-full py-3 font-bold text-xs">🚗 ملاكي</button><button onclick="showOwnerTab('bike')" id="tab-bike" class="flex-1 text-white/50 rounded-full py-3 font-bold text-xs">🏍️ مكنة</button></div>
-    <div class="pro-card p-4"><p id="sectionTitle" class="font-black text-xs">🛺 قسم التوكتوك</p><p class="text-[10px] opacity-40"><span id="sectionCount">0</span> كابتن موثق</p><div id="ownerSectionList" class="space-y-3 mt-3"></div><div class="grid grid-cols-3 gap-2 text-center mt-3"><div class="bg-[#0a0a0a] rounded-xl p-2"><p class="text-[8px] opacity-40">رحلات</p><p id="ownerTotalTrips" class="font-black text-xs">0</p></div><div class="bg-[#0a0a0a] rounded-xl p-2"><p class="text-[8px] opacity-40">مبيعات</p><p id="ownerTotalSales" class="font-black text-xs">0ج</p></div><div class="bg-[#ff1a1a]/20 rounded-xl p-2"><p class="text-[8px] text-[#ff1a1a]">عمولة 15%</p><p id="ownerTotalComm" class="font-black text-xs text-[#ff1a1a]">0ج</p></div></div></div>
-  </div>
+<div class="text-center pt-1">
+<h1 id="logo" class="text-[34px] font-black" style="cursor:pointer"><span style="color:#ff1a1a">Tawsila</span> Aman</h1>
+<p class="text-[10px] mt-1"><span class="bg-[#22ff88] text-black rounded-full px-3 py-1 font-black">✅ زراير شغالة 100% - جرب دوس</span></p>
+<p class="text-[8px] opacity-40 mt-1">دوس 7 مرات على اللوجو 👑 لوحة المالك - برقم الموبايل الحقيقي</p>
+</div>
+
+<div class="card p-2.5 relative">
+<div id="mainMap"></div>
+<div class="absolute top-3 left-3 glass text-[10px] z-[400]">🟢 <span id="liveStatus">جاري تحديد موقعك الحقيقي...</span> <span id="speedText" class="text-[#3b82f6]">0 كم/س</span></div>
+<div class="absolute bottom-3 left-3 right-3 glass rounded-[18px] p-3 flex justify-between items-center z-[400]">
+<div><p class="text-[9px] opacity-60">المسافة الحقيقية</p><b id="realDistText" class="text-[12px] text-[#22ff88]">دوس على الخريطة حدد وجهتك 📍</b><p id="etaText" class="text-[10px] opacity-50">-</p></div>
+<div class="text-left"><p class="text-[9px] opacity-60">السعر</p><b id="realPriceText" class="text-[15px] text-[#ff1a1a]">0ج</b></div>
+</div>
+</div>
+
+<div id="shareLiveBox" style="display:none" class="card border-[#3b82f6]/40 bg-[#3b82f6]/10 p-4">
+<p class="font-black text-[12px] text-[#3b82f6]">📍 مشاركة لايف مع الأهل - حقيقية</p>
+<p id="shareLink" class="text-[10px] mt-3 break-all bg-black rounded-xl p-3 text-[#22ff88]"></p>
+<button onclick="window.copyShareLink()" class="btn bg-[#3b82f6] text-white w-full mt-3">📋 نسخ اللينك</button>
+<div class="grid grid-cols-2 gap-2 mt-2"><button onclick="window.shareViaWhatsapp()" class="btn bg-[#25D366] text-black">واتساب</button><button onclick="window.stopSharing()" class="btn glass">إيقاف</button></div>
+</div>
+
+<div id="trackingView" style="display:none" class="fixed inset-0 z-[2000] bg-black p-3 overflow-auto">
+<div class="max-w-[410px] mx-auto space-y-3">
+<button onclick="window.closeTracking()" class="glass">← رجوع</button>
+<div id="trackingMap"></div>
+<div class="card p-3 grid grid-cols-3 gap-2 text-center text-[11px]"><div><b id="trackDist">-</b></div><div><b id="trackPrice">-</b></div><div><b id="trackSpeed">-</b></div></div>
+</div>
+</div>
+
+<div id="roleBox" class="card p-5">
+<p class="text-center font-black text-[13px]">اختار نوع حسابك - كل الزراير شغالة حقيقي</p>
+<div class="grid grid-cols-2 gap-3 mt-4">
+<button onclick="window.pick('toktok')" class="card p-5 text-center border-2 border-[#ff1a1a]/30"><div class="text-[26px]">🛺</div><div class="font-black text-[12px] mt-2">توكتوك</div></button>
+<button onclick="window.pick('client')" class="card p-5 text-center border-2 border-[#22ff88]/30"><div class="text-[26px]">👤</div><div class="font-black text-[12px] mt-2">عميل</div></button>
+<button onclick="window.pick('car')" class="card p-5 text-center border border-white/10"><div class="text-[26px]">🚗</div><div class="font-black text-[12px] mt-2">ملاكي</div></button>
+<button onclick="window.pick('bike')" class="card p-5 text-center border border-white/10"><div class="text-[26px]">🏍️</div><div class="font-black text-[12px] mt-2">مكنة</div></button>
+</div>
+<p id="testMsg" class="text-[10px] text-center mt-3 text-[#22ff88]">لو دوست ومحصلش حاجة يبقى انت لسه رافع الملف القديم - احذف الكاش</p>
+</div>
+
+<div id="authBox" style="display:none" class="card p-5 space-y-3">
+<button onclick="window.goBackToRoles()" class="glass">← رجوع</button>
+<div class="flex glass rounded-full p-1"><button id="tabLogin" onclick="window.switchAuth('login')" class="flex-1 btn bg-white text-black text-xs">دخول</button><button id="tabRegister" onclick="window.switchAuth('register')" class="flex-1 btn glass text-xs opacity-50">حساب جديد</button></div>
+<input id="name" placeholder="الاسم الكامل الحقيقي" class="input">
+<input id="phone" placeholder="رقم الموبايل الحقيقي 01xxxxxxxxx" class="input">
+<input id="address" placeholder="العنوان" class="input">
+<input id="referralInput" placeholder="كود دعوة (اختياري)" class="input">
+<div id="verificationBox" style="display:none" class="space-y-2 bg-[#ff1a1a]/10 border border-[#ff1a1a]/20 rounded-[20px] p-3">
+<p class="font-black text-[11px] text-[#ff1a1a]">🔒 توثيق الكابتن برقم الموبايل الحقيقي</p>
+<input id="idNumber" placeholder="رقم البطاقة 14 رقم" class="input">
+<input id="vehicleNumber" placeholder="رقم المركبة" class="input">
+</div>
+<input id="password" type="password" placeholder="كلمة السر" class="input">
+<button onclick="window.handleAuth()" class="btn bg-white text-black w-full py-4">دخول 🔐</button>
+<p id="authMsg" class="text-xs text-center text-[#ff1a1a]"></p>
+</div>
+
+<div id="dashboard" style="display:none" class="space-y-3">
+<div class="card p-4">
+<button onclick="window.goBackToAuth()" class="glass">← رجوع</button>
+<p class="font-black text-[14px] mt-3" id="dashName">-</p>
+<p class="text-[11px] opacity-60" id="dashInfo">-</p>
+<p id="verifyStatus" class="text-[10px] mt-1"></p>
+<span id="myCreditBadge" class="bg-[#22ff88] text-black rounded-full px-3 py-1 text-[11px] font-black">0ج</span>
+<p class="text-[11px] mt-3">🎁 كودك: <b id="myReferralCode">---</b></p>
+</div>
+<div id="clientActions" style="display:none" class="space-y-3">
+<div class="card p-4">
+<div class="flex gap-2 glass rounded-full p-1 mb-3">
+<button onclick="window.showClientTab('toktok')" id="c-tab-toktok" class="flex-1 btn bg-white text-black text-[11px]">🛺 توكتوك</button>
+<button onclick="window.showClientTab('car')" id="c-tab-car" class="flex-1 btn glass text-[11px]">🚗 ملاكي</button>
+<button onclick="window.showClientTab('bike')" id="c-tab-bike" class="flex-1 btn glass text-[11px]">🏍️ مكنة</button>
+</div>
+<div id="clientCaptainsList" class="space-y-2 max-h-[380px] overflow-auto"></div>
+</div>
+<button onclick="window.shareTrip()" class="btn bg-[#3b82f6]/20 border border-[#3b82f6]/30 w-full">📍 شارك رحلتك لايف مع أهلك</button>
+<p id="reqStatus" class="text-[11px] text-center font-black"></p>
+</div>
+<div id="driverActions" style="display:none" class="space-y-3">
+<div class="card p-4 flex justify-between items-center"><p class="text-[12px] font-black">متصل - تتبع مباشر</p><button onclick="window.toggleOnline()" id="onlineBtn" class="btn bg-[#22ff88] text-black text-[11px]">● متصل</button></div>
+<div id="activeTripBox" style="display:none" class="card p-4 border-[#22ff88]/30"><p class="font-black text-[12px]">🚀 رحلة نشطة</p><div id="activeTripInfo" class="text-[11px] mt-2"></div><div class="grid grid-cols-2 gap-2 mt-3"><a id="callClientBtn" href="#" class="btn bg-[#3b82f6] text-white text-center">📞 رن</a><button onclick="window.endTrip()" class="btn bg-[#22ff88] text-black">✅ إنهاء</button></div></div>
+<div class="card p-4"><p class="font-black text-center text-[12px]">📥 طلبات حقيقية</p><div id="requestsList" class="space-y-2 max-h-[400px] overflow-auto mt-3"></div></div>
+</div>
+</div>
+
+<div id="ownerPanel" style="display:none" class="fixed inset-0 z-[3000] bg-[#08080a] p-3 overflow-auto">
+<div class="max-w-[410px] mx-auto space-y-3">
+<button onclick="window.goBackFromOwner()" class="glass">← رجوع</button>
+<h2 class="font-black text-center">👑 لوحة المالك - برقم الموبايل الحقيقي</h2>
+<div class="card p-4"><p class="font-black text-[11px]">🔒 طلبات توثيق - انت اللي بتوافق</p><div id="pendingVerifications" class="mt-3 space-y-2"></div></div>
+<div class="card p-4"><p class="font-black text-[11px]">💸 مديونيات - العمولة الحقيقية 15% - الـ 10ج الوهمي بيتصفر تلقائي</p><div id="ownerDebtsList" class="mt-3 space-y-2"></div></div>
+</div>
+</div>
+
 </div>
 
 <script>
+// ===== PWA =====
 let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt=e; document.getElementById('installBanner').classList.remove('hidden'); });
-window.installApp=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); const {outcome}=await deferredPrompt.userChoice; if(outcome==='accepted'){ document.getElementById('installBanner').classList.add('hidden'); } deferredPrompt=null; } };
-</script>
+window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBanner').style.display='block'; });
+window.installApp = async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); const r=await deferredPrompt.userChoice; if(r.outcome==='accepted') document.getElementById('installBanner').style.display='none'; deferredPrompt=null; } else alert('افتح من كروم > 3 نقط > تثبيت التطبيق'); };
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, onDisconnect, push, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import L from "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/+esm";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",
-  authDomain: "mata3m-masr.firebaseapp.com",
-  databaseURL: "https://mata3m-masr-default-rtdb.firebaseio.com",
-  projectId: "mata3m-masr",
-  storageBucket: "mata3m-masr.firebasestorage.app",
-  messagingSenderId: "315344044519",
-  appId: "1:315344044519:web:2766778ebdec4cf053fd42"
-};
-let db; try{ db=getDatabase(initializeApp(firebaseConfig)); }catch(e){}
+// ===== FIREBASE =====
+const firebaseConfig = { apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk", authDomain: "mata3m-masr.firebaseapp.com", databaseURL: "https://mata3m-masr-default-rtdb.firebaseio.com", projectId: "mata3m-masr", storageBucket: "mata3m-masr.firebasestorage.app", messagingSenderId: "315344044519", appId: "1:315344044519:web:2766778ebdec4cf053fd42" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 const COMMISSION_RATE = 0.15;
-const PRICING={toktok:{base:15, perKm:5, label:'توكتوك'}, bike:{base:15, perKm:5, label:'مكنة'}, car:{base:25, perKm:7, label:'ملاكي'}};
-let currentRole=null, authMode='login', myLocation=[30.0444,31.2357], destLocation=null, destMarker=null, routeLine=null, myMarker=null;
-let driversLiveMarkers={}, allDriversData={}, allUsersData={}, allTripsData={}, clientTab='toktok', activeRequestId=null, currentChatRequestId=null;
-let myCredit=0, ownerTab='toktok';
+
+const PRICING={toktok:{base:15,perKm:5}, bike:{base:15,perKm:5}, car:{base:25,perKm:7}};
+let currentRole=null, authMode='register', myLocation=[30.0444,31.2357], destLocation=null, destMarker=null, routeLine=null, myMarker=null, mainMap=null, trackingMap=null, trackingMarker=null, trackingLine=null, watchId=null, activeRequestId=null, allDriversData={}, clientTab='toktok', driversLiveMarkers={}, myCredit=0;
+
 function haversine(lat1,lon1,lat2,lon2){ const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180; const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
 function calcPrice(type,km){ return Math.round(PRICING[type].base + (km * PRICING[type].perKm)); }
 async function getRealRoute(lat1,lon1,lat2,lon2){
   try{
     const url=`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
     const res=await fetch(url); const data=await res.json();
-    if(data.routes && data.routes[0]){ const route=data.routes[0]; return {km:route.distance/1000, minutes:Math.round(route.duration/60), geometry: route.geometry.coordinates.map(c=>[c[1],c[0]])}; }
+    if(data.routes && data.routes[0]){ const r=data.routes[0]; return {km:r.distance/1000, minutes:Math.round(r.duration/60), geometry:r.geometry.coordinates.map(c=>[c[1],c[0]])}; }
   }catch(e){}
   const km=haversine(lat1,lon1,lat2,lon2); return {km, minutes:Math.round(km*3), geometry:[[lat1,lon1],[lat2,lon2]]};
 }
-const mainMap = L.map('mainMap', {zoomControl:false}).setView(myLocation, 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OSM', maxZoom:19}).addTo(mainMap);
-L.control.zoom({position:'bottomleft'}).addTo(mainMap);
-window.updateMainMapLocation = (lat,lng)=>{ myLocation=[lat,lng]; mainMap.setView(myLocation, 15); if(myMarker) myMarker.setLatLng(myLocation); else myMarker=L.marker(myLocation, {icon:L.divIcon({html:'<div style="background:#fff;width:18px;height:18px;border-radius:50%;border:3px solid #ff1a1a"></div>', className:''})}).addTo(mainMap); }
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(pos=>{ myLocation=[pos.coords.latitude,pos.coords.longitude]; window.updateMainMapLocation(myLocation[0],myLocation[1]); },()=>{},{enableHighAccuracy:true});
-  navigator.geolocation.watchPosition(pos=>{ myLocation=[pos.coords.latitude,pos.coords.longitude]; if(myMarker) myMarker.setLatLng(myLocation); },()=>{},{enableHighAccuracy:true});
+
+function initMap(){
+  if(mainMap) return;
+  mainMap = L.map('mainMap', {zoomControl:false}).setView(myLocation, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OSM', maxZoom:19}).addTo(mainMap);
+  L.control.zoom({position:'bottomleft'}).addTo(mainMap);
+  myMarker=L.marker(myLocation, {icon:L.divIcon({html:'<div style="background:#fff;width:20px;height:20px;border-radius:50%;border:4px solid #ff1a1a;box-shadow:0 0 10px #ff1a1a"></div>', className:''})}).addTo(mainMap);
+  startLiveLocation();
+  mainMap.on('click', async function(e){
+    destLocation=[e.latlng.lat, e.latlng.lng];
+    if(destMarker) mainMap.removeLayer(destMarker);
+    if(routeLine) mainMap.removeLayer(routeLine);
+    destMarker=L.marker([e.latlng.lat, e.latlng.lng], {icon:L.divIcon({html:'<div style="font-size:32px">📍</div>', className:''})}).addTo(mainMap);
+    const r=await getRealRoute(myLocation[0],myLocation[1],destLocation[0],destLocation[1]);
+    routeLine=L.polyline(r.geometry, {color:'#ff1a1a', weight:7}).addTo(mainMap);
+    document.getElementById('realDistText').innerText=r.km.toFixed(2)+' كم طريق حقيقي';
+    document.getElementById('etaText').innerText=r.minutes+' دقيقة';
+    document.getElementById('realPriceText').innerText=calcPrice(clientTab, r.km)+'ج';
+    window.lastKm=r.km; window.lastPrice=calcPrice(clientTab, r.km); window.lastRealRoute=r;
+  });
+  setTimeout(()=>mainMap.invalidateSize(), 600);
 }
-mainMap.on('click', async function(e){
-  destLocation=[e.latlng.lat, e.latlng.lng];
-  if(destMarker) mainMap.removeLayer(destMarker); if(routeLine) mainMap.removeLayer(routeLine);
-  destMarker=L.marker([e.latlng.lat, e.latlng.lng], {icon:L.divIcon({html:'<div style="font-size:28px">📍</div>', className:''})}).addTo(mainMap);
-  const realRoute=await getRealRoute(myLocation[0],myLocation[1],destLocation[0],destLocation[1]);
-  routeLine=L.polyline(realRoute.geometry, {color:'#ff1a1a', weight:5}).addTo(mainMap);
-  const price=calcPrice(clientTab, realRoute.km); const creditToUse=Math.min(myCredit, price);
-  document.getElementById('realDistText').innerText=realRoute.km.toFixed(2)+' كم طريق حقيقي';
-  document.getElementById('etaText').innerText=realRoute.minutes+' د حقيقي';
-  document.getElementById('realPriceText').innerText=price+'ج حقيقي';
-  document.getElementById('creditUsedTextFull').innerText=creditToUse>0? `✅ رصيدك ${creditToUse}ج هيتدفع للكابتن - هتدفع كاش ${price-creditToUse}ج بس` : `💰 السعر ${price}ج`;
-  window.lastRealRoute={...realRoute, price, creditToUse, cashToPay: price-creditToUse};
-});
-function reassignRequest(requestId, requestData){
-  let candidates=[]; Object.entries(allDriversData).forEach(([id,d])=>{ if(d.role===requestData.type && d.verified===true && d.busy!==true && id!==requestData.assignedDriverId){ candidates.push({id, dist:haversine(requestData.lat, requestData.lng, d.lat, d.lng), name:d.name}); } });
-  candidates.sort((a,b)=>a.dist-b.dist);
-  if(candidates.length>0){ const next=candidates[0]; update(ref(db,'requests/'+requestId), {assignedDriverId: next.id, assignedDriverName: next.name, createdAt: Date.now()}); } else { update(ref(db,'requests/'+requestId), {status:'cancelled'}); }
+function startLiveLocation(){
+  if(!navigator.geolocation){
+    document.getElementById('liveStatus').innerText='⚠️ المتصفح مش بيدعم الموقع';
+    return;
+  }
+  document.getElementById('liveStatus').innerText='📡 بفعل الموقع تلقائيا...';
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  // محاولة تفعيل تلقائي فورا
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const newLoc=[pos.coords.latitude, pos.coords.longitude];
+    myLocation=newLoc;
+    if(myMarker) myMarker.setLatLng(myLocation);
+    if(mainMap){ mainMap.setView(myLocation, 16, {animate:true}); mainMap.invalidateSize(); }
+    document.getElementById('liveStatus').innerText='🟢 موقعك اتفعل تلقائيا - تتبع مباشر شغال';
+    document.getElementById('speedText').innerText='0 كم/س';
+    // بعد ما جبنا الموقع مرة، نبدأ التتبع المستمر
+    watchId=navigator.geolocation.watchPosition(pos=>{
+
+    const newLoc=[pos.coords.latitude, pos.coords.longitude];
+    const speed=pos.coords.speed ? (pos.coords.speed*3.6).toFixed(1) : 0;
+    document.getElementById('speedText').innerText=speed+' كم/س';
+    const moved=haversine(myLocation[0],myLocation[1], newLoc[0], newLoc[1]);
+    if(moved>0.001){
+      myLocation=newLoc;
+      if(myMarker) myMarker.setLatLng(myLocation);
+      if(mainMap && activeRequestId) mainMap.panTo(myLocation, {animate:true});
+      const id=localStorage.getItem('tawsila_id');
+      const role=localStorage.getItem('tawsila_role');
+      const verified=localStorage.getItem('tawsila_verified')==='true';
+      if(id && role!=='client' && verified){ db.ref('drivers/'+id).update({ lat:newLoc[0], lng:newLoc[1], speed:parseFloat(speed), t:Date.now() }); }
+      if(activeRequestId){ db.ref('requests/'+activeRequestId).update({ driverLat:newLoc[0], driverLng:newLoc[1] }); db.ref('liveTracks/'+activeRequestId).update({ lat:newLoc[0], lng:newLoc[1], speed:parseFloat(speed), t:Date.now() }); }
+    }
+  }, (err)=>{
+    console.log('GPS error', err);
+    if(err.code===1){
+      document.getElementById('liveStatus').innerText='⚠️ دوس السماح للموقع - افتح الإعدادات وفعل الموقع';
+      alert('⚠️ لازم تسمح للموقع عشان التطبيق يشتغل - دوس السماح / Allow');
+    } else {
+      document.getElementById('liveStatus').innerText='⚠️ فعل الـ GPS من الإعدادات';
+    }
+  }, {enableHighAccuracy:true, maximumAge:0, timeout:10000});
+  }, (err)=>{
+    document.getElementById('liveStatus').innerText='⚠️ فعل الـ GPS تلقائيا - دوس السماح';
+  }, {enableHighAccuracy:true, maximumAge:0, timeout:8000});
+
 }
-function renderClientCaptains(){
-  const list=document.getElementById('clientCaptainsList'); if(!list) return; list.innerHTML=''; let drivers=[];
-  Object.entries(allDriversData).forEach(([id,d])=>{ if(d.role===clientTab && d.verified===true && d.busy!==true){ drivers.push({...d, id, dist:haversine(myLocation[0],myLocation[1],d.lat,d.lng)}); } });
-  drivers.sort((a,b)=>a.dist-b.dist);
-  if(drivers.length===0){ list.innerHTML=`<p class="text-xs opacity-30 text-center py-6">مفيش كباتن فاضية</p>`; return; }
-  drivers.forEach(d=>{
-    const div=document.createElement('div'); div.className='bg-[#121212] border border-white/10 rounded-[20px] p-4';
-    div.innerHTML=`<p class="font-black text-xs">✅ ${d.name} موثق - فاضي</p><p class="text-[11px] mt-1">📞 $
+window.addEventListener('load', ()=>{ setTimeout(()=>{ initMap(); setTimeout(()=>{ startLiveLocation(); if(mainMap) mainMap.invalidateSize(); }, 1000); }, 400); const p=new URLSearchParams(window.location.search); const t=p.get('track'); if(t) setTimeout(()=>window.openTracking(t), 800); });
+
+// ===== BUTTONS - كلها window. شغالة 100% =====
+window.pick = function(r){
+  console.log('PICK', r);
+  document.getElementById('testMsg').innerText='✅ دوست على '+r+' - الزرار شغال حقيقي!';
+  currentRole=r;
+  document.getElementById('roleBox').style.display='none';
+  document.getElementById('authBox').style.display='block';
+  window.switchAuth('register');
+  document.getElementById('verificationBox').style.display=(r!=='client')?'block':'none';
+}
+window.goBackToRoles = function(){ document.getElementById('authBox').style.display='none'; document.getElementById('dashboard').style.display='none'; document.getElementById('roleBox').style.display='block'; if(mainMap) setTimeout(()=>mainMap.invalidateSize(),300); }
+window.goBackToAuth = function(){ document.getElementById('dashboard').style.display='none'; document.getElementById('authBox').style.display='block'; }
+window.goBackFromOwner = function(){ document.getElementById('ownerPanel').style.display='none'; }
+window.switchAuth = function(mode){
+  authMode=mode;
+  document.getElementById('tabLogin').className=mode==='login'?'flex-1 btn bg-white text-black text-xs':'flex-1 btn glass text-xs opacity-50';
+  document.getElementById('tabRegister').className=mode==='register'?'flex-1 btn bg-white text-black text-xs':'flex-1 btn glass text-xs opacity-50';
+  document.getElementById('verificationBox').style.display=(mode==='register' && currentRole!=='client')?'block':'none';
+}
+window.handleAuth = function(){
+  const phone=document.getElementById('phone').value.trim();
+  const pass=document.getElementById('password').value.trim();
+  const name=document.getElementById('name').value.trim();
+  const address=document.getElementById('address').value.trim();
+  const idNumber=document.getElementById('idNumber')?.value.trim()||'';
+  const vehicleNumber=document.getElementById('vehicleNumber')?.value.trim()||'';
+  const msg=document.getElementById('authMsg');
+  if(!phone||!pass){ msg.innerText='اكتب الموبايل والباسورد'; return; }
+  msg.innerText='جاري...';
+  db.ref('users/'+phone).get().then(snap=>{
+    if(authMode==='register'){
+      if(snap.exists()){ msg.innerText='متسجل قبل كده - دوس دخول'; return; }
+      if(!name||!address){ msg.innerText='اكتب اسمك وعنوانك'; return; }
+      if(currentRole!=='client' && idNumber.length<14){ msg.innerText='البطاقة 14 رقم'; return; }
+      const myReferralCode=phone.slice(-4)+name.slice(0,2).toUpperCase()+Math.floor(Math.random()*90+10);
+      const referralCodeTrim = document.getElementById('referralInput').value.trim();
+      const hasReferralCode = referralCodeTrim && referralCodeTrim.length>=3;
+      const firstCredit = (currentRole==='client' && hasReferralCode) ? 10 : 0;
+      const userData={ name, phone, address, role:currentRole, idNumber, vehicleNumber, verified: currentRole==='client', password:btoa(pass), referralCode:myReferralCode, referredBy: hasReferralCode ? referralCodeTrim : null, hasCode: hasReferralCode, credit:0, firstTripCredit: firstCredit, firstTripUsed:false, createdAt:Date.now() };
+      db.ref('us
