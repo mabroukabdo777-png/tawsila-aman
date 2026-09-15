@@ -1,44 +1,10 @@
-const CACHE_NAME = 'tawsila-v8-final';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json'
-];
-
-self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
+const CACHE='tawsila-aman-v9-ultimate-clean'; 
+const URLS=['./','./index.html','./manifest.json','./m261997owner.html','./privacy.html','./terms.html','./about.html','./logo.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(URLS)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{ if(e.request.url.includes('firebase')||e.request.url.includes('nominatim')||e.request.url.includes('osrm')||e.request.url.includes('firestore')||e.request.url.includes('google')||e.request.url.includes('freesound')) return; e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('./index.html')))); });
+self.addEventListener('push',e=>{
+  const data=e.data?e.data.json():{};
+  self.registration.showNotification(data.title||'🔔 طلب جديد - توصيلة أمان', {body:data.body||'عندك طلب جديد', icon:'./logo.png'});
 });
-
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    )).then(()=>self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request).then(res=>{
-      const clone=res.clone();
-      caches.open(CACHE_NAME).then(cache=>cache.put(event.request, clone));
-      return res;
-    }).catch(()=>caches.match(event.request))
-  );
-});
-
-self.addEventListener('message', event=>{
-  if(event.data && event.data.type==='SKIP_WAITING'){
-    self.skipWaiting();
-  }
-});
-
-self.addEventListener('push', event=>{
-  const data = event.data ? event.data.json() : {title:'Tawsila Aman', body:'طلب جديد حقيقي'};
-  event.waitUntil(
-    self.registration.showNotification(data.title, {body:data.body, icon:'https://cdn-icons-png.flaticon.com/512/3774/3774099.png'})
-  );
-});
+self.addEventListener('notificationclick',e=>{ e.notification.close(); e.waitUntil(clients.openWindow('./index.html')); });
