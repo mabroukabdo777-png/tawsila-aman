@@ -1,289 +1,414 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#ff1a1a">
 <link rel="manifest" href="./manifest.json">
-<title>Tawsila Aman - شركة كاملة - زراير شغالة 100%</title>
+<title>Tawsila Aman - شركة رسمية - 27 محافظة</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 <style>
-*{ -webkit-tap-highlight-color:transparent; }
-body{background:#08080a;color:#fff;font-family:system-ui; overflow-x:hidden}
-#mainMap{height:460px !important;width:100% !important;border-radius:28px;background:#111;border:2px solid rgba(255,26,26,0.3);display:block !important;z-index:1}
-#trackingMap{height:70vh;width:100%;border-radius:28px;border:2px solid #22ff88}
-.leaflet-container{background:#121214 !important}
-.card{background:#121214;border:1px solid rgba(255,255,255,0.08);border-radius:26px}
-.btn{border-radius:9999px;padding:13px 18px;font-weight:900;font-size:12px;cursor:pointer;user-select:none}
-.btn:active{transform:scale(0.96)}
-.input{background:#151518;border:1.5px solid #2a2a2e;border-radius:9999px;padding:14px 18px;width:100%;font-size:12px;outline:none;color:#fff}
-.glass{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:10px 20px;font-size:11px;font-weight:900}
-.live-dot{width:9px;height:9px;background:#22ff88;border-radius:50%;display:inline-block;animation:pulse 1.2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,255,136,.7)}70%{box-shadow:0 0 0 8px rgba(34,255,136,0)}100%{box-shadow:0 0 0 0 rgba(34,255,136,0)}}
+*{ -webkit-tap-highlight-color:transparent; box-sizing:border-box }
+body{background:#08080a;color:#fff;font-family:system-ui;margin:0;overflow-x:hidden}
+#mainMap{height:380px;width:100%;border-radius:24px;background:#111;border:2px solid rgba(255,26,26,.3)}
+#trackingMap{height:50vh;width:100%;border-radius:24px;border:2px solid #22ff88}
+.card{background:#121214;border:1px solid rgba(255,255,255,.08);border-radius:22px}
+.btn{border-radius:9999px;padding:12px 18px;font-weight:900;font-size:11px;cursor:pointer;display:inline-block;text-align:center;border:none}
+.btn:active{transform:scale(.95)}
+.input{background:#151518;border:1.5px solid #2a2a2e;border-radius:9999px;padding:13px 16px;width:100%;color:#fff;outline:none;font-size:11px}
+.glass{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:9999px;padding:8px 14px;font-size:10px;font-weight:900}
+.suggest{position:absolute;top:100%;left:0;right:0;background:#1a1a1e;border:1px solid #2a2a2e;border-radius:16px;z-index:500;max-height:180px;overflow:auto;display:none}
+.suggest div{padding:10px 14px;cursor:pointer;border-bottom:1px solid #222;font-size:11px}
+.upload-box{border:2px dashed #333;border-radius:16px;padding:16px;text-align:center;cursor:pointer}
+.upload-box.has-file{border-color:#22ff88;background:#22ff8811}
+.upload-box.required{border-color:#ff1a1a88}
+#ratingModal{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
 </style>
 </head>
 <body class="min-h-screen flex justify-center px-3 py-3">
-<div class="w-full max-w-[410px] space-y-3">
+<audio id="dingSound" preload="auto"><source src="https://cdn.freesound.org/previews/612/612095_5674468-lq.mp3" type="audio/mpeg"></audio>
 
-<div id="installBanner" style="display:none" class="card bg-[#ff1a1a] border-[#ff1a1a] p-3 text-center">
-<p class="font-black text-[12px]">📲 نزّل التطبيق - يشتغل زي أوبر - PWA حقيقي</p>
-<button onclick="window.installApp()" class="btn bg-white text-black w-full mt-2 text-[12px]">📥 تثبيت مباشر - جوجل كروم</button>
+<div id="ratingModal">
+<div class="card p-6 w-full max-w-[350px] text-center">
+<h3 style="font-weight:900;font-size:16px">⭐ قيم الرحلة</h3>
+<p id="ratingText" style="font-size:11px;opacity:.7;margin-top:6px">قيم الكابتن</p>
+<div id="starsDisplay" style="font-size:32px;margin:12px 0">⭐⭐⭐⭐⭐</div>
+<div style="display:flex;gap:4px;justify-content:center">
+<button class="btn glass starBtn" data-rating="1">1</button><button class="btn glass starBtn" data-rating="2">2</button><button class="btn glass starBtn" data-rating="3">3</button><button class="btn glass starBtn" data-rating="4">4</button><button class="btn bg-[#ff8c00] text-black starBtn" data-rating="5">5</button>
+</div>
+<textarea id="ratingComment" placeholder="تعليق (اختياري)" class="input" style="margin-top:12px;height:60px;border-radius:16px;resize:none"></textarea>
+<button id="btnSubmitRating" class="btn bg-[#22ff88] text-black w-full mt-3">إرسال التقييم</button>
+<button id="btnSkipRating" class="btn glass w-full mt-2">تخطي</button>
+</div>
 </div>
 
-<div class="text-center pt-1">
-<h1 id="logo" class="text-[34px] font-black" style="cursor:pointer"><span style="color:#ff1a1a">Tawsila</span> Aman</h1>
-<p class="text-[10px] mt-1"><span class="bg-[#22ff88] text-black rounded-full px-3 py-1 font-black">✅ زراير شغالة 100% - جرب دوس</span></p>
-<p class="text-[8px] opacity-40 mt-1">دوس 7 مرات على اللوجو 👑 لوحة المالك - برقم الموبايل الحقيقي</p>
+<div class="w-full max-w-[430px] space-y-3 pb-24">
+<div class="text-center pt-2">
+<h1 id="logo" style="font-size:34px;font-weight:900;cursor:pointer;user-select:none">Tawsila Aman</h1>
+<p style="font-size:10px;opacity:.7">شركة رسمية - تتبع لايف حقيقي - 27 محافظة</p>
+<div id="userBar" style="display:none;margin-top:8px;background:#151518;border-radius:9999px;padding:8px 14px;font-size:10px" class="flex justify-between items-center"><span id="userNameDisplay"></span><span id="userRoleDisplay"></span><span id="userRating"></span></div>
 </div>
+
+<div id="installBox" style="display:none" class="card p-3 bg-[#22ff88]/10 border-[#22ff88]/30 flex justify-between items-center"><div><p style="font-weight:900;font-size:11px;color:#22ff88">📲 ثبت التطبيق</p><p style="font-size:9px;opacity:.7">ثبته زي أوبر</p></div><button id="btnInstall" class="btn bg-[#22ff88] text-black">تثبيت</button></div>
 
 <div class="card p-2.5 relative">
+<div style="display:grid;gap:8px;margin-bottom:8px">
+<div style="position:relative"><input id="searchFrom" placeholder="📍 من: موقعك" class="input"><div id="suggestFrom" class="suggest"></div></div>
+<div style="position:relative"><input id="searchTo" placeholder="🎯 إلى: الوجهة" class="input"><div id="suggestTo" class="suggest"></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+<select id="clientVehicleType" class="input"><option value="all">🚗 كل الأنواع - الأقرب</option><option value="toktok">🛺 توكتوك فقط</option><option value="moto">🏍️ مكنة فقط</option><option value="car">🚗 ملاكي فقط</option><option value="car_sedan">🚗 سيدان</option><option value="car_suv">🚙 SUV</option><option value="car_7">🚐 7 راكب</option><option value="car_ac">❄️ مكيف</option></select>
+<input id="offerPrice" type="number" placeholder="💰 سعرك" class="input">
+</div>
+</div>
 <div id="mainMap"></div>
-<div class="absolute top-3 left-3 glass text-[10px] z-[400]">🟢 <span id="liveStatus">جاري تحديد موقعك الحقيقي...</span> <span id="speedText" class="text-[#3b82f6]">0 كم/س</span></div>
-<div class="absolute bottom-3 left-3 right-3 glass rounded-[18px] p-3 flex justify-between items-center z-[400]">
-<div><p class="text-[9px] opacity-60">المسافة الحقيقية</p><b id="realDistText" class="text-[12px] text-[#22ff88]">دوس على الخريطة حدد وجهتك 📍</b><p id="etaText" class="text-[10px] opacity-50">-</p></div>
-<div class="text-left"><p class="text-[9px] opacity-60">السعر</p><b id="realPriceText" class="text-[15px] text-[#ff1a1a]">0ج</b></div>
+<div style="position:absolute;top:132px;left:12px" class="glass z-[400]">🟢 <span id="liveStatus">جاري تحديد موقعك...</span> <span id="speedText"></span></div>
+<div style="position:absolute;bottom:12px;left:12px;right:12px" class="glass z-[400] flex justify-between"><div><p style="font-size:8px;opacity:.6">المسافة</p><b id="realDistText" style="color:#22ff88">دوس على الخريطة</b></div><div><p style="font-size:8px;opacity:.6">السعر</p><b id="realPriceText" style="color:#ff1a1a">0ج</b></div></div>
+</div>
+
+<div id="nearbyDriversBox" style="display:none" class="card p-3 border-[#22ff88]/40 bg-[#08080a]"><h4 style="font-weight:900;font-size:11px;color:#22ff88">📍 كباتن قريبين منك - على الخريطة</h4><div id="nearbyList" style="margin-top:8px;display:grid;gap:6px"></div><div id="nearbyMapCount" style="font-size:9px;opacity:.6;margin-top:6px"></div></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+<button id="btnSOS" class="btn bg-[#ff1a1a] text-white">🆘 122</button>
+<button id="btnShare" class="btn bg-[#3b82f6] text-white">📍 لايف</button>
+<button id="btnOnline" style="display:none" class="btn bg-[#22ff88] text-black">🟢 متاح</button>
+</div>
+
+<div id="shareLiveBox" style="display:none" class="card p-3 border-[#3b82f6]/40 bg-[#3b82f6]/10">
+<p style="font-weight:900;font-size:11px;color:#3b82f6">📍 موقعك لايف</p><p id="shareLink" style="font-size:9px;background:#000;padding:8px;border-radius:12px;margin-top:6px;word-break:break-all;color:#22ff88"></p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px"><button id="btnWapp" class="btn bg-[#25D366] text-black">واتساب</button><button id="btnCopy" class="btn bg-[#3b82f6] text-white">نسخ</button></div>
+<button id="btnStopShare" class="btn glass w-full mt-2">إيقاف</button>
+</div>
+
+<div id="ridesBox" style="display:none"><h3 style="font-weight:900;font-size:13px">🔔 طلبات لايف - حسب نوعك</h3><div id="ridesList" style="margin-top:8px;display:grid;gap:8px"></div></div>
+
+<div id="activeRideBox" style="display:none" class="card p-4 space-y-3 border-[#22ff88]/40">
+<h3 style="font-weight:900;color:#22ff88">🚗 رحلتك - تتبع لايف</h3><div id="activeRideInfo" style="font-size:11px"></div><div id="trackingMap"></div>
+<div id="driverContactBox" style="display:none" class="card p-3 bg-[#22ff88]/10 border-[#22ff88]/40">
+<p style="font-weight:900;font-size:12px;color:#22ff88">📞 الكابتن قبل الطلب - اتصل بيه حالا</p>
+<p id="driverInfoText" style="font-size:11px;margin-top:6px"></p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+<a id="btnCallDriver" href="#" class="btn bg-[#22ff88] text-black text-center" style="font-size:13px;padding:14px">📞 اتصال مباشر</a>
+<a id="btnWappDriver" href="#" target="_blank" class="btn bg-[#25D366] text-black text-center" style="font-size:13px;padding:14px">💬 واتساب</a>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+<a id="btnGpsDriver" href="#" target="_blank" class="btn bg-[#3b82f6] text-white text-center">📍 موقعه على الخريطة</a>
+<button id="btnShareTrip" class="btn glass text-center">مشاركة الرحلة</button>
+</div>
+</div>
+<div id="negotiateBox" style="display:none" class="card p-3 bg-[#ff8c00]/10 border-[#ff8c00]/20"><p style="font-size:11px;font-weight:900;color:#ff8c00">💬 تفاوض على السعر</p><div id="offersList" style="margin-top:8px;display:grid;gap:6px"></div><div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px"><input id="counterOffer" type="number" placeholder="عرضك" class="input"><button id="btnSendOffer" class="btn bg-[#ff8c00] text-black">إرسال</button></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button id="btnFinish" class="btn bg-[#22ff88] text-black">✅ إنهاء</button><button id="btnCancel" class="btn bg-[#ff1a1a] text-white">❌ إلغاء</button></div>
+</div>
+
+<div id="pendingView" style="display:none" class="card p-5 text-center"><div style="font-size:40px">⏳</div><h2 style="font-weight:900;margin-top:8px">انت في مراجعة الوظيفة</h2><p style="font-size:11px;opacity:.8;margin-top:8px;line-height:1.8">سجلناك يا <span id="pendingName" style="color:#ff1a1a;font-weight:900"></span>!<br>هنرن على <b id="pendingPhone" style="color:#22ff88"></b> مقابلة.</p><button id="btnExitPending" class="btn glass w-full mt-4">خروج</button></div>
+
+<div id="roleBox" class="card p-4">
+<p style="text-align:center;font-weight:900">اختار نوع حسابك</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+<button id="btnPickToktok" class="card p-4 text-center" style="border-color:rgba(255,26,26,.3)"><div style="font-size:24px">🛺</div><div style="font-weight:900;font-size:11px">توكتوك</div><div style="font-size:8px;opacity:.5">بطاقة + شخصية + توكتوك</div></button>
+<button id="btnPickClient" class="card p-4 text-center" style="border-color:rgba(34,255,136,.3)"><div style="font-size:24px">👤</div><div style="font-weight:900;font-size:11px">عميل</div><div style="font-size:8px;opacity:.5">اختار نوع العربية</div></button>
+<button id="btnPickCar" class="card p-4 text-center" style="border-color:rgba(59,130,246,.3)"><div style="font-size:24px">🚗</div><div style="font-weight:900;font-size:11px">ملاكي</div><div style="font-size:8px;opacity:.5">رخصتين اجباري</div></button>
+<button id="btnPickMoto" class="card p-4 text-center" style="border-color:rgba(255,140,0,.3)"><div style="font-size:24px">🏍️</div><div style="font-weight:900;font-size:11px">مكنة</div><div style="font-size:8px;opacity:.5">بطاقة + شخصية + مكنة</div></button>
 </div>
 </div>
 
-<div id="shareLiveBox" style="display:none" class="card border-[#3b82f6]/40 bg-[#3b82f6]/10 p-4">
-<p class="font-black text-[12px] text-[#3b82f6]">📍 مشاركة لايف مع الأهل - حقيقية</p>
-<p id="shareLink" class="text-[10px] mt-3 break-all bg-black rounded-xl p-3 text-[#22ff88]"></p>
-<button onclick="window.copyShareLink()" class="btn bg-[#3b82f6] text-white w-full mt-3">📋 نسخ اللينك</button>
-<div class="grid grid-cols-2 gap-2 mt-2"><button onclick="window.shareViaWhatsapp()" class="btn bg-[#25D366] text-black">واتساب</button><button onclick="window.stopSharing()" class="btn glass">إيقاف</button></div>
+<div id="registerBox" style="display:none" class="card p-4 space-y-3">
+<h3 style="font-weight:900" id="regTitle">تسجيل كابتن</h3>
+<input id="regName" placeholder="الاسم ثلاثي" class="input">
+<input id="regPhone" placeholder="01xxxxxxxxx" class="input">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><select id="regGov" class="input"><option>القليوبية - طوخ</option><option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>السويس</option><option>الدقهلية</option><option>الغربية</option><option>الشرقية</option><option>المنوفية</option><option>البحيرة</option></select><select id="regVehicle" class="input"><option value="toktok">توكتوك</option><option value="car">ملاكي</option><option value="moto">مكنة</option></select></div>
+<div id="carTypeBox" style="display:none"><select id="carType" class="input"><option value="sedan">🚗 سيدان</option><option value="suv">🚙 SUV</option><option value="7seats">🚐 7 راكب</option><option value="ac">❄️ مكيف</option><option value="economy">💰 اقتصادي</option></select><input id="carModel" placeholder="موديل - فيرنا 2018" class="input" style="margin-top:6px"><input id="carPlate" placeholder="رقم اللوحة" class="input" style="margin-top:6px"></div>
+<div id="boxSelfie" class="upload-box required"><p>🤳 صورة شخصية - اجباري</p><p id="labelSelfie" style="font-size:8px;opacity:.5">اجباري</p><input type="file" id="fileSelfie" hidden accept="image/*"></div>
+<div id="box1" class="upload-box required"><p>📄 البطاقة - اجباري</p><p id="label1" style="font-size:8px;opacity:.5">اجباري</p><input type="file" id="file1" hidden accept="image/*"></div>
+<div id="box2" class="upload-box required"><p id="labelVehicleTitle">🛺 المركبة</p><p id="label2" style="font-size:8px;opacity:.5">اجباري</p><input type="file" id="file2" hidden accept="image/*"></div>
+<div id="box3" class="upload-box"><p id="label3Title">📜 رخصة القيادة</p><p id="label3" style="font-size:8px;opacity:.5">اختياري للتوكتوك/مكنة - اجباري ملاكي</p><input type="file" id="file3" hidden accept="image/*"></div>
+<div id="box4" class="upload-box"><p>🚗 رخصة العربية</p><p id="label4" style="font-size:8px;opacity:.5">اجباري للملاكي فقط</p><input type="file" id="file4" hidden accept="image/*"></div>
+<div id="carRequirements" style="display:none;background:rgba(255,26,26,.1);border:1px solid rgba(255,26,26,.3);border-radius:12px;padding:10px"><p style="font-size:10px;font-weight:900;color:#ff1a1a">⚠️ ملاكي اجباري: شخصية + بطاقة + عربية + رخصتين + موديل + لوحة</p></div>
+<div id="toktokRequirements" style="display:none;background:rgba(34,255,136,.1);border-radius:12px;padding:10px"><p style="font-size:10px;color:#22ff88">✅ توكتوك/مكنة: شخصية + بطاقة + مركبة بس</p></div>
+<button id="btnSubmitDriver" class="btn bg-[#ff1a1a] text-white w-full">🚀 سجل</button>
+<button id="btnBackFromReg" class="btn glass w-full">رجوع</button>
 </div>
 
-<div id="trackingView" style="display:none" class="fixed inset-0 z-[2000] bg-black p-3 overflow-auto">
-<div class="max-w-[410px] mx-auto space-y-3">
-<button onclick="window.closeTracking()" class="glass">← رجوع</button>
-<div id="trackingMap"></div>
-<div class="card p-3 grid grid-cols-3 gap-2 text-center text-[11px]"><div><b id="trackDist">-</b></div><div><b id="trackPrice">-</b></div><div><b id="trackSpeed">-</b></div></div>
-</div>
+<div id="clientBox" style="display:none" class="card p-4 space-y-3">
+<h3 style="font-weight:900">تسجيل عميل - اختار اللي يريحك</h3><input id="clientName" placeholder="اسمك" class="input"><input id="clientPhone" placeholder="رقمك" class="input">
+<button id="btnSubmitClient" class="btn bg-[#22ff88] text-black w-full">دخول</button>
+<button id="btnBackFromClient" class="btn glass w-full">رجوع</button>
 </div>
 
-<div id="roleBox" class="card p-5">
-<p class="text-center font-black text-[13px]">اختار نوع حسابك - كل الزراير شغالة حقيقي</p>
-<div class="grid grid-cols-2 gap-3 mt-4">
-<button onclick="window.pick('toktok')" class="card p-5 text-center border-2 border-[#ff1a1a]/30"><div class="text-[26px]">🛺</div><div class="font-black text-[12px] mt-2">توكتوك</div></button>
-<button onclick="window.pick('client')" class="card p-5 text-center border-2 border-[#22ff88]/30"><div class="text-[26px]">👤</div><div class="font-black text-[12px] mt-2">عميل</div></button>
-<button onclick="window.pick('car')" class="card p-5 text-center border border-white/10"><div class="text-[26px]">🚗</div><div class="font-black text-[12px] mt-2">ملاكي</div></button>
-<button onclick="window.pick('bike')" class="card p-5 text-center border border-white/10"><div class="text-[26px]">🏍️</div><div class="font-black text-[12px] mt-2">مكنة</div></button>
-</div>
-<p id="testMsg" class="text-[10px] text-center mt-3 text-[#22ff88]">لو دوست ومحصلش حاجة يبقى انت لسه رافع الملف القديم - احذف الكاش</p>
+<div id="mainControls" style="display:none" class="space-y-3">
+<button id="btnRequestRide" class="btn bg-[#ff1a1a] text-white w-full">🚀 اطلب رحلة - بالنوع اللي اختارته</button>
+<div id="historyBox" class="card p-3"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="font-size:11px;font-weight:900">📜 رحلاتك السابقة</h4><button id="btnRefreshHistory" class="glass" style="font-size:8px">تحديث</button></div><div id="historyList" style="font-size:10px;opacity:.7;margin-top:8px">مفيش</div></div>
 </div>
 
-<div id="authBox" style="display:none" class="card p-5 space-y-3">
-<button onclick="window.goBackToRoles()" class="glass">← رجوع</button>
-<div class="flex glass rounded-full p-1"><button id="tabLogin" onclick="window.switchAuth('login')" class="flex-1 btn bg-white text-black text-xs">دخول</button><button id="tabRegister" onclick="window.switchAuth('register')" class="flex-1 btn glass text-xs opacity-50">حساب جديد</button></div>
-<input id="name" placeholder="الاسم الكامل الحقيقي" class="input">
-<input id="phone" placeholder="رقم الموبايل الحقيقي 01xxxxxxxxx" class="input">
-<input id="address" placeholder="العنوان" class="input">
-<input id="referralInput" placeholder="كود دعوة (اختياري)" class="input">
-<div id="verificationBox" style="display:none" class="space-y-2 bg-[#ff1a1a]/10 border border-[#ff1a1a]/20 rounded-[20px] p-3">
-<p class="font-black text-[11px] text-[#ff1a1a]">🔒 توثيق الكابتن برقم الموبايل الحقيقي</p>
-<input id="idNumber" placeholder="رقم البطاقة 14 رقم" class="input">
-<input id="vehicleNumber" placeholder="رقم المركبة" class="input">
-</div>
-<input id="password" type="password" placeholder="كلمة السر" class="input">
-<button onclick="window.handleAuth()" class="btn bg-white text-black w-full py-4">دخول 🔐</button>
-<p id="authMsg" class="text-xs text-center text-[#ff1a1a]"></p>
 </div>
 
-<div id="dashboard" style="display:none" class="space-y-3">
-<div class="card p-4">
-<button onclick="window.goBackToAuth()" class="glass">← رجوع</button>
-<p class="font-black text-[14px] mt-3" id="dashName">-</p>
-<p class="text-[11px] opacity-60" id="dashInfo">-</p>
-<p id="verifyStatus" class="text-[10px] mt-1"></p>
-<span id="myCreditBadge" class="bg-[#22ff88] text-black rounded-full px-3 py-1 text-[11px] font-black">0ج</span>
-<p class="text-[11px] mt-3">🎁 كودك: <b id="myReferralCode">---</b></p>
+<div id="secretOwnerPanel" style="display:none;position:fixed;inset:0;z-index:99999;background:#08080a;overflow:auto;padding:12px">
+<div style="max-width:520px;margin:0 auto;display:grid;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><h1 style="font-size:20px;font-weight:900"><span style="color:#ff1a1a">لوحة</span> المالك ✅</h1><button id="btnCloseOwner" class="btn bg-white/10">✕</button></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px"><div class="card p-3 text-center"><p style="font-size:8px;opacity:.6">انتظار</p><b id="cPending" style="color:#ff8c00">0</b></div><div class="card p-3 text-center"><p style="font-size:8px;opacity:.6">مقبولين</p><b id="cApproved" style="color:#22ff88">0</b></div><div class="card p-3 text-center"><p style="font-size:8px;opacity:.6">طلبات</p><b id="cRides" style="color:#3b82f6">0</b></div><div class="card p-3 text-center"><p style="font-size:8px;opacity:.6">عمولة</p><b id="cMoney" style="color:#ff1a1a">0ج</b></div></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><button id="fPending" class="btn bg-[#ff8c00] text-black">⏳ انتظار</button><button id="fApproved" class="btn bg-white/10">✅ مقبولين</button><button id="fRides" class="btn bg-white/10">🚗 طلبات لايف</button><button id="fAll" class="btn bg-white/10">الكل</button></div>
+<div id="driversList" style="display:grid;gap:8px"></div>
+<div class="card p-3"><h3 style="font-weight:900;font-size:11px">💰 تصفية 8:30 م - 15%</h3><div id="commissionTable" style="margin-top:8px;display:grid;gap:6px"></div><button id="btnResetComm" class="btn bg-[#22ff88] text-black w-full mt-2">صفر العدادات</button></div>
 </div>
-<div id="clientActions" style="display:none" class="space-y-3">
-<div class="card p-4">
-<div class="flex gap-2 glass rounded-full p-1 mb-3">
-<button onclick="window.showClientTab('toktok')" id="c-tab-toktok" class="flex-1 btn bg-white text-black text-[11px]">🛺 توكتوك</button>
-<button onclick="window.showClientTab('car')" id="c-tab-car" class="flex-1 btn glass text-[11px]">🚗 ملاكي</button>
-<button onclick="window.showClientTab('bike')" id="c-tab-bike" class="flex-1 btn glass text-[11px]">🏍️ مكنة</button>
-</div>
-<div id="clientCaptainsList" class="space-y-2 max-h-[380px] overflow-auto"></div>
-</div>
-<button onclick="window.shareTrip()" class="btn bg-[#3b82f6]/20 border border-[#3b82f6]/30 w-full">📍 شارك رحلتك لايف مع أهلك</button>
-<p id="reqStatus" class="text-[11px] text-center font-black"></p>
-</div>
-<div id="driverActions" style="display:none" class="space-y-3">
-<div class="card p-4 flex justify-between items-center"><p class="text-[12px] font-black">متصل - تتبع مباشر</p><button onclick="window.toggleOnline()" id="onlineBtn" class="btn bg-[#22ff88] text-black text-[11px]">● متصل</button></div>
-<div id="activeTripBox" style="display:none" class="card p-4 border-[#22ff88]/30"><p class="font-black text-[12px]">🚀 رحلة نشطة</p><div id="activeTripInfo" class="text-[11px] mt-2"></div><div class="grid grid-cols-2 gap-2 mt-3"><a id="callClientBtn" href="#" class="btn bg-[#3b82f6] text-white text-center">📞 رن</a><button onclick="window.endTrip()" class="btn bg-[#22ff88] text-black">✅ إنهاء</button></div></div>
-<div class="card p-4"><p class="font-black text-center text-[12px]">📥 طلبات حقيقية</p><div id="requestsList" class="space-y-2 max-h-[400px] overflow-auto mt-3"></div></div>
-</div>
-</div>
-
-<div id="ownerPanel" style="display:none" class="fixed inset-0 z-[3000] bg-[#08080a] p-3 overflow-auto">
-<div class="max-w-[410px] mx-auto space-y-3">
-<button onclick="window.goBackFromOwner()" class="glass">← رجوع</button>
-<h2 class="font-black text-center">👑 لوحة المالك - برقم الموبايل الحقيقي</h2>
-<div class="card p-4"><p class="font-black text-[11px]">🔒 طلبات توثيق - انت اللي بتوافق</p><div id="pendingVerifications" class="mt-3 space-y-2"></div></div>
-<div class="card p-4"><p class="font-black text-[11px]">💸 مديونيات - العمولة الحقيقية 15% - الـ 10ج الوهمي بيتصفر تلقائي</p><div id="ownerDebtsList" class="mt-3 space-y-2"></div></div>
-</div>
-</div>
-
 </div>
 
 <script>
-// ===== PWA =====
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBanner').style.display='block'; });
-window.installApp = async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); const r=await deferredPrompt.userChoice; if(r.outcome==='accepted') document.getElementById('installBanner').style.display='none'; deferredPrompt=null; } else alert('افتح من كروم > 3 نقط > تثبيت التطبيق'); };
-
-// ===== FIREBASE =====
 const firebaseConfig = { apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk", authDomain: "mata3m-masr.firebaseapp.com", databaseURL: "https://mata3m-masr-default-rtdb.firebaseio.com", projectId: "mata3m-masr", storageBucket: "mata3m-masr.firebasestorage.app", messagingSenderId: "315344044519", appId: "1:315344044519:web:2766778ebdec4cf053fd42" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const COMMISSION_RATE = 0.15;
+let db=null; try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); }catch(e){}
+let myLocation=null, destLocation=null, map=null, myMarker=null, destMarker=null, routeLine=null, watchId=null;
+let uploadedFiles={}, activeRide=null, driverOnline=false, trackingMap=null, allDrivers=[], filter='pending';
+let deferredPrompt=null, currentRating=5, ratingRideId=null;
+let nearbyDrivers={}, nearbyMarkers={}, lastRideCount=0;
 
-const PRICING={toktok:{base:15,perKm:5}, bike:{base:15,perKm:5}, car:{base:25,perKm:7}};
-let currentRole=null, authMode='register', myLocation=[30.0444,31.2357], destLocation=null, destMarker=null, routeLine=null, myMarker=null, mainMap=null, trackingMap=null, trackingMarker=null, trackingLine=null, watchId=null, activeRequestId=null, allDriversData={}, clientTab='toktok', driversLiveMarkers={}, myCredit=0;
+function el(id){ return document.getElementById(id); }
+function show(id){ const e=el(id); if(e) e.style.display='block'; }
+function hide(id){ const e=el(id); if(e) e.style.display='none'; }
+function showFlex(id){ const e=el(id); if(e) e.style.display='flex'; }
 
-function haversine(lat1,lon1,lat2,lon2){ const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180; const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
-function calcPrice(type,km){ return Math.round(PRICING[type].base + (km * PRICING[type].perKm)); }
-async function getRealRoute(lat1,lon1,lat2,lon2){
-  try{
-    const url=`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
-    const res=await fetch(url); const data=await res.json();
-    if(data.routes && data.routes[0]){ const r=data.routes[0]; return {km:r.distance/1000, minutes:Math.round(r.duration/60), geometry:r.geometry.coordinates.map(c=>[c[1],c[0]])}; }
-  }catch(e){}
-  const km=haversine(lat1,lon1,lat2,lon2); return {km, minutes:Math.round(km*3), geometry:[[lat1,lon1],[lat2,lon2]]};
+function playDing(){
+ try{
+  const a=el('dingSound'); if(a){ a.currentTime=0; a.play().catch(()=>{}); }
+  if(navigator.vibrate) navigator.vibrate([300,100,300,100,500]);
+ }catch(e){}
 }
 
-function initMap(){
-  if(mainMap) return;
-  mainMap = L.map('mainMap', {zoomControl:false}).setView(myLocation, 14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OSM', maxZoom:19}).addTo(mainMap);
-  L.control.zoom({position:'bottomleft'}).addTo(mainMap);
-  myMarker=L.marker(myLocation, {icon:L.divIcon({html:'<div style="background:#fff;width:20px;height:20px;border-radius:50%;border:4px solid #ff1a1a;box-shadow:0 0 10px #ff1a1a"></div>', className:''})}).addTo(mainMap);
-  startLiveLocation();
-  mainMap.on('click', async function(e){
-    destLocation=[e.latlng.lat, e.latlng.lng];
-    if(destMarker) mainMap.removeLayer(destMarker);
-    if(routeLine) mainMap.removeLayer(routeLine);
-    destMarker=L.marker([e.latlng.lat, e.latlng.lng], {icon:L.divIcon({html:'<div style="font-size:32px">📍</div>', className:''})}).addTo(mainMap);
-    const r=await getRealRoute(myLocation[0],myLocation[1],destLocation[0],destLocation[1]);
-    routeLine=L.polyline(r.geometry, {color:'#ff1a1a', weight:7}).addTo(mainMap);
-    document.getElementById('realDistText').innerText=r.km.toFixed(2)+' كم طريق حقيقي';
-    document.getElementById('etaText').innerText=r.minutes+' دقيقة';
-    document.getElementById('realPriceText').innerText=calcPrice(clientTab, r.km)+'ج';
-    window.lastKm=r.km; window.lastPrice=calcPrice(clientTab, r.km); window.lastRealRoute=r;
-  });
-  setTimeout(()=>mainMap.invalidateSize(), 600);
+// ===== إذن الموقع الحقيقي Native - 3 اختيارات =====
+function requestNativeLocation(){
+ if(!navigator.geolocation){ el('liveStatus').innerText='المتصفح لا يدعم الموقع'; return; }
+ el('liveStatus').innerText='يطلب إذن الموقع الحقيقي من الموبايل...';
+ navigator.geolocation.getCurrentPosition(function(pos){ updatePos(pos); startWatchNative(); requestNotificationPermission(); setTimeout(listenNearbyDrivers,1000); }, function(err){ if(err.code===1) el('liveStatus').innerText='رفضت الموقع - دوس 📍 واسمح'; else if(err.code===2) el('liveStatus').innerText='شغل GPS'; else el('liveStatus').innerText='فشل - دوس 📍'; }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
 }
-function startLiveLocation(){
-  if(!navigator.geolocation){
-    document.getElementById('liveStatus').innerText='⚠️ المتصفح مش بيدعم الموقع';
-    return;
+function startTracking(){ requestNativeLocation(); }
+function startWatchNative(){ if(watchId) navigator.geolocation.clearWatch(watchId); watchId=navigator.geolocation.watchPosition(updatePos, function(){}, {enableHighAccuracy:true, maximumAge:0, timeout:20000}); }
+function checkLocationPermission(){ requestNativeLocation(); }
+function requestLocationWithPrompt(){ requestNativeLocation(); }
+
+function updatePos(pos){
+ const lat=pos.coords.latitude, lng=pos.coords.longitude, speed=pos.coords.speed? (pos.coords.speed*3.6).toFixed(1):'0';
+ myLocation=[lat,lng];
+ el('liveStatus').innerText='لايف مباشر ✅'; el('speedText').innerText=speed+' كم/س';
+ if(!myMarker){ try{ myMarker=L.marker([lat,lng],{icon:L.divIcon({html:'<div style=background:#22ff88;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px #22ff88></div>',className:'',iconSize:[14,14]})}).addTo(map); map.setView([lat,lng],15); }catch(e){} } else myMarker.setLatLng([lat,lng]);
+ const myId=localStorage.getItem('tawsila_id');
+ if(myId && db && driverOnline){ db.ref('live_locations/'+myId).set({lat:lat,lng:lng,speed:speed,time:Date.now(),name:localStorage.getItem('tawsila_name'), vehicle:localStorage.getItem('tawsila_role'), phone:localStorage.getItem('tawsila_phone')||''}); }
+}
+function calcDist(a,b){ const R=6371; const dLat=(b[0]-a[0])*Math.PI/180; const dLng=(b[1]-a[1])*Math.PI/180; const x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2); return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); }
+function setDest(latlng, name){
+ destLocation=latlng;
+ if(destMarker) try{ map.removeLayer(destMarker); }catch(e){}
+ destMarker=L.marker(latlng,{icon:L.divIcon({html:'🎯',className:'',iconSize:[24,24]})}).addTo(map);
+ if(el('searchTo')) el('searchTo').value=name||'الوجهة';
+ if(myLocation){
+  const km=calcDist(myLocation, latlng);
+  el('realDistText').innerText=km.toFixed(1)+' كم'; el('realPriceText').innerText=Math.round(15+km*5)+'ج';
+  fetch('https://router.project-osrm.org/route/v1/driving/'+myLocation[1]+','+myLocation[0]+';'+latlng[1]+','+latlng[0]+'?overview=full&geometries=geojson').then(r=>r.json()).then(data=>{ if(data.routes&&data.routes[0]){ const route=data.routes[0]; el('realDistText').innerText=(route.distance/1000).toFixed(1)+' كم'; if(routeLine) try{ map.removeLayer(routeLine); }catch(e){} routeLine=L.geoJSON(route.geometry,{style:{color:'#ff1a1a',weight:4}}).addTo(map); } }).catch(()=>{});
+ }
+}
+const egyptDB=[{n:"طوخ",g:"القليوبية",lat:30.354,lng:31.20},{n:"بنها",g:"القليوبية",lat:30.464,lng:31.184},{n:"السويس",g:"السويس",lat:29.97,lng:32.52},{n:"القاهرة",g:"القاهرة",lat:30.04,lng:31.23}];
+function searchAddress(q,type){
+ const box=el(type=='from'?'suggestFrom':'suggestTo'); if(!box) return;
+ if(q.length<2){ box.style.display='none'; return; }
+ let local=egyptDB.filter(p=>p.n.includes(q)).slice(0,5);
+ box.innerHTML=''; local.forEach(p=>{ const d=document.createElement('div'); d.innerText='📍 '+p.n; d.onclick=function(){ if(type=='from'){myLocation=[p.lat,p.lng]; try{map.setView([p.lat,p.lng],14);}catch(e){} el('searchFrom').value=p.n;} else {setDest([p.lat,p.lng],p.n);} box.style.display='none'; }; box.appendChild(d); });
+ if(local.length>0) box.style.display='block';
+ fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(q+', Egypt')+'&limit=5').then(r=>r.json()).then(data=>{ (data||[]).forEach(p=>{ const d=document.createElement('div'); d.innerText='🌍 '+p.display_name.split(',').slice(0,2).join(','); d.onclick=function(){ const lat=parseFloat(p.lat),lng=parseFloat(p.lon); if(type=='from'){myLocation=[lat,lng]; try{map.setView([lat,lng],14);}catch(e){} el('searchFrom').value=p.display_name.split(',')[0];} else {setDest([lat,lng],p.display_name.split(',')[0]);} box.style.display='none'; }; box.appendChild(d); }); if(data.length>0) box.style.display='block'; }).catch(()=>{});
+}
+function handleFile(input,key,labelId,boxId){
+ const file=input.files[0]; if(!file) return;
+ const reader=new FileReader();
+ reader.onload=function(e){ uploadedFiles[key]=e.target.result; el(labelId).innerText='✅ '+file.name.substring(0,10); el(boxId).classList.add('has-file'); };
+ reader.readAsDataURL(file);
+}
+function updateVehicleUI(){
+ const v=el('regVehicle').value;
+ const carBox=el('carTypeBox'), carReq=el('carRequirements'), tokReq=el('toktokRequirements'), box3=el('box3'), box4=el('box4');
+ if(v==='car'){ carBox.style.display='block'; carReq.style.display='block'; tokReq.style.display='none'; box3.classList.add('required'); box4.style.display='block'; box4.classList.add('required'); el('labelVehicleTitle').innerText='🚗 صورة العربية - اجباري'; el('regTitle').innerText='تسجيل ملاكي - رخصتين اجباري'; }
+ else { carBox.style.display='none'; carReq.style.display='none'; tokReq.style.display='block'; box3.classList.remove('required'); box4.style.display='none'; el('labelVehicleTitle').innerText=v==='toktok'?'🛺 توكتوك - اجباري':'🏍️ مكنة - اجباري'; el('regTitle').innerText=v==='toktok'?'توكتوك - بطاقة + شخصية + توكتوك':'مكنة - بطاقة + شخصية + مكنة'; }
+}
+function pick(role){ hide('roleBox'); if(role==='client'){ show('clientBox'); } else { el('regVehicle').value=role; show('registerBox'); updateVehicleUI(); } }
+function showRoles(){ show('roleBox'); hide('registerBox'); hide('clientBox'); hide('pendingView'); }
+function submitDriver(){
+ const name=el('regName').value.trim(), phone=el('regPhone').value.trim(), gov=el('regGov').value, vehicle=el('regVehicle').value;
+ const carType=el('carType')?el('carType').value:'', carModel=el('carModel')?el('carModel').value:'', carPlate=el('carPlate')?el('carPlate').value:'';
+ if(name.length<3){ alert('الاسم ثلاثي'); return; }
+ if(phone.length<11){ alert('رقم غلط'); return; }
+ if(db){ db.ref('blocked_phones/'+phone.replace(/[^0-9]/g,'')).once('value').then(snap=>{ if(snap.exists()){ alert('الرقم محظور نهائي'); return; } else { doRegister(); } }); } else { doRegister(); }
+ function doRegister(){
+  if(!uploadedFiles.selfie){ alert('صورة شخصية اجباري'); return; }
+  if(!uploadedFiles.idCard){ alert('البطاقة اجباري'); return; }
+  if(!uploadedFiles.vehicle){ alert('صورة المركبة اجباري'); return; }
+  if(vehicle==='car'){ if(!uploadedFiles.license){ alert('رخصة القيادة اجباري'); return; } if(!uploadedFiles.carLicense){ alert('رخصة العربية اجباري'); return; } if(!carModel||!carPlate){ alert('موديل ولوحة اجباري'); return; } }
+  const id='driver_'+Date.now();
+  const data={id:id,name:name,phone:phone,gov:gov,vehicle:vehicle,carType:carType,carModel:carModel,carPlate:carPlate,selfie:uploadedFiles.selfie,idCard:uploadedFiles.idCard,vehicleImg:uploadedFiles.vehicle,licenseImg:uploadedFiles.license||'',carLicenseImg:uploadedFiles.carLicense||'',status:'pending',createdAt:new Date().toISOString(),trips:0,commission:0,online:false,rating:5};
+  localStorage.setItem('tawsila_id',id); localStorage.setItem('tawsila_name',name); localStorage.setItem('tawsila_role',vehicle); localStorage.setItem('tawsila_phone',phone); localStorage.setItem('tawsila_status','pending'); localStorage.setItem('tawsila_gov',gov);
+  localStorage.setItem('pending_driver',JSON.stringify(data));
+  let arr=JSON.parse(localStorage.getItem('demo_drivers')||'[]'); arr.unshift(data); localStorage.setItem('demo_drivers',JSON.stringify(arr));
+  if(db) db.ref('drivers/'+id).set(data);
+  showPending(data);
+ }
+}
+function showPending(data){ hide('roleBox'); hide('registerBox'); show('pendingView'); el('pendingName').innerText=data.name; el('pendingPhone').innerText=data.phone; }
+function submitClient(){ const name=el('clientName').value.trim(), phone=el('clientPhone').value.trim(); if(name.length<2||phone.length<11){ alert('اكمل البيانات'); return; } const id='client_'+Date.now(); localStorage.setItem('tawsila_id',id); localStorage.setItem('tawsila_name',name); localStorage.setItem('tawsila_role','client'); localStorage.setItem('tawsila_phone',phone); localStorage.setItem('tawsila_status','approved'); location.reload(); }
+function requestRide(){
+ const to=el('searchTo').value.trim(); const price=parseInt(el('offerPrice').value)||parseInt(el('realPriceText').innerText)||0; const vehicleType=el('clientVehicleType').value;
+ if(!to||!destLocation){ alert('اختار الوجهة من الخريطة'); return; }
+ if(!myLocation){ alert('فعل الموقع - دوس 📍'); requestNativeLocation(); return; }
+ const rideId='ride_'+Date.now();
+ const ride={id:rideId, clientId:localStorage.getItem('tawsila_id'), clientName:localStorage.getItem('tawsila_name'), clientPhone:localStorage.getItem('tawsila_phone')||'', from:el('searchFrom').value||'موقعي', to:to, fromLat:myLocation[0], fromLng:myLocation[1], toLat:destLocation[0], toLng:destLocation[1], price:price, vehicleType:vehicleType, status:'pending', createdAt:new Date().toISOString()};
+ localStorage.setItem('active_ride',JSON.stringify(ride));
+ if(db){ db.ref('rides/'+rideId).set(ride); db.ref('pending_rides/'+rideId).set(ride); }
+ activeRide=ride; showActiveRide(ride);
+ alert('تم إرسال طلبك - نوع: '+vehicleType);
+}
+function showActiveRide(ride){
+ show('activeRideBox'); hide('mainControls');
+ el('activeRideInfo').innerHTML='<div>📍 '+ride.from+' → '+ride.to+' - 💰 '+ride.price+'ج - 🚗 '+ride.vehicleType+' - الحالة: '+ride.status+'</div>';
+ setTimeout(function(){ if(!trackingMap){ trackingMap=L.map('trackingMap').setView([ride.fromLat,ride.fromLng],13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(trackingMap); } },300);
+ if(db){
+  db.ref('rides/'+ride.id).on('value', function(snap){ const r=snap.val(); if(!r) return; activeRide=r; if(r.status==='accepted'){ el('activeRideInfo').innerHTML='<div style="background:#22ff8822;padding:10px;border-radius:12px">✅ قبلها <b>'+r.driverName+'</b> - جايلك لايف</div><div style="margin-top:6px">📍 '+r.from+' → '+r.to+'</div>'; show('driverContactBox'); el('driverInfoText').innerText=r.driverName+' - '+(r.driverPhone||''); const clean=(r.driverPhone||'').replace(/[^0-9]/g,''); el('btnCallDriver').href='tel:'+(r.driverPhone||''); el('btnWappDriver').href='https://wa.me/2'+clean.replace(/^0/,'')+'?text=رحلتي '+r.from+' → '+r.to; el('btnGpsDriver').href='https://www.google.com/maps?q='+r.driverLat+','+r.driverLng; listenDriverLive(r.driverId); playDing(); } if(r.status==='finished'){ showRating(r.id, 'قيم الكابتن '+r.driverName); } });
+  db.ref('ride_offers/'+ride.id).on('value', function(snap){ const offers=snap.val()||{}; const list=Object.values(offers); if(list.length>0){ show('negotiateBox'); el('offersList').innerHTML=list.map(function(o){ return '<div style="display:flex;justify-content:space-between;background:#000;padding:8px;border-radius:10px;font-size:11px"><span>🛺 '+o.driverName+' - '+o.price+'ج</span><div><button class="btn bg-[#22ff88] text-black" style="font-size:9px" onclick="acceptOffer(\''+o.driverId+'\','+o.price+')">قبول</button> <a class="btn bg-[#3b82f6] text-white" style="font-size:9px" href="tel:'+o.driverPhone+'">📞</a></div></div>'; }).join(''); } });
+ }
+}
+function listenDriverLive(driverId){ if(!db||!trackingMap) return; db.ref('live_locations/'+driverId).on('value', function(snap){ const loc=snap.val(); if(!loc) return; if(!window.driverLiveMarker){ window.driverLiveMarker=L.marker([loc.lat,loc.lng],{icon:L.divIcon({html:'🛺',className:'',iconSize:[30,30]})}).addTo(trackingMap); } else window.driverLiveMarker.setLatLng([loc.lat,loc.lng]); if(el('btnGpsDriver')) el('btnGpsDriver').href='https://www.google.com/maps?q='+loc.lat+','+loc.lng; }); }
+function acceptOffer(driverId, price){ if(!activeRide) return; if(db){ db.ref('rides/'+activeRide.id+'/status').set('accepted'); db.ref('rides/'+activeRide.id+'/driverId').set(driverId); db.ref('rides/'+activeRide.id+'/price').set(price); db.ref('pending_rides/'+activeRide.id).remove(); } }
+function sendCounterOffer(){ const price=parseInt(el('counterOffer').value); if(!price||!activeRide) return; const myId=localStorage.getItem('tawsila_id'), myName=localStorage.getItem('tawsila_name'), myPhone=localStorage.getItem('tawsila_phone')||''; if(db){ db.ref('ride_offers/'+activeRide.id+'/'+myId).set({driverId:myId, driverName:myName, driverPhone:myPhone, price:price, time:Date.now()}); el('counterOffer').value=''; alert('تم إرسال عرضك: '+price+'ج'); } }
+function listenNearbyDrivers(){
+ if(!db) return;
+ db.ref('live_locations').on('value', function(snap){
+  const locs=snap.val()||{}; nearbyDrivers=locs;
+  const isClient=localStorage.getItem('tawsila_role')==='client';
+  if(isClient && myLocation){
+   const filtered=Object.entries(locs).filter(([id,loc])=>{ const d=calcDist(myLocation,[loc.lat,loc.lng]); return d<=15; });
+   if(filtered.length>0){ show('nearbyDriversBox'); el('nearbyList').innerHTML=filtered.slice(0,5).map(([id,loc])=>{ const dist=calcDist(myLocation,[loc.lat,loc.lng]).toFixed(1); return '<div style="display:flex;justify-content:space-between;background:#000;padding:8px;border-radius:10px;font-size:10px"><span>🛺 '+(loc.name||'كابتن')+' - '+dist+' كم - '+(loc.vehicle||'')+'</span><span style="color:#22ff88">متاح 🟢</span></div>'; }).join(''); el('nearbyMapCount').innerText=filtered.length+' كابتن قريب في 15 كم - ظاهرين على الخريطة'; } else { hide('nearbyDriversBox'); }
   }
-  document.getElementById('liveStatus').innerText='📡 بفعل الموقع تلقائيا...';
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  // محاولة تفعيل تلقائي فورا
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const newLoc=[pos.coords.latitude, pos.coords.longitude];
-    myLocation=newLoc;
-    if(myMarker) myMarker.setLatLng(myLocation);
-    if(mainMap){ mainMap.setView(myLocation, 16, {animate:true}); mainMap.invalidateSize(); }
-    document.getElementById('liveStatus').innerText='🟢 موقعك اتفعل تلقائيا - تتبع مباشر شغال';
-    document.getElementById('speedText').innerText='0 كم/س';
-    // بعد ما جبنا الموقع مرة، نبدأ التتبع المستمر
-    watchId=navigator.geolocation.watchPosition(pos=>{
-
-    const newLoc=[pos.coords.latitude, pos.coords.longitude];
-    const speed=pos.coords.speed ? (pos.coords.speed*3.6).toFixed(1) : 0;
-    document.getElementById('speedText').innerText=speed+' كم/س';
-    const moved=haversine(myLocation[0],myLocation[1], newLoc[0], newLoc[1]);
-    if(moved>0.001){
-      myLocation=newLoc;
-      if(myMarker) myMarker.setLatLng(myLocation);
-      if(mainMap && activeRequestId) mainMap.panTo(myLocation, {animate:true});
-      const id=localStorage.getItem('tawsila_id');
-      const role=localStorage.getItem('tawsila_role');
-      const verified=localStorage.getItem('tawsila_verified')==='true';
-      if(id && role!=='client' && verified){ db.ref('drivers/'+id).update({ lat:newLoc[0], lng:newLoc[1], speed:parseFloat(speed), t:Date.now() }); }
-      if(activeRequestId){ db.ref('requests/'+activeRequestId).update({ driverLat:newLoc[0], driverLng:newLoc[1] }); db.ref('liveTracks/'+activeRequestId).update({ lat:newLoc[0], lng:newLoc[1], speed:parseFloat(speed), t:Date.now() }); }
-    }
-  }, (err)=>{
-    console.log('GPS error', err);
-    if(err.code===1){
-      document.getElementById('liveStatus').innerText='⚠️ دوس السماح للموقع - افتح الإعدادات وفعل الموقع';
-      alert('⚠️ لازم تسمح للموقع عشان التطبيق يشتغل - دوس السماح / Allow');
-    } else {
-      document.getElementById('liveStatus').innerText='⚠️ فعل الـ GPS من الإعدادات';
-    }
-  }, {enableHighAccuracy:true, maximumAge:0, timeout:10000});
-  }, (err)=>{
-    document.getElementById('liveStatus').innerText='⚠️ فعل الـ GPS تلقائيا - دوس السماح';
-  }, {enableHighAccuracy:true, maximumAge:0, timeout:8000});
-
+  if(map){
+   Object.entries(locs).forEach(([id,loc])=>{
+    if(!nearbyMarkers[id]){ nearbyMarkers[id]=L.marker([loc.lat,loc.lng],{icon:L.divIcon({html:'<div style=background:#22ff88;width:12px;height:12px;border-radius:50%;border:2px solid white></div><span style=font-size:18px>🛺</span>',className:'',iconSize:[28,28]})}).addTo(map).bindPopup((loc.name||'كابتن')+' - '+(loc.vehicle||'')); }
+    else nearbyMarkers[id].setLatLng([loc.lat,loc.lng]);
+   });
+  }
+ });
 }
-window.addEventListener('load', ()=>{ setTimeout(()=>{ initMap(); setTimeout(()=>{ startLiveLocation(); if(mainMap) mainMap.invalidateSize(); }, 1000); }, 400); const p=new URLSearchParams(window.location.search); const t=p.get('track'); if(t) setTimeout(()=>window.openTracking(t), 800); });
+function listenRides(){
+ if(!db) return;
+ db.ref('pending_rides').on('value', function(snap){
+  const rides=snap.val()||{}; const myVehicle=localStorage.getItem('tawsila_role'); const myData=JSON.parse(localStorage.getItem('pending_driver')||'{}'); const myCarType=myData.carType||''; let list=Object.values(rides);
+  list=list.filter(function(r){ if(r.vehicleType==='all') return true; if(r.vehicleType===myVehicle) return true; if(myVehicle==='car' && r.vehicleType.startsWith('car_')){ const req=r.vehicleType.replace('car_',''); return myCarType===req; } if(r.vehicleType==='car' && myVehicle==='car') return true; return false; });
+  const newCount=list.length;
+  if(newCount>lastRideCount && myVehicle!=='client'){ playDing(); }
+  lastRideCount=newCount;
+  if(list.length>0) show('ridesBox'); else hide('ridesBox');
+  el('ridesList').innerHTML=list.map(function(r){ return '<div class="card p-3"><p style="font-weight:900">👤 '+r.clientName+' - '+r.from+' → '+r.to+' - '+r.price+'ج - 🚗 '+r.vehicleType+'</p><p style="font-size:10px;opacity:.7">'+r.clientPhone+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"><button class="btn bg-[#22ff88] text-black" onclick="acceptRide(\''+r.id+'\')">✅ قبول</button><a class="btn glass text-center" target="_blank" href="https://www.google.com/maps?q='+r.fromLat+','+r.fromLng+'">📍 عميل</a></div><div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:6px"><input id="offer_'+r.id+'" type="number" placeholder="عرضك" class="input" style="font-size:10px;padding:8px"><button class="btn bg-[#ff8c00] text-black" style="font-size:10px" onclick="makeOffer(\''+r.id+'\')">💬 تفاوض</button></div></div>'; }).join('')||'مفيش طلبات تناسبك';
+  if(el('cRides')) el('cRides').innerText=Object.keys(rides).length;
+  if(list.length>0 && Notification && Notification.permission==='granted'){ new Notification('🔔 طلب جديد - '+list[0].vehicleType, {body: list[0].from+' → '+list[0].to+' - '+list[0].price+'ج'}); }
+ });
+}
+function makeOffer(rideId){ const input=el('offer_'+rideId); const price=parseInt(input?input.value:0); if(!price){ alert('اكتب سعرك'); return; } const myId=localStorage.getItem('tawsila_id'), myName=localStorage.getItem('tawsila_name'), myPhone=localStorage.getItem('tawsila_phone')||''; if(db){ db.ref('ride_offers/'+rideId+'/'+myId).set({driverId:myId, driverName:myName, driverPhone:myPhone, price:price, time:Date.now()}); alert('تم إرسال عرضك '+price+'ج'); } }
+function acceptRide(rideId){
+ if(!driverOnline){ alert('خليك متاح الأول'); return; }
+ if(db){ db.ref('rides/'+rideId).once('value').then(function(snap){ const r=snap.val(); if(!r) return; db.ref('rides/'+rideId+'/status').set('accepted'); db.ref('rides/'+rideId+'/driverId').set(localStorage.getItem('tawsila_id')); db.ref('rides/'+rideId+'/driverName').set(localStorage.getItem('tawsila_name')); db.ref('rides/'+rideId+'/driverPhone').set(localStorage.getItem('tawsila_phone')||''); db.ref('pending_rides/'+rideId).remove(); activeRide=r; localStorage.setItem('active_ride',JSON.stringify(activeRide)); showActiveRide(activeRide); }); }
+}
+function finishRide(){ if(!confirm('إنهاء الرحلة؟ سيتم احتساب 15%')) return; if(activeRide){ const commission=Math.round(activeRide.price*0.15); let hist=JSON.parse(localStorage.getItem('ride_history')||'[]'); hist.unshift({...activeRide, status:'finished', commission:commission, finishedAt:new Date().toISOString()}); localStorage.setItem('ride_history',JSON.stringify(hist)); if(db){ db.ref('rides/'+activeRide.id+'/status').set('finished'); db.ref('rides/'+activeRide.id+'/commission').set(commission); db.ref('history/'+activeRide.clientId+'/'+activeRide.id).set({...activeRide, status:'finished'}); db.ref('history/'+activeRide.driverId+'/'+activeRide.id).set({...activeRide, status:'finished'}); db.ref('drivers/'+activeRide.driverId+'/trips').transaction(function(c){return (c||0)+1;}); db.ref('drivers/'+activeRide.driverId+'/commission').transaction(function(c){return (c||0)+commission;}); } showRating(activeRide.id, 'قيم العميل'); activeRide=null; localStorage.removeItem('active_ride'); hide('activeRideBox'); show('mainControls'); loadHistory(); } }
+function cancelRide(){ if(!confirm('إلغاء؟')) return; if(db&&activeRide){ db.ref('rides/'+activeRide.id+'/status').set('cancelled'); db.ref('pending_rides/'+activeRide.id).remove(); } activeRide=null; localStorage.removeItem('active_ride'); hide('activeRideBox'); show('mainControls'); }
+function toggleOnline(){ driverOnline=!driverOnline; const btn=el('btnOnline'); if(driverOnline){ btn.innerText='🔴 مش متاح'; btn.className='btn bg-[#ff1a1a] text-white'; if(db) db.ref('drivers/'+localStorage.getItem('tawsila_id')+'/online').set(true); listenRides(); listenNearbyDrivers(); requestNotificationPermission(); } else { btn.innerText='🟢 متاح'; btn.className='btn bg-[#22ff88] text-black'; if(db) db.ref('drivers/'+localStorage.getItem('tawsila_id')+'/online').set(false); hide('ridesBox'); } }
+function startShareLive(){ if(!myLocation){ alert('فعل الموقع'); requestNativeLocation(); return; } const link='https://www.google.com/maps?q='+myLocation[0]+','+myLocation[1]; el('shareLink').innerText=link; show('shareLiveBox'); }
+function shareViaWhatsapp(){ window.open('https://wa.me/?text='+encodeURIComponent('📍 موقعي لايف: '+el('shareLink').innerText)); }
+function copyShareLink(){ navigator.clipboard.writeText(el('shareLink').innerText); alert('تم النسخ'); }
+function stopSharing(){ hide('shareLiveBox'); }
+function callSOS(){ if(!myLocation){ alert('فعل الموقع'); requestNativeLocation(); return; } const msg='🆘 SOS - موقعي: https://www.google.com/maps?q='+myLocation[0]+','+myLocation[1]; if(confirm('تتصل بـ 122؟')){ window.open('tel:122'); window.open('https://wa.me/?text='+encodeURIComponent(msg)); } }
+function showRating(rideId, text){ ratingRideId=rideId; el('ratingText').innerText=text; showFlex('ratingModal'); currentRating=5; el('starsDisplay').innerText='⭐⭐⭐⭐⭐'; }
+function setRating(n){ currentRating=n; el('starsDisplay').innerText='⭐'.repeat(n); }
+function submitRating(){ const comment=el('ratingComment').value; if(db && ratingRideId){ db.ref('ratings/'+ratingRideId).push({rating:currentRating, comment:comment, time:Date.now()}); } hide('ratingModal'); el('ratingComment').value=''; alert('شكرا ⭐'); }
+function loadHistory(){ const myId=localStorage.getItem('tawsila_id'); if(!myId) return; if(db){ db.ref('history/'+myId).limitToLast(10).on('value', function(snap){ const hist=snap.val()||{}; const list=Object.values(hist).reverse(); if(list.length===0){ el('historyList').innerHTML='مفيش رحلات لسه'; return; } el('historyList').innerHTML=list.map(function(r){ return '<div style="display:flex;justify-content:space-between;background:#000;padding:8px;border-radius:10px;margin-top:6px;font-size:10px"><span>📍 '+r.from+' → '+r.to+'</span><span style="color:#ff1a1a">'+r.price+'ج</span></div>'; }).join(''); }); } }
+function requestNotificationPermission(){ if(!('Notification' in window)) return; if(Notification.permission==='default') Notification.requestPermission(); }
+window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt=e; show('installBox'); });
+function installApp(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(){ deferredPrompt=null; hide('installBox'); }); } }
+let ownerClicks=0, ownerTimer=null, lastTouch=0;
+function openOwnerPanel(){ const p=el('secretOwnerPanel'); if(p){ p.style.display='block'; loadOwnerData(); } }
+window.openOwnerPanel=openOwnerPanel;
+function handleOwnerTap(){ const now=Date.now(); if(now-lastTouch<300) return; lastTouch=now; ownerClicks++; if(ownerTimer) clearTimeout(ownerTimer); ownerTimer=setTimeout(function(){ownerClicks=0;},5000); if(ownerClicks>=7){ ownerClicks=0; setTimeout(function(){ const pass=prompt('🔐 باسورد المالك:'); if(pass==='261997') openOwnerPanel(); },100); } }
+function bindLogo(){ const logo=el('logo'); if(!logo) return; logo.addEventListener('click', handleOwnerTap); logo.addEventListener('touchend', function(e){e.preventDefault(); handleOwnerTap();},{passive:false}); }
+function loadOwnerData(){ const demo=JSON.parse(localStorage.getItem('demo_drivers')||'[]'); const pend=JSON.parse(localStorage.getItem('pending_driver')||'null'); if(pend && !demo.find(function(d){return d.id===pend.id})) demo.unshift(pend); allDrivers=demo; renderOwner(); if(db){ db.ref('drivers').on('value', function(s){ allDrivers=Object.values(s.val()||{}); renderOwner(); }); db.ref('pending_rides').on('value', function(s){ el('cRides').innerText=Object.keys(s.val()||{}).length; }); } }
+function renderOwner(){ const pend=allDrivers.filter(function(d){return d.status==='pending'}); const appr=allDrivers.filter(function(d){return d.status==='approved'}); el('cPending').innerText=pend.length; el('cApproved').innerText=appr.length; el('cMoney').innerText=allDrivers.reduce(function(s,d){return s+(d.commission||0);},0)+'ج'; let list=allDrivers; if(filter==='pending') list=pend; else if(filter==='approved') list=appr; const box=el('driversList'); if(!box) return; if(list.length===0){ box.innerHTML='<p style=text-align:center;opacity:.4;margin-top:20px>مفيش</p>'; return; } box.innerHTML=list.map(function(d){ const isCar=d.vehicle==='car'; return '<div class="card p-3"><div style="display:flex;justify-content:space-between"><div><p style="font-weight:900">'+d.name+' <span style="font-size:8px;background:'+(d.status==='pending'?'#ff8c0022':'#22ff8822')+';color:'+(d.status==='pending'?'#ff8c00':'#22ff88')+';padding:2px 6px;border-radius:9999px">'+d.status+'</span> '+(isCar?'🚗 '+d.carType:'')+'</p><p style="font-size:10px;opacity:.7">📞 '+d.phone+' - '+d.gov+'</p></div><div>عمولة:'+(d.commission||0)+'ج</div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:8px"><img src="'+(d.selfie||'')+'" style="height:60px;object-fit:cover;border-radius:8px;background:#222"><img src="'+d.idCard+'" style="height:60px;object-fit:cover;border-radius:8px"><img src="'+d.vehicleImg+'" style="height:60px;object-fit:cover;border-radius:8px"><img src="'+(d.licenseImg||'')+'" style="height:60px;object-fit:cover;border-radius:8px;background:#222"></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-top:8px"><button class="btn bg-[#22ff88] text-black" onclick="ownerApprove(\''+d.id+'\')">قبول</button><button class="btn bg-[#ff8c00] text-black" onclick="ownerReject(\''+d.id+'\')">رفض</button><a class="btn bg-[#25D366] text-black text-center" target="_blank" href="https://wa.me/2'+d.phone.replace(/^0/,'')+'">واتساب</a><button class="btn bg-[#ff1a1a] text-white" onclick="ownerDel(\''+d.id+'\')">حذف بلوك</button></div></div>'; }).join(''); el('commissionTable').innerHTML=appr.map(function(d){ return '<div style="display:flex;justify-content:space-between;background:#000;padding:8px;border-radius:10px;font-size:11px"><span>'+d.name+'</span><span style="color:#ff1a1a">'+(d.commission||0)+'ج</span></div>'; }).join('')||'مفيش'; }
+function ownerFilter(f){ filter=f; document.querySelectorAll('[id^=f]').forEach(function(b){ if(b.id.startsWith('f')) b.className='btn bg-white/10'; }); const a=el('f'+f.charAt(0).toUpperCase()+f.slice(1)); if(a) a.className='btn bg-[#ff8c00] text-black'; if(f==='all'){ const al=el('fAll'); if(al) al.className='btn bg-[#ff1a1a] text-white'; } if(f==='rides'){ const r=el('fRides'); if(r) r.className='btn bg-[#3b82f6] text-white'; if(db) db.ref('pending_rides').once('value').then(function(s){ const rides=s.val()||{}; el('driversList').innerHTML=Object.values(rides).map(function(r){ return '<div class="card p-3"><p>'+r.clientName+' '+r.from+'→'+r.to+' '+r.price+'ج - '+r.vehicleType+'</p></div>'; }).join('')||'مفيش طلبات'; }); return; } renderOwner(); }
+function ownerApprove(id){ if(db) db.ref('drivers/'+id+'/status').set('approved'); }
+function ownerReject(id){ if(db) db.ref('drivers/'+id+'/status').set('rejected'); }
+function ownerDel(id){ if(confirm('حذف بلوك نهائي؟')){ const drv=allDrivers.find(function(d){return d.id===id;}); if(db){ if(drv&&drv.phone){ db.ref('blocked_phones/'+drv.phone.replace(/[^0-9]/g,'')).set({phone:drv.phone, time:Date.now()}); } db.ref('drivers/'+id).remove(); } allDrivers=allDrivers.filter(function(d){return d.id!==id;}); localStorage.setItem('demo_drivers',JSON.stringify(allDrivers)); renderOwner(); } }
+function resetComm(){ if(confirm('صفر؟')){ allDrivers.forEach(function(d){ if(db) db.ref('drivers/'+d.id+'/commission').set(0); }); } }
 
-// ===== BUTTONS - كلها window. شغالة 100% =====
-window.pick = function(r){
-  console.log('PICK', r);
-  document.getElementById('testMsg').innerText='✅ دوست على '+r+' - الزرار شغال حقيقي!';
-  currentRole=r;
-  document.getElementById('roleBox').style.display='none';
-  document.getElementById('authBox').style.display='block';
-  window.switchAuth('register');
-  document.getElementById('verificationBox').style.display=(r!=='client')?'block':'none';
-}
-window.goBackToRoles = function(){ document.getElementById('authBox').style.display='none'; document.getElementById('dashboard').style.display='none'; document.getElementById('roleBox').style.display='block'; if(mainMap) setTimeout(()=>mainMap.invalidateSize(),300); }
-window.goBackToAuth = function(){ document.getElementById('dashboard').style.display='none'; document.getElementById('authBox').style.display='block'; }
-window.goBackFromOwner = function(){ document.getElementById('ownerPanel').style.display='none'; }
-window.switchAuth = function(mode){
-  authMode=mode;
-  document.getElementById('tabLogin').className=mode==='login'?'flex-1 btn bg-white text-black text-xs':'flex-1 btn glass text-xs opacity-50';
-  document.getElementById('tabRegister').className=mode==='register'?'flex-1 btn bg-white text-black text-xs':'flex-1 btn glass text-xs opacity-50';
-  document.getElementById('verificationBox').style.display=(mode==='register' && currentRole!=='client')?'block':'none';
-}
-window.handleAuth = function(){
-  const phone=document.getElementById('phone').value.trim();
-  const pass=document.getElementById('password').value.trim();
-  const name=document.getElementById('name').value.trim();
-  const address=document.getElementById('address').value.trim();
-  const idNumber=document.getElementById('idNumber')?.value.trim()||'';
-  const vehicleNumber=document.getElementById('vehicleNumber')?.value.trim()||'';
-  const msg=document.getElementById('authMsg');
-  if(!phone||!pass){ msg.innerText='اكتب الموبايل والباسورد'; return; }
-  msg.innerText='جاري...';
-  db.ref('users/'+phone).get().then(snap=>{
-    if(authMode==='register'){
-      if(snap.exists()){ msg.innerText='متسجل قبل كده - دوس دخول'; return; }
-      if(!name||!address){ msg.innerText='اكتب اسمك وعنوانك'; return; }
-      if(currentRole!=='client' && idNumber.length<14){ msg.innerText='البطاقة 14 رقم'; return; }
-      const myReferralCode=phone.slice(-4)+name.slice(0,2).toUpperCase()+Math.floor(Math.random()*90+10);
-      const referralCodeTrim = document.getElementById('referralInput').value.trim();
-      const hasReferralCode = referralCodeTrim && referralCodeTrim.length>=3;
-      const firstCredit = (currentRole==='client' && hasReferralCode) ? 10 : 0;
-      const userData={ name, phone, address, role:currentRole, idNumber, vehicleNumber, verified: currentRole==='client', password:btoa(pass), referralCode:myReferralCode, referredBy: hasReferralCode ? referralCodeTrim : null, hasCode: hasReferralCode, credit:0, firstTripCredit: firstCredit, firstTripUsed:false, createdAt:Date.now() };
-      db.ref('us
+document.addEventListener('DOMContentLoaded', function(){
+ const bind=function(id,fn){ const e=el(id); if(e) e.addEventListener('click',fn); };
+ bind('btnPickToktok', function(){ pick('toktok'); });
+ bind('btnPickClient', function(){ pick('client'); });
+ bind('btnPickCar', function(){ pick('car'); });
+ bind('btnPickMoto', function(){ pick('moto'); });
+ bind('btnBackFromReg', showRoles);
+ bind('btnBackFromClient', showRoles);
+ bind('btnSubmitDriver', submitDriver);
+ bind('btnSubmitClient', submitClient);
+ bind('btnMyLoc', function(){ requestNativeLocation(); if(myLocation) try{map.setView(myLocation,16);}catch(e){} });
+ bind('btnSOS', callSOS);
+ bind('btnShare', startShareLive);
+ bind('btnOnline', toggleOnline);
+ bind('btnWapp', shareViaWhatsapp);
+ bind('btnCopy', copyShareLink);
+ bind('btnStopShare', stopSharing);
+ bind('btnRequestRide', requestRide);
+ bind('btnFinish', finishRide);
+ bind('btnCancel', cancelRide);
+ bind('btnExitPending', function(){ localStorage.clear(); location.reload(); });
+ bind('btnCloseOwner', function(){ hide('secretOwnerPanel'); });
+ bind('fPending', function(){ ownerFilter('pending'); });
+ bind('fApproved', function(){ ownerFilter('approved'); });
+ bind('fRides', function(){ ownerFilter('rides'); });
+ bind('fAll', function(){ ownerFilter('all'); });
+ bind('btnResetComm', resetComm);
+ bind('boxSelfie', function(){ el('fileSelfie').click(); });
+ bind('box1', function(){ el('file1').click(); });
+ bind('box2', function(){ el('file2').click(); });
+ bind('box3', function(){ el('file3').click(); });
+ bind('box4', function(){ el('file4').click(); });
+ bind('btnSubmitRating', submitRating);
+ bind('btnSkipRating', function(){ hide('ratingModal'); });
+ bind('btnRefreshHistory', loadHistory);
+ bind('btnInstall', installApp);
+ bind('btnSendOffer', sendCounterOffer);
+ el('fileSelfie').addEventListener('change', function(){ handleFile(this,'selfie','labelSelfie','boxSelfie'); });
+ el('file1').addEventListener('change', function(){ handleFile(this,'idCard','label1','box1'); });
+ el('file2').addEventListener('change', function(){ handleFile(this,'vehicle','label2','box2'); });
+ el('file3').addEventListener('change', function(){ handleFile(this,'license','label3','box3'); });
+ el('file4').addEventListener('change', function(){ handleFile(this,'carLicense','label4','box4'); });
+ el('regVehicle').addEventListener('change', updateVehicleUI);
+ el('searchFrom').addEventListener('input', function(){ searchAddress(this.value,'from'); });
+ el('searchTo').addEventListener('input', function(){ searchAddress(this.value,'to'); });
+ document.querySelectorAll('.starBtn').forEach(function(b){ b.addEventListener('click', function(){ setRating(parseInt(this.dataset.rating)); }); });
+ bindLogo();
+ try{
+  map=L.map('mainMap').setView([30.05,31.25],12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  map.on('click', function(e){ setDest([e.latlng.lat,e.latlng.lng]); });
+ }catch(e){}
+ setTimeout(function(){ requestNativeLocation(); setTimeout(listenNearbyDrivers,2000); }, 1200);
+ const status=localStorage.getItem('tawsila_status');
+ if(status){
+  const role=localStorage.getItem('tawsila_role'), name=localStorage.getItem('tawsila_name');
+  el('userBar').style.display='flex'; el('userNameDisplay').innerText=name; el('userRoleDisplay').innerText=role;
+  hide('roleBox');
+  if(status==='pending'){ const pend=JSON.parse(localStorage.getItem('pending_driver')||'null'); if(pend) showPending(pend); }
+  else if(role==='client'){ show('mainControls'); loadHistory(); listenNearbyDrivers(); }
+  else { show('btnOnline'); show('ridesBox'); listenRides(); loadHistory(); }
+ }
+ const url=new URLSearchParams(location.search);
+ if(url.get('owner')==='261997') setTimeout(openOwnerPanel,500);
+ if(location.hash==='#owner261997') setTimeout(openOwnerPanel,500);
+ loadHistory();
+});
+window.addEventListener('load', bindLogo);
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+window.pick=pick; window.acceptRide=acceptRide; window.makeOffer=makeOffer; window.acceptOffer=acceptOffer; window.ownerApprove=ownerApprove; window.ownerReject=ownerReject; window.ownerDel=ownerDel; window.ownerFilter=ownerFilter;
+</script>
+</body>
+</html>
