@@ -1,23 +1,42 @@
 {
-  "name": "Tawsila Aman - توصيلة أمان - رقم 1 في مصر",
-  "short_name": "Tawsila Aman",
-  "description": "توكتوك وملاكي ومكنة - تتبع حقيقي - طريق حقيقي - شات حقيقي - رصيد إحالة بيدفع للكابتن جوه التطبيق",
+  "name": "توصيلة أمان - شركة رسمية - 27 محافظة - تتبع لايف حقيقي",
+  "short_name": "توصيلة أمان",
+  "description": "شركة توصيل رسمية - تتبع لايف - طلبات من موبايل لموبايل - تفاوض - بلوك نهائي - تقييم",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#050507",
+  "background_color": "#08080a",
   "theme_color": "#ff1a1a",
   "orientation": "portrait",
+  "scope": "./",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3774/3774099.png",
+      "src": "./logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3774/3774099.png",
+      "src": "./logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "اطلب رحلة",
+      "url": "./index.html",
+      "description": "اطلب رحلة لايف"
+    },
+    {
+      "name": "لوحة المالك",
+      "url": "./m261997owner.html",
+      "description": "لوحة المالك السرية - 261997"
+    }
+  ],
+  "permissions": [
+    "geolocation"
   ]
 }
