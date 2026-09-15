@@ -1,4 +1,4 @@
-const CACHE='tawsila-aman-v9-ultimate-clean'; 
+const CACHE='tawsila-aman-v10-logo-fix'; 
 const URLS=['./','./index.html','./manifest.json','./m261997owner.html','./privacy.html','./terms.html','./about.html','./logo.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(URLS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
