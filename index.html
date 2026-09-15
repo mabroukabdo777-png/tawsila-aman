@@ -750,3 +750,32 @@ document.addEventListener('DOMContentLoaded', function(){
   // الخريطة هتظهر بعد التسجيل فقط
  }
  // تحديث السعر لما يغير نوع العربية
+ const vehicleSelect=el('clientVehicleType');
+ if(vehicleSelect){ vehicleSelect.addEventListener('change', function(){ if(myLocation && destLocation){ setDest(destLocation, el('searchTo').value); } }); }
+ const url=new URLSearchParams(location.search);
+ if(url.get('owner')==='261997') setTimeout(openOwnerPanel,500);
+ if(location.hash==='#owner261997') setTimeout(openOwnerPanel,500);
+ loadHistory();
+});
+window.addEventListener('load', bindLogo);
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    setInterval(()=>reg.update(), 60000);
+    reg.addEventListener('updatefound', ()=>{
+      const newWorker=reg.installing;
+      newWorker.addEventListener('statechange', ()=>{
+        if(newWorker.state==='installed' && navigator.serviceWorker.controller){
+          newWorker.postMessage({action:'skipWaiting'});
+        }
+      });
+    });
+  }).catch(()=>{});
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(!refreshing){ refreshing=true; window.location.reload(); }
+  });
+}
+window.pick=pick; window.acceptRide=acceptRide; window.makeOffer=makeOffer; window.acceptOffer=acceptOffer; window.ownerApprove=ownerApprove; window.ownerReject=ownerReject; window.ownerDel=ownerDel; window.ownerFilter=ownerFilter; window.focusDriver=focusDriver;
+</script>
+</body>
+</html>
