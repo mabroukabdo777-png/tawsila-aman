@@ -286,7 +286,7 @@ function startCountdown(fromLat, fromLng, toLat, toLng){
         $('rideStatusText').textContent=`🚗 الكابتن في الطريق إليك - ${m}:${s.toString().padStart(2,'0')} - ${distKm} كم`;
         $('etaText').textContent=`${m}:${s.toString().padStart(2,'0')} دقيقة`;
       },1000);
-      // خط سير الكابتن وهو جايلك - أزرق زي أوبر
+      // خط سير الكابتن وهو جايلك - 
       if(trackingMap){
         if(window.driverRouteLine) try{trackingMap.removeLayer(window.driverRouteLine);}catch(e){}
         window.driverRouteLine=L.geoJSON(route.geometry,{style:{color:'#3b82f6',weight:6,opacity:0.8,dashArray:'10,10'}}).addTo(trackingMap);
@@ -421,7 +421,7 @@ function listen(){
  db.ref('pending_rides/'+gov).on('value', snap=>{
    const rides=Object.values(snap.val()||{}); if(rides.length>0 && localStorage.getItem('tawsila_role')!=='client'){
      $('ridesBox').style.display='block'; $('ridesList').innerHTML=rides.map(r=>{
-       // تقييم العميل بيظهر للكابتن زي إندرايف
+       // تقييم العميل بيظهر للكابتن 
        const clientRating=r.clientRating||'5.0'; const clientTrips=r.clientTrips||'0';
        return `<div class="card p-3"><p class="font-black text-[13px]">👤 ${esc(r.clientName)} <span class="text-[10px] text-[#ffcc00]">⭐ ${clientRating} • ${clientTrips} رحلة</span> - ${r.price}ج • ${r.km? r.km.toFixed(1)+' كم حقيقي':''}</p><p class="text-[10px] opacity-70">📍 ${esc(r.from)} → ${esc(r.to)} • ${esc(r.mode)} • ${esc(r.vehicleType)}</p><p class="text-[9px] text-[#22ff88]">📞 ${esc(r.clientPhone)} • دفع كاش</p><div class="grid grid-cols-2 gap-2 mt-2"><button class="btn bg-[#22ff88] text-black" onclick="acceptRide('${r.id}')">✅ قبول - في الطريق إليك</button><div class="flex gap-1"><input id="counter_${r.id}" placeholder="سعر مضاد" type="number" class="input bg-black text-[11px]"><button class="btn bg-[#3b82f6] text-white text-[10px]" onclick="sendCounterOffer('${r.id}')">💰 تفاوض</button></div></div></div>`;
      }).join('');
@@ -484,7 +484,7 @@ function showActiveRide(r){
  else if(r.status==='accepted') statusText='✅ تم قبول الرحلة - جاري التحرك';
  else if(r.status==='auto_cancelled') statusText='❌ اتلغت تلقائي - '+ (r.cancelReason||'');
  $('rideStatusText').textContent=statusText;
- // تفاصيل العربية كبيرة زي أوبر بعد القبول
+ // تفاصيل العربية كبيرة  بعد القبول
  let carDetails='';
  if(r.status!=='pending' && r.driverId){
    const gov=r.gov||localStorage.getItem('tawsila_gov'); 
@@ -497,7 +497,7 @@ function showActiveRide(r){
    const phone=r.driverPhone||r.clientPhone||''; 
    $('btnCallDriver').href='tel:'+phone; 
    $('driverInfoText').textContent=(r.driverName||r.clientName||'')+' • '+phone;
-   // صورة الكابتن والعربية زي أوبر وإندرايف
+   // صورة الكابتن والعربية   
    const gov=r.gov||localStorage.getItem('tawsila_gov');
    const driverId=r.driverId||'';
    if(driverId && db){
@@ -718,7 +718,7 @@ if(btnInstall){
 }
 window.addEventListener('appinstalled', ()=>{ toast('✅ تم التثبيت - بقى على شاشتك'); if(installBox) installBox.style.display='none'; });
 
-// 🔄 تحديث تلقائي زي أوبر - لما ترفع نسخة جديدة على جيت هاب
+// 🔄 تحديث تلقائي   - لما ترفع نسخة جديدة على جيت هاب
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(reg=>{
     console.log('PWA SW registered');
