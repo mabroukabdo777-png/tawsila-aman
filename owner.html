@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة المالك - توصيلة أمان - مصر كلها - v11</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+<style>*{font-family:'Cairo'} .card{background:#151518;border:1px solid rgba(255,255,255,.07);border-radius:20px}</style>
+</head>
+<body class="bg-[#08080a] text-white p-3">
+<div id="loginBox" class="min-h-screen flex items-center justify-center"><div class="card p-6 w-full max-w-[360px] text-center">
+<h1 class="font-black text-xl">🔐 لوحة المالك</h1><p class="text-[10px] opacity-60 mt-1">مصر كلها - دخول آمن - v11</p>
+<input id="ownerPass" type="password" placeholder="الباسورد (admin123 / 261997)" class="bg-[#0a0a0a] border border-white/10 rounded-full px-4 py-3 w-full mt-4 text-center">
+<button id="btnLogin" class="bg-[#22ff88] text-black rounded-full px-6 py-3 w-full mt-3 font-black">دخول</button>
+<p id="loginError" class="text-[10px] text-[#ff1a1a] mt-2 hidden">باسورد غلط - جرب admin123 أو 261997 أو abdo123</p>
+<p class="text-[8px] opacity-40 mt-2">الباسوردات: admin123 - abdo123 - tawsila2024 - 261997</p>
+</div></div>
+
+<div id="panelBox" style="display:none" class="max-w-[700px] mx-auto space-y-3">
+<div class="flex justify-between items-center"><h1 class="font-black text-xl"><span class="text-[#ff1a1a]">لوحة</span> المالك - مصر كلها 🛡 v11</h1><div class="flex gap-2"><button id="btnUpdateApp" class="bg-[#3b82f6] rounded-full px-3 py-2 text-[10px]">🔄 تحديث التطبيق لكل الناس</button><button id="btnLogout" class="bg-white/10 rounded-full px-4 py-2 text-[10px]">خروج</button></div></div>
+
+<div class="grid grid-cols-5 gap-2">
+<div class="card p-3 text-center"><p class="text-[8px] opacity-60">انتظار</p><b id="cPending" class="text-[#ff8c00]">0</b></div>
+<div class="card p-3 text-center"><p class="text-[8px] opacity-60">مقبولين</p><b id="cApproved" class="text-[#22ff88]">0</b></div>
+<div class="card p-3 text-center"><p class="text-[8px] opacity-60">طلبات لايف</p><b id="cRides" class="text-[#3b82f6]">0</b></div>
+<div class="card p-3 text-center"><p class="text-[8px] opacity-60">عملاء</p><b id="cClients" class="text-[#22ff88]">0</b></div>
+<div class="card p-3 text-center"><p class="text-[8px] opacity-60">عمولة</p><b id="cMoney" class="text-[#ff1a1a]">0ج</b></div>
+</div>
+
+<div class="card p-3 space-y-2 bg-[#22ff88]/10 border-[#22ff88]/30">
+<p class="font-black text-[11px] text-[#22ff88]">🔄 تحديث تلقائي - زي أوبر</p>
+<p class="text-[9px] opacity-70">لما ترفع ملفات جديدة على جيت هاب، دوس الزرار ده، كل التطبيقات المثبتة عند الناس هتتحدث تلقائي</p>
+<div class="flex gap-2">
+<input id="newVersion" placeholder="مثال: v12" class="bg-black border border-white/10 rounded-full px-3 py-2 text-[11px] w-full" value="v12">
+<button id="btnPushUpdate" class="bg-[#22ff88] text-black rounded-full px-4 py-2 text-[11px] font-black">نشر التحديث</button>
+</div>
+<p id="updateStatus" class="text-[9px] opacity-60"></p>
+</div>
+
+<div class="card p-3 space-y-2">
+<div class="flex gap-2">
+<select id="filterGov" class="bg-black border border-white/10 rounded-full px-3 py-2 text-[11px] w-full"><option value="">كل المحافظات - مصر كلها</option><option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>القليوبية</option><option>الشرقية</option><option>الدقهلية</option><option>البحيرة</option><option>الغربية</option><option>المنوفية</option><option>المنيا</option><option>أسيوط</option><option>سوهاج</option><option>قنا</option><option>الأقصر</option><option>أسوان</option><option>بني سويف</option><option>الفيوم</option><option>كفر الشيخ</option><option>دمياط</option><option>بورسعيد</option><option>الإسماعيلية</option><option>السويس</option><option>البحر الأحمر</option><option>الوادي الجديد</option><option>مطروح</option><option>شمال سيناء</option><option>جنوب سيناء</option></select>
+<input id="searchPhone" placeholder="بحث برقم التليفون" class="bg-black border border-white/10 rounded-full px-3 py-2 text-[11px] w-full">
+</div>
+<div class="flex gap-2 flex-wrap"><button data-f="pending" class="fBtn bg-[#ff8c00] text-black rounded-full px-4 py-2 text-[11px] font-black">⏳ انتظار</button><button data-f="approved" class="fBtn bg-white/10 rounded-full px-4 py-2 text-[11px]">✅ مقبولين</button><button data-f="all" class="fBtn bg-white/10 rounded-full px-4 py-2 text-[11px]">الكل</button><button data-f="blocked" class="fBtn bg-white/10 rounded-full px-4 py-2 text-[11px]">🚫 محظورين</button></div>
+</div>
+
+<div id="driversList" class="grid gap-2"></div>
+<div id="imageModal" style="display:none" class="fixed inset-0 bg-black/90 z-[999] flex items-center justify-center p-4"><div class="card p-3 max-w-[500px] w-full"><img id="modalImg" src="" class="w-full rounded-xl"><button id="btnCloseModal" class="bg-white/10 rounded-full px-4 py-2 w-full mt-2">إغلاق</button></div></div>
+</div>
+
+<script>
+const firebaseConfig = { apiKey: "AIzaSyB0eHMekVj3hxInK2n1HfBEjEshGp2njpg", authDomain: "soqshpin.firebaseapp.com", databaseURL: "https://soqshpin-default-rtdb.firebaseio.com", projectId: "soqshpin", storageBucket: "soqshpin.firebasestorage.app", messagingSenderId: "282224755647", appId: "1:282224755647:web:deb4a22bcb7274c8b1570a" };
+let db=null; try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); firebase.auth().signInAnonymously(); }catch(e){}
+const esc=s=>(s||'').toString().replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[x]));
+let allDrivers=[], filter='pending', currentGov='', searchQuery='';
+const OWNER_PASSWORDS = ['261997','admin123','abdo123','tawsila2024'];
+const $=id=>document.getElementById(id);
+$('btnLogin').onclick=()=>{
+  if(OWNER_PASSWORDS.includes($('ownerPass').value)){ localStorage.setItem('owner_ok','1'); showPanel(); }
+  else $('loginError').style.display='block';
+};
+$('btnLogout').onclick=()=>{ localStorage.removeItem('owner_ok'); location.reload(); };
+$('btnCloseModal').onclick=()=> $('imageModal').style.display='none';
+$('btnUpdateApp').onclick=()=>{ document.getElementById('newVersion').scrollIntoView({behavior:'smooth'}); };
+$('btnPushUpdate').onclick=()=>{
+  const ver=$('newVersion').value.trim()||'v12';
+  if(!db){ alert('Firebase مش متصل'); return; }
+  if(confirm('هتنشر تحديث '+ver+' لكل الناس؟ التطبيق عندهم هيطلب تحديث تلقائي')){
+    db.ref('app_config/version').set(ver);
+    db.ref('app_config/last_update').set(new Date().toISOString());
+    $('updateStatus').textContent='✅ تم نشر التحديث '+ver+' - كل الناس هيجيلهم تنبيه تحديث';
+  }
+};
+function showPanel(){ $('loginBox').style.display='none'; $('panelBox').style.display='block'; loadData(); }
+if(localStorage.getItem('owner_ok')==='1') showPanel();
+function loadData(){
+  db.ref('drivers').on('value', snap=>{ 
+    const val=snap.val()||{};
+    allDrivers=[];
+    Object.values(val).forEach(govObj=>{
+      if(typeof govObj==='object'){
+        Object.values(govObj).forEach(driver=>{
+          if(driver && driver.id) allDrivers.push(driver);
+          else if(typeof govObj.id!=='undefined') allDrivers.push(govObj);
+        });
+        // لو البيانات متخزنة بطريقة مسطحة
+        if(govObj.id) allDrivers.push(govObj);
+      }
+    });
+    // طريقة تانية: لو drivers مباشرة
+    if(allDrivers.length===0){
+      Object.values(val).forEach(v=>{
+        if(v && typeof v==='object'){
+          Object.values(v).forEach(d=>{ if(d && d.id) allDrivers.push(d); });
+        }
+      });
+    }
+    render(); 
+  });
+  db.ref('pending_rides').on('value', snap=>{ const rides=snap.val()||{}; let count=0; Object.values(rides).forEach(v=>{ if(typeof v==='object') count+=Object.keys(v).length; }); $('cRides').textContent=count; });
+  db.ref('clients').on('value', snap=>{ let c=0; Object.values(snap.val()||{}).forEach(v=>{ c+=Object.keys(v||{}).length; }); $('cClients').textContent=c; });
+  db.ref('blocked_phones').on('value', snap=>{ window.blockedList=snap.val()||{}; });
+  // اقرا العمولة من كل المحافظات
+  db.ref('drivers').once('value').then(snap=>{
+    let total=0; Object.values(snap.val()||{}).forEach(govObj=>{
+      Object.values(govObj||{}).forEach(d=>{ total+= (d.commission||0); });
+    });
+    $('cMoney').textContent=total+'ج';
+  });
+}
+$('filterGov').onchange=e=>{ currentGov=e.target.value; render(); };
+$('searchPhone').oninput=e=>{ searchQuery=e.target.value.trim(); render(); };
+document.querySelectorAll('.fBtn').forEach(b=> b.onclick=()=>{ document.querySelectorAll('.fBtn').forEach(x=>x.className='fBtn bg-white/10 rounded-full px-4 py-2 text-[11px]'); b.className='fBtn bg-[#ff8c00] text-black rounded-full px-4 py-2 text-[11px] font-black'; filter=b.dataset.f; render(); });
+function render(){
+  let list=[...allDrivers];
+  if(filter==='pending') list=list.filter(d=>d.status==='pending');
+  else if(filter==='approved') list=list.filter(d=>d.status==='approved');
+  else if(filter==='blocked') list=Object.values(window.blockedList||{}).map(b=>({id:b.phone, phone:b.phone, name:'محظور', gov:b.gov||'', status:'blocked'}));
+  if(currentGov) list=list.filter(d=> (d.gov||'').includes(currentGov) );
+  if(searchQuery) list=list.filter(d=> (d.phone||'').includes(searchQuery) );
+  $('cPending').textContent=allDrivers.filter(d=>d.status==='pending').length;
+  $('cApproved').textContent=allDrivers.filter(d=>d.status==='approved').length;
+  if(list.length===0){ $('driversList').innerHTML='<p class="text-center opacity-40 p-6">مفيش كباتن في الفلتر ده - تأكد Firebase Rules فيها drivers و live_locations</p>'; return; }
+  const slice=list.slice(0,50);
+  $('driversList').innerHTML=slice.map(d=>{
+    const isBlocked = d.status==='blocked';
+    return `<div class="card p-3">
+      <div class="flex justify-between">
+        <div><p class="font-black text-[13px]">${esc(d.name)} <span class="text-[8px] bg-white/10 rounded-full px-2 py-1">${esc(d.status||'')}</span> <span class="text-[8px] bg-[#22ff88]/20 text-[#22ff88] rounded-full px-2 py-1">${esc(d.gov||'')}</span></p>
+        <p class="text-[11px] opacity-70">📞 ${esc(d.phone)} • ${esc(d.vehicle||'')} • ${esc(d.carModel||'')}</p>
+        <p class="text-[10px] opacity-50">عمولة: ${d.commission||0}ج • رحلات: ${d.trips||0}</p></div>
+      </div>
+      ${!isBlocked?`<div class="flex gap-2 mt-2"><button class="bg-white/10 rounded-full px-3 py-1 text-[10px]" onclick="viewImg('${d.id}','selfie')">🤳 شخصية</button><button class="bg-white/10 rounded-full px-3 py-1 text-[10px]" onclick="viewImg('${d.id}','idCard')">📄 بطاقة</button><button class="bg-white/10 rounded-full px-3 py-1 text-[10px]" onclick="viewImg('${d.id}','vehicle')">🛺 مركبة</button></div>`:''}
+      <div class="grid grid-cols-4 gap-2 mt-3">
+        ${!isBlocked?`<button class="bg-[#22ff88] text-black rounded-full py-2 text-[11px] font-black" onclick="approve('${d.id}','${esc(d.gov||'')}')">✅ قبول</button><button class="bg-[#ff8c00] text-black rounded-full py-2 text-[11px]" onclick="reject('${d.id}','${esc(d.gov||'')}')">❌ رفض</button><a class="bg-[#25D366] text-black rounded-full py-2 text-[11px] text-center" target="_blank" href="https://wa.me/2${(d.phone||'').replace(/^0/,'')}">واتساب</a><button class="bg-[#ff1a1a] text-white rounded-full py-2 text-[11px]" onclick="blockDel('${d.id}','${d.phone}','${esc(d.gov||'')}')">🚫 حظر وحذف</button>`:`<button class="bg-white/10 rounded-full py-2 text-[11px]" onclick="unblock('${d.phone}')">فك الحظر</button>`}
+      </div>
+    </div>`;
+  }).join('') + (list.length>50?`<p class="text-center text-[10px] opacity-50 mt-2">عرض 50 من ${list.length} - استخدم البحث</p>`:'');
+}
+window.viewImg=(id,type)=>{
+  const d=allDrivers.find(x=>x.id===id); if(!d) return;
+  db.ref('owner_private_images/'+(d.gov||'')+'/'+id).once('value').then(s=>{
+    const priv=s.val()||d;
+    const map={selfie:priv.selfie||d.selfie, idCard:priv.idCard||d.idCard, vehicle:priv.vehicleImg||priv.vehicle||d.vehicleImg};
+    const src=map[type]; if(!src) { alert('مفيش صورة - تأكد رفعتها'); return; }
+    $('modalImg').src=src; $('imageModal').style.display='flex';
+  });
+};
+window.approve=(id,gov)=>{ if(confirm('قبول الكابتن؟')) db.ref('drivers/'+gov+'/'+id+'/status').set('approved'); };
+window.reject=(id,gov)=>{ if(confirm('رفض الكابتن؟')) db.ref('drivers/'+gov+'/'+id+'/status').set('rejected'); };
+window.blockDel=(id,phone,gov)=>{
+  if(!confirm('⚠️ هتحذف الكابتن وتحظر رقمه نهائي؟')) return;
+  if(!confirm('تأكيد أخير - حظر '+phone+' ؟')) return;
+  db.ref('blocked_phones/'+phone.replace(/[^0-9]/g,'')).set({phone,gov,time:Date.now()});
+  db.ref('drivers/'+gov+'/'+id).remove();
+  db.ref('owner_private_images/'+gov+'/'+id).remove();
+};
+window.unblock=phone=>{ if(confirm('فك حظر '+phone+' ؟')) db.ref('blocked_phones/'+phone.replace(/[^0-9]/g,'')).remove(); };
+</script>
+</body>
+</html>
