@@ -1,42 +1,22 @@
 {
-  "name": "توصيلة أمان - شركة رسمية - 27 محافظة - تتبع لايف حقيقي",
+  "name": "توصيلة أمان - Tawsila Aman",
   "short_name": "توصيلة أمان",
-  "description": "شركة توصيل رسمية - تتبع لايف - طلبات من موبايل لموبايل - تفاوض - بلوك نهائي - تقييم",
+  "description": "أسرع توصيلة توكتوك ومكنة وملاكي ودليفري في القليوبية - تتبع لايف حقيقي",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#08080a",
-  "theme_color": "#ff1a1a",
-  "orientation": "portrait",
-  "scope": "./",
-  "lang": "ar",
-  "dir": "rtl",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
   "icons": [
     {
-      "src": "./logo.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3774/3774083.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "./logo.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3774/3774083.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "اطلب رحلة",
-      "url": "./index.html",
-      "description": "اطلب رحلة لايف"
-    },
-    {
-      "name": "لوحة المالك",
-      "url": "./m261997owner.html",
-      "description": "لوحة المالك السرية - 261997"
-    }
-  ],
-  "permissions": [
-    "geolocation"
   ]
 }
