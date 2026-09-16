@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogItiq2YjYtdmK2YTYqSDYo9mF2KfZhiAtINij2K3Ys9mGINmF2YYg2KPZiNio2LEg2YjYpdmG2K/Ysdin2YrZgSIsCiAgInNob3J0X25hbWUiOiAi2KrZiNi12YrZhNipINij2YXYp9mGIiwKICAiZGVzY3JpcHRpb24iOiAi2KPYrdiz2YYg2YXZhiDYo9mI2KjYsSDZiNil2YbYr9ix2KfZitmBIC0g2KrZiNmD2KrZiNmDICsg2LPZgdixINmF2K3Yp9mB2LjYp9iqICsgU09TICsg2KrYqtio2Lkg2YTYp9mK2YEiLAogICJzdGFydF91cmwiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzAwMDAwMCIsCiAgInRoZW1lX2NvbG9yIjogIiMyMmZmODgiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJpY29uLTE5Mi5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaWNvbi01MTIucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
-<title>Tawsila Aman - مصر كلها - زي أوبر وإندرايف 100%</title>
+<title>Tawsila Aman -  100%</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -80,7 +80,7 @@ body{background:#08080a;color:#fff;margin:0;overflow:hidden}
 <div class="card p-3 space-y-2 bg-[#0a0a0a]"><input id="searchFrom" placeholder="🟢 من: موقعك" class="input bg-black" readonly><input id="searchTo" placeholder="🎯 إلى: دوس على الخريطة" class="input bg-black"><select id="clientVehicleType" class="input bg-black"><option value="toktok">🛺 توكتوك (<10كم)</option><option value="moto">🏍 مكنة</option><option value="car" selected>🚗 ملاكي</option><option value="car_sedan">🚗 سيدان</option><option value="car_suv">🚙 SUV</option><option value="car_7">🚐 7 راكب</option><option value="delivery">📦 دليفري</option></select></div>
 <div class="flex gap-2 flex-wrap"><span id="realDistText" class="glass">المسافة: -</span><span id="realPriceText" class="glass">السعر: -</span><span id="etaText" class="glass">الوقت: -</span></div>
 
-<!-- اختيار كابتن بالتفاصيل زي إندرايف -->
+<!-- اختيار كابتن بالتفاصيل زي  -->
 
 <div id="favPlacesBox" class="card p-3 space-y-2" style="display:none">
 <p class="font-black text-[12px]">⭐ أماكني المفضلة - زي أوبر</p>
@@ -100,7 +100,7 @@ body{background:#08080a;color:#fff;margin:0;overflow:hidden}
 </div>
 
 <div id="driverDestFilterBox" class="card p-3 space-y-2" style="display:none">
-<p class="font-black text-[11px]">🎯 فلتر وجهة - زي أوبر (عايز رحلات رايحة فين؟)</p>
+<p class="font-black text-[11px]">🎯 فلتر وجهة -  (عايز رحلات رايحة فين؟)</p>
 <div class="flex gap-2">
 <input id="destFilterInput" placeholder="مثال: القاهرة، بنها، المعادي..." class="input bg-black text-[11px] flex-1">
 <button id="btnSetDestFilter" class="btn bg-[#ffcc00] text-black text-[10px]">تفعيل</button>
@@ -110,7 +110,7 @@ body{background:#08080a;color:#fff;margin:0;overflow:hidden}
 </div>
 
 <div id="earningsBox" class="card p-3 space-y-2" style="display:none">
-<p class="font-black text-[12px]">💰 أرباحي - مفصلة زي أوبر</p>
+<p class="font-black text-[12px]">💰 أرباحي - مفصلة </p>
 <div class="grid grid-cols-3 gap-2 text-center">
 <div class="bg-black p-2 rounded-xl"><p class="text-[9px] opacity-60">اليوم</p><p id="earnToday" class="font-black text-[13px] text-[#22ff88]">0ج</p></div>
 <div class="bg-black p-2 rounded-xl"><p class="text-[9px] opacity-60">الأسبوع</p><p id="earnWeek" class="font-black text-[13px] text-[#3b82f6]">0ج</p></div>
@@ -121,12 +121,12 @@ body{background:#08080a;color:#fff;margin:0;overflow:hidden}
 
 <div id="nearbyDriversBox" style="display:none"><h4 class="font-black text-[13px]">🚘 كباتن قريبين في <span id="nearbyGov"></span> - اختار زي إندرايف</h4><div id="nearbyList" class="grid gap-2 mt-2"></div><div id="selectedDriverCard" style="display:none" class="card p-3 mt-2 border-[#22ff88]/40 bg-[#22ff8810]"></div></div>
 
-<!-- عروض أسعار من الكباتن - تفاوض زي إندرايف -->
+<!-- عروض أسعار من الكباتن - تفاوض زي  -->
 <div id="offersBox" style="display:none" class="card p-3 space-y-2 border-[#3b82f6]/30"><h4 class="font-black text-[12px] text-[#3b82f6]">💰 عروض الكباتن - تفاوض زي إندرايف</h4><div id="offersList" class="grid gap-2"></div><div class="flex gap-2"><input id="myOfferPrice" placeholder="سعرك المقترح" class="input bg-black flex-1" type="number"><button id="btnSendOffer" class="btn bg-[#3b82f6] text-white">اقترح سعر</button></div></div>
 
 <button id="btnRequestRide" class="btn bg-[#ff1a1a] text-white w-full py-4">🚀 اطلب - من موبايل لموبايل</button>
 
-<!-- الرحلة النشطة بكل حالاتها زي أوبر -->
+<!-- الرحلة النشطة بكل حالاتها زي  -->
 <div id="activeRideBox" style="display:none" class="card p-3 space-y-2"><h3 id="rideStatusText" class="font-black text-[#22ff88]">🚗 رحلتك</h3><div id="activeRideInfo" class="text-[12px]"></div><div id="trackingMap"></div>
 <div id="driverContactBox" style="display:none" class="space-y-2">
 <div id="driverPhotoCard" style="display:none" class="card p-3 bg-black border-[#22ff88]/30 flex gap-3 items-center">
@@ -160,7 +160,7 @@ body{background:#08080a;color:#fff;margin:0;overflow:hidden}
 
 
 <div id="receiptBox" style="display:none" class="card p-4 space-y-2 text-center">
-<h3 class="font-black text-[16px]">🧾 إيصال الرحلة - زي أوبر</h3>
+<h3 class="font-black text-[16px]">🧾 إيصال الرحلة - زي </h3>
 <div id="receiptDetails" class="text-[11px] text-right space-y-1 bg-black p-3 rounded-xl"></div>
 <button id="btnCloseReceipt" class="btn bg-white/10 w-full mt-2">إغلاق</button>
 </div>
