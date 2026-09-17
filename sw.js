@@ -1,7 +1,7 @@
-const CACHE_NAME='tawsila-aman-v4-real';
-const urlsToCache=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./firebase-messaging-sw.js'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.map(x=>{if(x!==CACHE_NAME)return caches.delete(x)}))).then(()=>self.clients.claim()));});
-self.addEventListener('fetch',e=>{if(e.request.url.includes('firebaseio.com')||e.request.url.includes('router.project-osrm.org')||e.request.url.includes('routing.openstreetmap.de'))return e.respondWith(fetch(e.request));e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const cl=res.clone();caches.open(CACHE_NAME).then(c=>c.put(e.request,cl));}return res;}).catch(()=>caches.match('./index.html'))));});
-self.addEventListener('push',e=>{let data={};try{data=e.data?e.data.json():{};}catch{data={title:e.data?e.data.text():'توصيلة أمان'};}const title=data.notification?.title||data.title||'توصيلة أمان - طلب جديد';const body=data.notification?.body||data.body||'طلب حقيقي قريب منك - افتح الآن';e.waitUntil(self.registration.showNotification(title,{body,icon:'./icon-192.png',badge:'./icon-192.png',vibrate:[300,100,300],tag:'ride-request',renotify:true,requireInteraction:true,data:{url:'./index.html'}}));});
-self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cl=>{for(let c of cl){if(c.url.includes('tawsila')&&'focus' in c)return c.focus();}return clients.openWindow('./index.html');}));});
+const CACHE='mata3m-v1';
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.json'])));
+});
+self.addEventListener('fetch',e=>{
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+});
