@@ -1,0 +1,8 @@
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+firebase.initializeApp({apiKey:"AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",authDomain:"mata3m-masr.firebaseapp.com",databaseURL:"https://mata3m-masr-default-rtdb.firebaseio.com",projectId:"mata3m-masr",storageBucket:"mata3m-masr.firebasestorage.app",messagingSenderId:"315344044519",appId:"1:315344044519:web:2766778ebdec4cf053fd42"});
+const messaging=firebase.messaging();
+const VAPID_KEY="[STRIPPED 87 bytes]";
+messaging.onBackgroundMessage(payload=>{const t=payload.notification?.title||'توصيلة أمان - طلب جديد';const b=payload.notification?.body||'طلب جديد قريب منك';const o={body:b,icon:'./icon-192.png',badge:'./icon-192.png',vibrate:[300,100,300],tag:'ride-request',renotify:true,data:{url:'./index.html'}};self.registration.showNotification(t,o);});
+self.addEventListener('push',e=>{let data={};try{data=e.data?e.data.json():{};}catch(err){data={title:e.data?e.data.text():'توصيلة أمان'};}const title=data.notification?.title||data.title||'توصيلة أمان - طلب جديد';const body=data.notification?.body||data.body||'طلب حقيقي قريب منك';e.waitUntil(self.registration.showNotification(title,{body,icon:'./icon-192.png',badge:'./icon-192.png',vibrate:[300,100,300],tag:'ride-request',renotify:true,data:{url:'./index.html'}}));});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window'}).then(cl=>{for(let c of cl){if('focus' in c)return c.focus();}if(clients.openWindow)return clients.openWindow('./index.html');}));});
