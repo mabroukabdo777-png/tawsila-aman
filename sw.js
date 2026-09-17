@@ -1,49 +1,7 @@
-// PWA Service Worker - تثبيت مباشر  + إشعار يرن حتى لو مقفول
-const CACHE_NAME = 'tawsila-v10';
-const urlsToCache = ['./','./index.html','./manifest.json'];
-
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(cacheNames => Promise.all(cacheNames.map(n=> n!==CACHE_NAME ? caches.delete(n) : null))));
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(caches.match(event.request).then(r=> r || fetch(event.request)));
-});
-
-try {
-  importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
-  importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
-  firebase.initializeApp({
-    apiKey: "AIzaSyA-EXAMPLE-REPLACE-WITH-YOUR-KEY",
-    authDomain: "soqshpin.firebaseapp.com",
-    databaseURL: "https://soqshpin-default-rtdb.firebaseio.com",
-    projectId: "soqshpin",
-    storageBucket: "soqshpin.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
-  });
-  const messaging = firebase.messaging();
-  messaging.onBackgroundMessage((payload) => {
-    const title = payload.notification?.title || 'توصيلة أمان - طلب جديد 🔥';
-    const options = {
-      body: payload.notification?.body || 'فيه طلب قريب منك',
-      icon: 'https://cdn-icons-png.flaticon.com/512/3774/3774083.png',
-      badge: 'https://cdn-icons-png.flaticon.com/512/3774/3774083.png',
-      vibrate: [300,100,300,100,500],
-      requireInteraction: true,
-      data: payload.data
-    };
-    self.registration.showNotification(title, options);
-  });
-} catch(e){}
-
-self.addEventListener('notificationclick', (event)=>{
-  event.notification.close();
-  event.waitUntil(clients.openWindow('./'));
-});
+const CACHE_NAME='tawsila-aman-v4-real';
+const urlsToCache=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./firebase-messaging-sw.js'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)).then(()=>self.skipWaiting()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.map(x=>{if(x!==CACHE_NAME)return caches.delete(x)}))).then(()=>self.clients.claim()));});
+self.addEventListener('fetch',e=>{if(e.request.url.includes('firebaseio.com')||e.request.url.includes('router.project-osrm.org')||e.request.url.includes('routing.openstreetmap.de'))return e.respondWith(fetch(e.request));e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const cl=res.clone();caches.open(CACHE_NAME).then(c=>c.put(e.request,cl));}return res;}).catch(()=>caches.match('./index.html'))));});
+self.addEventListener('push',e=>{let data={};try{data=e.data?e.data.json():{};}catch{data={title:e.data?e.data.text():'توصيلة أمان'};}const title=data.notification?.title||data.title||'توصيلة أمان - طلب جديد';const body=data.notification?.body||data.body||'طلب حقيقي قريب منك - افتح الآن';e.waitUntil(self.registration.showNotification(title,{body,icon:'./icon-192.png',badge:'./icon-192.png',vibrate:[300,100,300],tag:'ride-request',renotify:true,requireInteraction:true,data:{url:'./index.html'}}));});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cl=>{for(let c of cl){if(c.url.includes('tawsila')&&'focus' in c)return c.focus();}return clients.openWindow('./index.html');}));});
