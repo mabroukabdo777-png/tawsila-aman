@@ -1,15 +1,11 @@
 {
-  "name": "توصيلة أمان - Tawsila Aman",
-  "short_name": "توصيلة أمان",
-  "description": "أول تطبيق في مصر فيه توكتوك + مكنة + دليفري + كابتن بنت - سعر ثابت - أونلاين حقيقي مباشر - دعم 01002548338",
+  "name": "مطاعم مصر - توصيل حقيقي",
+  "short_name": "مطاعم مصر",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#08080a",
-  "theme_color": "#08080a",
-  "orientation": "portrait",
-  "scope": "./",
+  "background_color": "#0F172A",
+  "theme_color": "#facc15",
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "https://cdn-icons-png.flaticon.com/512/857/857681.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
