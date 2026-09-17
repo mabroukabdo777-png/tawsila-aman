@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>مطعمي - Matami</title>
+  <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#facc15">
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js')}
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;800;900&display=swap" rel="stylesheet">
 <style>body{font-family:'Tajawal',sans-serif}</style>
@@ -754,6 +759,40 @@ window.finishTrip=async(orderId)=>{
   alert(`انتهت الرحلة حقيقي - ربحت ${fee}ج - عمولة ${commission}ج - بقيت متاح 🟢`);
 };
 renderHome();
+<button id="installBtn" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#facc15;color:#000;padding:14px 28px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 8px 20px rgba(0,0,0,.4)">ثبت التطبيق 📲</button>
+
+<script>
+let deferredPrompt;
+const installBtn=document.getElementById('installBtn');
+
+// لو متثبت قبل كده اخفيه
+if(localStorage.getItem('appInstalled')==='1' || window.matchMedia('(display-mode: standalone)').matches){
+  installBtn.style.display='none';
+}
+
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  if(localStorage.getItem('appInstalled')!=='1'){
+    installBtn.style.display='block';
+  }
+});
+
+installBtn.onclick=async()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const {outcome}=await deferredPrompt.userChoice;
+  if(outcome==='accepted'){
+    installBtn.style.display='none';
+    localStorage.setItem('appInstalled','1');
+  }
+  deferredPrompt=null;
+};
+
+window.addEventListener('appinstalled',()=>{
+  installBtn.style.display='none';
+  localStorage.setItem('appInstalled','1');
+});
 </script>
 </body>
 </html>
