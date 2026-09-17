@@ -801,5 +801,11 @@ window.addEventListener('appinstalled',()=>{
   localStorage.setItem('appInstalled','1');
 });
 </script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    reg.update(); // بيجبر التطبيق يدور على تحديث جديد
+  });
+}
+</script>
 </body>
 </html>
