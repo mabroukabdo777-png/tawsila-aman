@@ -536,6 +536,223 @@ function loadRestDiscounts(type){
   };
   loadRestDiscounts(type);
              }
+// ========== الخطوة 5: صفحة الدليفري الحقيقية المحدثة - تسعير + شيك + عمولة 15% + اشعارات ==========
+let deliveryMap=null, deliveryWatch=null, orderSoundDel=null, lastOrderIds=new Set();
+
+function calcFee(distKm){ // 13 جنيه فتح + 5 جنيه على الكيلو
+  return Math.round(13 + (distKm * 5));
+}
+
+function renderDelivery(){
+  document.getElementById('app').innerHTML=`
+  <div class="bg-[#0F172A] text-white p-3 flex justify-between items-center sticky top-0 z-50">
+    <h2 class="font-black text-[11px]">الكابتن - تتبع حقيقي + عمولة 15%</h2>
+    <div class="flex gap-1">
+      <button onclick="showDelTab('home')" id="d-home" class="bg-[#16A34A] px-2 py-1 rounded-full text-[10px]">الرئيسية</button>
+      <button onclick="showDelTab('orders')" id="d-orders" class="bg-white/20 px-2 py-1 rounded-full text-[10px]">طلباتي 🔔<span id="delOrderCount">0</span></button>
+      <button onclick="showDelTab('profit')" id="d-profit" class="bg-white/20 px-2 py-1 rounded-full text-[10px]">أرباحي</button>
+    </div>
+  </div>
+
+  <div id="del-home" class="p-2 space-y-2">
+    <div class="bg-green-50 border-2 border-green-500 rounded-2xl p-3 text-center">
+      <p id="delNameTop" class="font-black text-sm">...</p>
+      <p id="delStatus" class="text-[11px] font-bold">جاري...</p>
+      <p class="text-[10px]">التسعير: 13ج فتح + 5ج/كيلو حقيقي تلقائي</p>
+      <div class="grid grid-cols-2 gap-2 mt-2 text-[10px]">
+        <div class="bg-white rounded-xl p-2"><p>ربحك</p><p id="delProfitTop" class="font-black text-lg">0ج</p></div>
+        <div class="bg-white rounded-xl p-2"><p>عمولة 15%</p><p id="delCommissionTop" class="font-black text-lg text-red-600">0ج</p></div>
+      </div>
+      <button onclick="toggleTracking()" id="trackBtn" class="w-full bg-black text-white py-3 rounded-full mt-2 font-black text-xs">🟢 شغل تتبع موقعي لايف - حقيقي</button>
+    </div>
+    <div id="deliveryMap" style="height:280px;border-radius:20px;border:2px solid black"></div>
+    <div id="nearOrders" class="space-y-2"></div>
+  </div>
+
+  <div id="del-orders" class="hidden p-2 space-y-2">
+    <div id="delTrackMap" style="height:300px;border-radius:20px;border:2px solid black"></div>
+    <div id="myDelOrders" class="space-y-2"></div>
+  </div>
+
+  <div id="del-profit" class="hidden p-3 space-y-2">
+    <div class="bg-black text-white rounded-2xl p-4 text-center">
+      <p class="text-[11px]">ربحك الحقيقي - العمولة 15% محسوبة تلقائي</p>
+      <p id="totalProfit" class="font-black text-2xl">0ج</p>
+      <p id="totalCommission" class="text-red-300 text-sm">عمولة: 0ج</p>
+      <p id="totalTrips" class="text-[10px]">0 رحلة</p>
+      <p class="text-[9px] mt-2 text-yellow-300">كل يوم 9 مساءً: موظفين سوف يتصل بك جهز مبلغ العمولة للدفع</p>
+    </div>
+    <div id="profitList"></div>
+  </div>
+
+  <!-- شيك حقيقي -->
+  <div id="receiptModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[9999] p-4">
+    <div class="bg-white rounded-[20px] p-4 w-full max-w-[360px] text-[11px] space-y-2">
+      <h3 class="font-black text-center">شيك توصيل حقيقي</h3>
+      <div id="receiptBody"></div>
+      <button onclick="closeReceipt()" class="w-full bg-black text-white py-2 rounded-full mt-2">اغلاق</button>
+    </div>
+  </div>`;
+
+  setTimeout(async()=>{
+    const dSnap=await get(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`)); const d=dSnap.val()||{};
+    const uSnap=await get(ref(db,`users/${auth.currentUser.uid}`)); const u=uSnap.val()||{};
+    document.getElementById('delNameTop').innerText=d.name||u.name||'كابتن';
+    document.getElementById('delProfitTop').innerText=(d.profit||0)+'ج';
+    document.getElementById('delCommissionTop').innerText=(d.commission||0)+'ج';
+    document.getElementById('totalProfit').innerText=(d.profit||0)+'ج';
+    document.getElementById('totalCommission').innerText='عمولة 15%: '+(d.commission||0)+'ج';
+    document.getElementById('totalTrips').innerText=(d.orders||0)+' رحلة حقيقية';
+
+    deliveryMap=L.map('deliveryMap').setView([d.lat||30.1027,d.lng||31.3157],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(deliveryMap);
+    orderSoundDel=new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+    // تنبيه 9 مساءً كل يوم
+    setInterval(()=>{
+      const now=new Date();
+      if(now.getHours()===21 && now.getMinutes()===0){
+        if(Notification && Notification.permission==='granted'){
+          new Notification('مطاعم مصر',{body:'موظفين سوف يتصل بك جهز مبلغ العمولة للدفع - عمولتك: '+(d.commission||0)+'ج'});
+        } else {
+          const el=document.createElement('div'); el.className='fixed top-2 left-2 right-2 bg-yellow-400 text-black p-3 rounded-xl z-[9999] text-xs font-black'; el.innerText='🔔 موظفين سوف يتصل بك جهز مبلغ العمولة للدفع - عمولتك: '+(d.commission||0)+'ج'; document.body.appendChild(el); setTimeout(()=>el.remove(),8000);
+        }
+      }
+    },60000);
+    if(Notification && Notification.permission!=='granted') Notification.requestPermission();
+
+    // اشعارات صوتية حتى لو قافل التليفون - طول ما الصفحة مفتوحة في الخلفية
+    onValue(ref(db,`delivery_orders/${auth.currentUser.uid}`), async (snap)=>{
+      const data=snap.val()||{}; let html=''; let count=0;
+      const newIds=Object.keys(data).filter(id=>!lastOrderIds.has(id) && data[id].status==='assigned');
+      if(newIds.length>0 && orderSoundDel){
+        orderSoundDel.play().catch(()=>{});
+        if(navigator.vibrate) navigator.vibrate([500,200,500]);
+      }
+      lastOrderIds=new Set(Object.keys(data));
+
+      for(const [id,o] of Object.entries(data)){
+        if(o.status!=='delivered'){
+          count++;
+          // حساب المسافة الحقيقية مطعم -> عميل
+          const restSnap=await get(ref(db,`restaurants/qalyubia/${o.restId}`)); const rest=restSnap.val()||{};
+          const clientSnap=await get(ref(db,`users/${o.clientId}`)); const client=clientSnap.val()||{};
+          const distRestToClient=(o.clientLat&&rest.lat)?calcDist(rest.lat,rest.lng,o.clientLat,o.clientLng):0;
+          const deliveryFee=calcFee(distRestToClient);
+          const commission=Math.round((o.total * 0.15));
+
+          html+=`<div class="bg-white border-2 ${o.status==='assigned'?'border-yellow-400 animate-pulse':''} rounded-2xl p-3 text-[11px]">
+            <p class="font-black">${o.total}ج - مسافة ${distRestToClient.toFixed(2)} كم - توصيل ${deliveryFee}ج (13+5/ك) - عمولة 15% = ${commission}ج</p>
+            <p>العميل: ${client.name||''} - ${o.clientPhone||client.phone||''} - ${o.address||client.address||''}</p>
+            <p>المطعم: ${rest.name||''} - ${rest.phone||''}</p>
+            <div class="flex gap-2 mt-2">
+              <button onclick="startDelTripReal('${id}')" class="flex-1 bg-[#16A34A] text-white py-2 rounded-full font-black text-xs">${o.status==='assigned'?'ابدأ الرحلة - لازم تدوس':'تتبع'}</button>
+              <button onclick="openReceiptReal('${id}')" class="flex-1 bg-slate-900 text-white py-2 rounded-full text-xs">فتح الشيك</button>
+              <button onclick="cancelDelOrder('${id}')" class="bg-red-100 text-red-600 px-3 py-2 rounded-full text-xs">الغاء +2ج</button>
+            </div>
+          </div>`;
+        }
+      }
+      document.getElementById('delOrderCount').innerText=count;
+      document.getElementById('myDelOrders').innerHTML=html||'لا يوجد طلبات - لو جالك اوردر هيجيلك اشعار صوتي حتى لو قافل التليفون';
+      document.getElementById('nearOrders').innerHTML=html;
+    });
+
+    onValue(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`),(snap)=>{
+      const dd=snap.val()||{};
+      document.getElementById('delProfitTop').innerText=(dd.profit||0)+'ج';
+      document.getElementById('delCommissionTop').innerText=(dd.commission||0)+'ج';
+      document.getElementById('totalProfit').innerText=(dd.profit||0)+'ج';
+      document.getElementById('totalCommission').innerText='عمولة 15%: '+(dd.commission||0)+'ج';
+      document.getElementById('totalTrips').innerText=(dd.orders||0)+' رحلة';
+      document.getElementById('delStatus').innerText=dd.status==='busy'?'🔴 مشغول - علامة حمراء':'🟢 متاح - علامة خضرا';
+    });
+
+  },500);
+}
+
+window.showDelTab=(t)=>{
+  document.getElementById('del-home').classList.add('hidden');
+  document.getElementById('del-orders').classList.add('hidden');
+  document.getElementById('del-profit').classList.add('hidden');
+  document.getElementById('del-'+t).classList.remove('hidden');
+  document.querySelectorAll('[id^="d-"]').forEach(b=>{if(b.id.startsWith('d-')) b.className='bg-white/20 px-2 py-1 rounded-full text-[10px]';});
+  document.getElementById('d-'+t).className='bg-[#16A34A] px-2 py-1 rounded-full text-[10px]';
+};
+
+window.toggleTracking=async()=>{
+  const btn=document.getElementById('trackBtn');
+  if(deliveryWatch){
+    navigator.geolocation.clearWatch(deliveryWatch); deliveryWatch=null;
+    await update(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`),{status:'free'});
+    btn.innerText='🟢 شغل تتبع موقعي لايف - حقيقي';
+  } else {
+    btn.innerText='🔴 جاري تتبع لايف... - علامة حمراء لما تبدأ رحلة';
+    deliveryWatch=navigator.geolocation.watchPosition(async(pos)=>{
+      await update(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`),{lat:pos.coords.latitude,lng:pos.coords.longitude,lastSeen:Date.now()});
+      await update(ref(db,`users/${auth.currentUser.uid}`),{lat:pos.coords.latitude,lng:pos.coords.longitude});
+    },()=>{},{enableHighAccuracy:true,maximumAge:0});
+  }
+};
+
+window.startDelTripReal=async(orderId)=>{
+  const orderSnap=await get(ref(db,`orders/${orderId}`)); const o=orderSnap.val();
+  const restSnap=await get(ref(db,`restaurants/qalyubia/${o.restId}`)); const rest=restSnap.val()||{};
+  const dist=calcDist(rest.lat||30.1027,rest.lng||31.3157,o.clientLat||30.1027,o.clientLng||31.3157);
+  const fee=calcFee(dist); const commission=Math.round(o.total*0.15);
+
+  await update(ref(db,`orders/${orderId}`),{status:'on_the_way',deliveryFee:fee,commission,startedAt:Date.now()});
+  await update(ref(db,`delivery_orders/${auth.currentUser.uid}/${orderId}`),{status:'on_the_way',deliveryFee:fee,commission});
+  await update(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`),{status:'busy'}); // علامة حمراء مشغول
+  // يروح لصفحة المالك مع العمولة
+  await set(ref(db,`owner_commissions/${orderId}`),{orderId,deliveryId:auth.currentUser.uid,restId:o.restId,total:o.total,fee,commission,createdAt:Date.now()});
+  openReceiptReal(orderId);
+};
+
+window.openReceiptReal=async(orderId)=>{
+  const o=await (await get(ref(db,`orders/${orderId}`))).val();
+  const rest=await (await get(ref(db,`restaurants/qalyubia/${o.restId}`))).val()||{};
+  const client=await (await get(ref(db,`users/${o.clientId}`))).val()||{};
+  const dist=o.clientLat?calcDist(rest.lat||0,rest.lng||0,o.clientLat,o.clientLng).toFixed(2):'0';
+  const fee=o.deliveryFee||calcFee(Number(dist));
+  const body=`
+    <p><b>مطعم:</b> ${rest.name||''} - ${rest.phone||''} - ${rest.address||''}</p>
+    <p><b>عميل:</b> ${client.name||''} - ${o.clientPhone||client.phone||''}</p>
+    <p><b>عنوان العميل:</b> ${o.address||client.address||''}</p>
+    <p><b>الوجبات:</b> ${o.items?.map(i=>i.name+' '+i.price+'ج').join(', ')}</p>
+    <p><b>سعر المطعم:</b> ${o.total}ج</p>
+    <p><b>المسافة:</b> ${dist} كم</p>
+    <p><b>سعر التوصيل (13+5*كم):</b> ${fee}ج حقيقي</p>
+    <p><b>العمولة 15%:</b> ${Math.round(o.total*0.15)}ج</p>
+    <hr><p><b>الاجمالي للعميل:</b> ${o.total+fee}ج</p>
+    <p class="text-[9px] text-slate-500">الشيك حقيقي - طالع من الفايربيز</p>
+  `;
+  document.getElementById('receiptBody').innerHTML=body;
+  document.getElementById('receiptModal').classList.remove('hidden');
+  document.getElementById('receiptModal').classList.add('flex');
+};
+window.closeReceipt=()=>{document.getElementById('receiptModal').classList.add('hidden');};
+
+window.cancelDelOrder=async(orderId)=>{
+  if(!confirm('لو لغيت هيزيد على عمولتك 2ج - متأكد؟')) return;
+  const snap=await get(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`)); const d=snap.val()||{};
+  await update(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`),{commission:(d.commission||0)+2, cancelCount:(d.cancelCount||0)+1});
+  await update(ref(db,`orders/${orderId}`),{status:'cancelled_by_delivery', cancelledAt:Date.now()});
+  await update(ref(db,`delivery_orders/${auth.currentUser.uid}/${orderId}`),{status:'cancelled_by_delivery'});
+  await set(ref(db,`owner_commissions/${orderId}_cancel`),{orderId,deliveryId:auth.currentUser.uid,penalty:2,reason:'cancel',createdAt:Date.now()});
+  alert('الاوردر اتلغى - زاد على عمولتك 2ج حقيقي - راح لصفحة المالك');
+};
+
+window.finishTrip=async(orderId)=>{
+  const o=await (await get(ref(db,`orders/${orderId}`))).val();
+  const fee=o.deliveryFee||20; const commission=o.commission||Math.round(o.total*0.15);
+  await update(ref(db,`orders/${orderId}`),{status:'delivered',deliveredAt:Date.now()});
+  await update(ref(db,`delivery_orders/${auth.currentUser.uid}/${orderId}`),{status:'delivered'});
+  const dSnap=await get(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`)); const d=dSnap.val()||{};
+  await update(ref(db,`deliveries/qalyubia/${auth.currentUser.uid}`),{status:'free',profit:(d.profit||0)+fee,commission:(d.commission||0)+commission,orders:(d.orders||0)+1});
+  // علامة خضرا تظهر تاني
+  alert(`انتهت الرحلة حقيقي - ربحت ${fee}ج - عمولة ${commission}ج - بقيت متاح 🟢`);
+};
 renderHome();
 </script>
 </body>
