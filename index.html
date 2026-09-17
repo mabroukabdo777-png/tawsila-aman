@@ -371,6 +371,171 @@ window.startTrip=async(orderId,delId)=>{await update(ref(db,`orders/${orderId}`)
 function loadMyOrdersReal(){onValue(ref(db,'orders'),(snap)=>{const data=snap.val()||{};let html='';Object.entries(data).forEach(([id,o])=>{if(o.clientId===auth.currentUser?.uid){html+=`<div class="bg-white border-2 rounded-2xl p-3 text-xs"><p class="font-black">${o.total}ج - ${o.status}</p><p>الكابتن: ${o.deliveryId?o.deliveryId.slice(0,8):'لم يحدد'}</p><p>${o.deliveryId?'استلم - تابع فوق لايف':'بانتظار كابتن'}</p></div>`;}});const el=document.getElementById('myOrdersList');if(el)el.innerHTML=html||'لا يوجد طلبات';});}
 window.showDiscount=(type)=>{document.getElementById('d-img').className=type==='image'?'bg-black text-white px-4 py-2 rounded-full text-xs':'bg-slate-100 px-4 py-2 rounded-full text-xs';document.getElementById('d-vid').className=type==='video'?'bg-black text-white px-4 py-2 rounded-full text-xs':'bg-slate-100 px-4 py-2 rounded-full text-xs';loadDiscountsReal(type);};
 function loadDiscountsReal(type){onValue(ref(db,'ads'),(snap)=>{const data=snap.val()||{};let html='';Object.entries(data).forEach(([id,ad])=>{if(ad.type===type){html+=`<div class="bg-white border-2 rounded-2xl overflow-hidden"><div class="p-3"><p class="font-black text-sm">${ad.restName}</p></div>${ad.type==='image'?`<img src="${ad.url}" class="w-full h-64 object-cover"><button onclick="openRest('${ad.restId}')" class="w-full bg-black text-white py-3 text-sm font-black">اطلب</button>`:`<video src="${ad.url}" controls class="w-full h-64"></video><button onclick="openRest('${ad.restId}')" class="w-full bg-black text-white py-3">اطلب</button>`}</div>`;}});const el=document.getElementById('discountGrid');if(el)el.innerHTML=html||'لا يوجد خصومات';});}
+// ========== الخطوة 4: صفحة المطعم الحقيقية - أونلاين 100% - مفيش وهم ==========
+let restaurantMap=null, clientMarkers=[], orderSound=null;
+
+function renderRestaurant(){
+  document.getElementById('app').innerHTML=`
+  <div class="bg-[#14532D] text-white p-3 flex justify-between items-center sticky top-0 z-50">
+    <h2 class="font-black text-[12px]">لوحة المطعم - حقيقي أونلاين</h2>
+    <div class="flex gap-1">
+      <button onclick="showRestTab('discounts')" id="r-dis" class="bg-black px-2 py-1 rounded-full text-[10px]">خصومات المطاعم</button>
+      <button onclick="showRestTab('menu')" id="r-menu" class="bg-white/20 px-2 py-1 rounded-full text-[10px]">منيو</button>
+      <button onclick="showRestTab('orders')" id="r-orders" class="bg-white/20 px-2 py-1 rounded-full text-[10px]">طلباتي 🔔<span id="orderCount">0</span></button>
+    </div>
+  </div>
+
+  <div class="p-3 text-center bg-white border-b">
+    <p id="restNameTop" class="font-black text-lg">...</p>
+    <p id="restAddrTop" class="text-[11px] text-slate-500"></p>
+    <button onclick="openAdRequest()" class="w-[90%] mx-auto mt-3 bg-[#16A34A] text-white py-3 rounded-full font-black text-sm shadow-lg animate-pulse">🟢 اطلب اعلان خصوماتك</button>
+  </div>
+
+  <!-- تبويب خصومات المطاعم التانية -->
+  <div id="rest-discounts" class="p-2 space-y-2">
+    <p class="font-black text-sm">خصومات مطاعم تانية - حقيقي - سكرول وتفرج</p>
+    <div class="flex gap-2"><button onclick="loadRestDiscounts('image')" id="rd-img" class="bg-black text-white px-3 py-1 rounded-full text-xs">صور</button><button onclick="loadRestDiscounts('video')" id="rd-vid" class="bg-slate-100 px-3 py-1 rounded-full text-xs">فيديو</button></div>
+    <div id="restDiscountGrid" class="grid grid-cols-1 gap-3"></div>
+  </div>
+
+  <!-- تبويب المنيو -->
+  <div id="rest-menu" class="p-3 hidden space-y-3">
+    <div class="bg-white border-2 border-green-200 rounded-2xl p-3 space-y-2">
+      <h3 class="font-black text-sm">اضف وجبة جديدة - تقدر تضيف 1000 وجبة في منيو واحد</h3>
+      <input id="mealName" placeholder="اسم الوجبة الحقيقي" class="w-full border rounded-xl p-3 text-sm">
+      <input id="mealPrice" type="number" placeholder="السعر الحقيقي بالجنيه" class="w-full border rounded-xl p-3 text-sm">
+      <input id="mealImg" type="file" accept="image/*" class="w-full text-xs border rounded-xl p-2">
+      <div id="mealPreview"></div>
+      <button onclick="addMealReal()" class="w-full bg-black text-white py-3 rounded-full font-black text-sm">اضافة وجبة حقيقية - تظهر للعملاء مباشر أونلاين</button>
+      <p class="text-[10px] text-slate-500">كل وجبة بتظهر للعملاء القريبين منك في نفس المنطقة مباشر - حقيقي</p>
+    </div>
+    <h3 class="font-black text-sm">منيو مطعمك الحقيقي (<span id="mealCount">0</span> وجبة)</h3>
+    <div id="myMenuList" class="space-y-2"></div>
+  </div>
+
+  <!-- تبويب طلباتي -->
+  <div id="rest-orders" class="p-2 hidden space-y-2">
+    <div id="restMap" style="height:300px;border-radius:20px;border:2px solid #14532D"></div>
+    <p class="font-black text-sm">طلبات العملاء - خريطة بتعرف مكان العميل ومنين + اشعار صوتي</p>
+    <div id="restOrdersList" class="space-y-2"></div>
+  </div>
+
+  <!-- طلب اعلان -->
+  <div id="adRequestModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[9999] p-4">
+    <div class="bg-white rounded-[24px] p-4 w-full max-w-[380px] space-y-3">
+      <h3 class="font-black text-center">اطلب اعلان خصوماتك - يروح للمالك تلقائي</h3>
+      <div class="flex gap-2"><button onclick="setAdType('image')" id="adT-img" class="flex-1 bg-black text-white py-2 rounded-full text-xs">صورة</button><button onclick="setAdType('video')" id="adT-vid" class="flex-1 bg-slate-100 py-2 rounded-full text-xs">فيديو</button></div>
+      <input id="adOfferName" placeholder="اسم العرض" class="w-full border rounded-xl p-3 text-sm">
+      <input id="adOfferPrice" type="number" placeholder="سعر العرض" class="w-full border rounded-xl p-3 text-sm">
+      <input id="adOfferDiscount" type="number" placeholder="الخصم %" class="w-full border rounded-xl p-3 text-sm">
+      <input id="adFile" type="file" class="w-full text-xs border rounded-xl p-2">
+      <div id="adFilePreview"></div>
+      <button onclick="submitAdRequest()" class="w-full bg-[#16A34A] text-white py-3 rounded-full font-black">طلب اعلان - يظهر للمالك تلقائي</button>
+      <button onclick="closeAdRequest()" class="w-full bg-slate-100 py-2 rounded-full text-xs">الغاء</button>
+    </div>
+  </div>`;
+
+  setTimeout(async()=>{
+    const uSnap=await get(ref(db,`restaurants/qalyubia/${auth.currentUser.uid}`)); const r=uSnap.val()||{};
+    document.getElementById('restNameTop').innerText=r.name||'مطعمك';
+    document.getElementById('restAddrTop').innerText=r.address||'';
+
+    // منيو حقيقي
+    onValue(ref(db,`menus/${auth.currentUser.uid}`),(snap)=>{
+      const data=snap.val()||{}; let html=''; let c=0;
+      Object.entries(data).forEach(([mid,m])=>{c++; html+=`<div class="bg-white border rounded-2xl p-3 flex gap-3"><img src="${m.img}" class="w-16 h-16 rounded-xl object-cover"><div class="flex-1"><p class="font-black text-sm">${m.name}</p><p class="text-xs text-green-600">${m.price}ج</p><p class="text-[9px] text-slate-400">بتظهر للعملاء القريبين مباشر</p></div><button onclick="deleteMeal('${mid}')" class="text-red-500 text-xs">حذف</button></div>`;});
+      document.getElementById('mealCount').innerText=c;
+      document.getElementById('myMenuList').innerHTML=html||'لسه مفيش وجبات - ضيف اول وجبة';
+    });
+
+    // طلباتي + خريطة + اشعار صوتي حقيقي
+    restaurantMap=L.map('restMap').setView([r.lat||30.1027,r.lng||31.3157],13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(restaurantMap);
+    orderSound=new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    onValue(ref(db,'orders'),(snap)=>{
+      const data=snap.val()||{}; let html=''; let count=0; clientMarkers.forEach(m=>restaurantMap.removeLayer(m)); clientMarkers=[];
+      Object.entries(data).forEach(([id,o])=>{
+        if(o.restId===auth.currentUser.uid && o.status!=='delivered'){
+          count++;
+          if(o.clientLat){const mk=L.marker([o.clientLat,o.clientLng],{icon:L.divIcon({html:'🧍',className:'text-[22px]'})}).addTo(restaurantMap).bindPopup('عميل: '+o.address); clientMarkers.push(mk);}
+          html+=`<div class="bg-white border-2 ${o.status==='new'?'border-red-400 animate-pulse':''} rounded-2xl p-3"><p class="font-black text-sm">${o.total}ج - ${o.status} - عميل: ${o.clientPhone||''}</p><p class="text-[11px]">${o.address||''} - ${o.items?.map(i=>i.name).join(', ')}</p><p class="text-[10px] text-slate-500">مكان العميل: ${o.clientLat?.toFixed(4)||''},${o.clientLng?.toFixed(4)||''} - ${o.clientLat?calcDist(r.lat||30.1027,r.lng||31.3157,o.clientLat,o.clientLng).toFixed(2)+' كم منك':''}</p><button onclick="acceptRestOrder('${id}')" class="w-full bg-[#16A34A] text-white py-2 rounded-full mt-2 text-xs font-black">استلام الطلب - اشعار صوتي وقف</button></div>`;
+          if(o.status==='new'&&orderSound){orderSound.play().catch(()=>{});}
+        }
+      });
+      document.getElementById('orderCount').innerText=count;
+      document.getElementById('restOrdersList').innerHTML=html||'لا يوجد طلبات حاليا - لما عميل قريب يطلب منك هيجيلك اشعار صوتي هنا حقيقي';
+    });
+
+    loadRestDiscounts('image');
+  },500);
+}
+
+window.showRestTab=(t)=>{
+  document.getElementById('rest-discounts').classList.add('hidden');
+  document.getElementById('rest-menu').classList.add('hidden');
+  document.getElementById('rest-orders').classList.add('hidden');
+  document.getElementById('rest-'+t).classList.remove('hidden');
+  document.querySelectorAll('[id^="r-"]').forEach(b=>b.className='bg-white/20 px-2 py-1 rounded-full text-[10px]');
+  document.getElementById('r-'+(t==='discounts'?'dis':t)).className='bg-black px-2 py-1 rounded-full text-[10px]';
+};
+
+let currentAdType='image';
+window.setAdType=(type)=>{currentAdType=type; document.getElementById('adT-img').className=type==='image'?'flex-1 bg-black text-white py-2 rounded-full text-xs':'flex-1 bg-slate-100 py-2 rounded-full text-xs'; document.getElementById('adT-vid').className=type==='video'?'flex-1 bg-black text-white py-2 rounded-full text-xs':'flex-1 bg-slate-100 py-2 rounded-full text-xs'; document.getElementById('adFile').accept=type==='image'?'image/*':'video/*';};
+window.openAdRequest=()=>{document.getElementById('adRequestModal').classList.remove('hidden');document.getElementById('adRequestModal').classList.add('flex'); setAdType('image');};
+window.closeAdRequest=()=>{document.getElementById('adRequestModal').classList.add('hidden');};
+
+document.addEventListener('change',(e)=>{
+  if(e.target.id==='mealImg'){const f=e.target.files[0]; if(f){const url=URL.createObjectURL(f); document.getElementById('mealPreview').innerHTML=`<img src="${url}" class="w-full h-32 rounded-xl mt-2 object-cover">`;}}
+  if(e.target.id==='adFile'){const f=e.target.files[0]; if(f){const url=URL.createObjectURL(f); document.getElementById('adFilePreview').innerHTML=currentAdType==='image'?`<img src="${url}" class="w-full h-32 rounded-xl mt-2">`:`<video src="${url}" controls class="w-full h-32 rounded-xl mt-2"></video>`;}}
+});
+
+window.addMealReal=async()=>{
+  const name=document.getElementById('mealName').value.trim();
+  const price=Number(document.getElementById('mealPrice').value);
+  const file=document.getElementById('mealImg').files[0];
+  if(!name||!price||!file){alert('اكمل البيانات');return;}
+  try{
+    const r=sRef(storage,`menus/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
+    await uploadBytes(r,file); const url=await getDownloadURL(r);
+    const mid=push(ref(db,`menus/${auth.currentUser.uid}`)).key;
+    await set(ref(db,`menus/${auth.currentUser.uid}/${mid}`),{name,price,img:url,createdAt:Date.now(),restId:auth.currentUser.uid});
+    document.getElementById('mealName').value=''; document.getElementById('mealPrice').value=''; document.getElementById('mealImg').value=''; document.getElementById('mealPreview').innerHTML='';
+    alert('الوجبة اتضافت حقيقي - بتظهر للعملاء القريبين منك في نفس المنطقة مباشر أونلاين');
+  }catch(err){alert('خطأ: '+err.message);}
+};
+
+window.deleteMeal=async(mid)=>{if(confirm('حذف؟')) await remove(ref(db,`menus/${auth.currentUser.uid}/${mid}`));};
+
+window.acceptRestOrder=async(id)=>{await update(ref(db,`orders/${id}`),{status:'accepted',acceptedAt:Date.now()});};
+
+window.submitAdRequest=async()=>{
+  const offerName=document.getElementById('adOfferName').value.trim();
+  const price=Number(document.getElementById('adOfferPrice').value);
+  const discount=Number(document.getElementById('adOfferDiscount').value);
+  const file=document.getElementById('adFile').files[0];
+  if(!offerName||!file){alert('اكمل');return;}
+  try{
+    const r=sRef(storage,`adRequests/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
+    await uploadBytes(r,file); const url=await getDownloadURL(r);
+    const restSnap=await get(ref(db,`restaurants/qalyubia/${auth.currentUser.uid}`)); const rest=restSnap.val()||{};
+    const reqId=push(ref(db,'adRequests')).key;
+    await set(ref(db,`adRequests/${reqId}`),{id:reqId,restId:auth.currentUser.uid,restName:rest.name,ownerName:rest.ownerName,address:rest.address,phone:rest.phone,offerName,price,discount,type:currentAdType,url,createdAt:Date.now(),status:'pending'});
+    closeAdRequest();
+    alert('طلب الاعلان اتبعت للمالك تلقائي - هيظهر في لوحة المالك الآن حقيقي');
+  }catch(e){alert(e.message);}
+};
+
+function loadRestDiscounts(type){
+  window.loadRestDiscounts=(type)=>{
+    document.getElementById('rd-img').className=type==='image'?'bg-black text-white px-3 py-1 rounded-full text-xs':'bg-slate-100 px-3 py-1 rounded-full text-xs';
+    document.getElementById('rd-vid').className=type==='video'?'bg-black text-white px-3 py-1 rounded-full text-xs':'bg-slate-100 px-3 py-1 rounded-full text-xs';
+    onValue(ref(db,'ads'),(snap)=>{
+      const data=snap.val()||{}; let html='';
+      Object.entries(data).forEach(([id,ad])=>{if(ad.type===type&&ad.restId!==auth.currentUser.uid){html+=`<div class="bg-white border-2 rounded-2xl overflow-hidden"><div class="p-2"><p class="font-black text-sm">${ad.restName} - ${ad.offerName||''}</p><p class="text-[10px]">${ad.price||''}ج - خصم ${ad.discount||''}%</p></div>${ad.type==='image'?`<img src="${ad.url}" class="w-full h-52 object-cover">`:`<video src="${ad.url}" controls class="w-full h-52"></video>`}</div>`;}});
+      document.getElementById('restDiscountGrid').innerHTML=html||'لا يوجد اعلانات حقيقية من مطاعم تانية لسه';
+    });
+  };
+  loadRestDiscounts(type);
+             }
 renderHome();
 </script>
 </body>
