@@ -18,6 +18,20 @@
 <style>*{font-family:'Cairo',sans-serif}body{background:#08080a;color:#fff;overflow-x:hidden}::-webkit-scrollbar{width:0}.leaflet-routing-alt{display:none}</style>
 </head>
 <body>
+
+<div id="pwaInstallBanner" class="hidden fixed top-[58px] left-0 right-0 z-[100] max-w-[1280px] mx-auto px-4">
+<div class="rounded-[20px] bg-[#22ff88] text-[#08080a] p-3 flex items-center justify-between gap-3 border border-[#08080a]/10 shadow-[0_8px_30px_rgba(34,255,136,0.3)]">
+<div class="flex items-center gap-3"><div class="w-11 h-11 rounded-full bg-[#08080a] grid place-items-center text-[18px]">📲</div><div><div class="font-black text-[13px]">ثبت توصيلة أمان الآن - بضغطة واحدة</div><div class="text-[10px] opacity-70">أسرع - يشتغل بدون نت - تتبع مباشر - بدون جوجل بلاي</div></div></div>
+<div class="flex items-center gap-2"><button id="pwaInstallBtn" class="px-5 h-10 rounded-full bg-[#08080a] text-[#22ff88] font-black text-[12px]">🚀 ثبت الآن</button><button id="pwaCloseBtn" class="w-8 h-8 rounded-full bg-[#08080a]/10 grid place-items-center text-[12px]">×</button></div>
+</div>
+</div>
+<div id="pwaIosBanner" class="hidden fixed bottom-[75px] left-3 right-3 z-[100] max-w-[400px] mx-auto">
+<div class="rounded-[20px] bg-[#151518] border border-[#d4af37]/30 p-4 text-center">
+<div class="font-black text-[12px] mb-2">📲 لتثبيت على آيفون:</div><div class="text-[11px] text-white/70 leading-6">دوس <b>مشاركة ⎙</b> تحت → <b>Add to Home Screen</b> → <b>Add</b><br>هيبقى تطبيق حقيقي على الشاشة</div>
+<button onclick="this.parentElement.parentElement.classList.add('hidden')" class="mt-3 px-4 h-8 rounded-full bg-white/10 text-[11px]">فهمت</button>
+</div>
+</div>
+
 <div class="sticky top-0 z-40 bg-[#151518]/95 backdrop-blur-[26px] border-b border-[#d4af37]/15">
 <div class="max-w-[1280px] mx-auto px-4 h-[56px] flex items-center justify-between">
 <div class="flex items-center gap-3" id="logoBtn"><div class="w-9 h-9 rounded-full bg-[#08080a] border border-[#d4af37]/30 grid place-items-center font-black text-[#d4af37] text-[12px]">TA</div><div><div class="font-black text-[13px]">توصيلة أمان</div><div class="text-[10px] text-white/40">سعرنا ثابت مفيش استغلال - تتبع مباشر</div></div></div>
@@ -154,31 +168,4 @@ img.onload=()=>{
 const canvas=document.createElement('canvas');
 let w=img.width,h=img.height;const max=1024;
 if(w>max||h>max){if(w>h){h*=max/w;w=max;}else{w*=max/h;h=max;}}
-canvas.width=w;canvas.height=h;
-const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
-let quality=0.7;let dataUrl=canvas.toDataURL('image/jpeg',quality);
-while(dataUrl.length>400*1024&&quality>0.25){quality-=0.1;dataUrl=canvas.toDataURL('image/jpeg',quality);}
-canvas.toBlob(blob=>{res({dataUrl,blob});},'image/jpeg',quality);
-};
-img.onerror=rej;reader.readAsDataURL(file);
-});
-}
-async function uploadToStorage(file,path){
-initFirebase();
-if(!storage)return null;
-try{
-const ref=storage.ref().child(path);
-const snap=await ref.put(file);
-const url=await snap.ref.getDownloadURL();
-return url;
-}catch(e){console.log("Storage upload fail fallback to base64",e);return null;}
-}
-function toBase64(file){return new Promise((res,rej)=>{if(!file)return res(null);compressImage(file).then(r=>res(r.dataUrl)).catch(rej);});}
-async function toStorageUrl(file,path){
-const comp=await compressImage(file);
-const url=await uploadToStorage(comp.blob||file,path);
-if(url)return url;
-return comp.dataUrl;
-}
-const VAPID_KEY_REAL="[STRIPPED 87 bytes]";
-function toggleCar(){const v=document.getElementById("dVehicle").value;const isCar=v.startsWith("car");document.getElementById("carExtra").classList.toggle("hidden",!isCar);document.getElementById("doc3").classList.toggle("hidden",!isCar);document.getElementById("doc4").classList.toggle("hidden",!isCar);document.getElementById("doc5").classList.toggle("hidden",!isCar);document.getElementById("doc6").classList.toggle("hidden",!isCar);const docsList=
+canvas.width=w;canvas.he
