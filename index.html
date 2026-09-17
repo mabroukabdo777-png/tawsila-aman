@@ -1,187 +1,348 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#08080a">
-<meta name="description" content="توصيلة أمان - سعر ثابت مفيش استغلال - تتبع مباشر - حقيقي 100%">
-<title>توصيلة أمان - سعر ثابت - حقيقي 100%</title>
-<link rel="manifest" href="./manifest.json">
-<link rel="icon" href="./icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>مطعمي - Matami</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-<style>*{font-family:'Cairo',sans-serif}body{background:#08080a;color:#fff;overflow-x:hidden}::-webkit-scrollbar{width:0}.leaflet-routing-alt{display:none}</style>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;800;900&display=swap" rel="stylesheet">
+<style>body{font-family:'Tajawal',sans-serif}</style>
+<script type="importmap">
+{"imports":{
+"firebase/app":"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
+"firebase/auth":"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js",
+"firebase/database":"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js",
+"firebase/storage":"https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"
+}}
+</script>
 </head>
-<body>
+<body class="bg-[#F0FDF4] min-h-screen">
+<div id="app" class="max-w-[480px] mx-auto bg-white min-h-screen shadow-2xl"></div>
+<div id="recaptcha-container"></div>
 
-<div id="pwaInstallBanner" class="hidden fixed top-[58px] left-0 right-0 z-[100] max-w-[1280px] mx-auto px-4">
-<div class="rounded-[20px] bg-[#22ff88] text-[#08080a] p-3 flex items-center justify-between gap-3 border border-[#08080a]/10 shadow-[0_8px_30px_rgba(34,255,136,0.3)]">
-<div class="flex items-center gap-3"><div class="w-11 h-11 rounded-full bg-[#08080a] grid place-items-center text-[18px]">📲</div><div><div class="font-black text-[13px]">ثبت توصيلة أمان الآن - بضغطة واحدة - سعر ثابت</div><div class="text-[10px] opacity-70">أسرع - يشتغل بدون نت - تتبع مباشر - Push حقيقي</div></div></div>
-<div class="flex items-center gap-2"><button id="pwaInstallBtn" class="px-5 h-10 rounded-full bg-[#08080a] text-[#22ff88] font-black text-[12px]">🚀 ثبت الآن</button><button id="pwaCloseBtn" class="w-8 h-8 rounded-full bg-[#08080a]/10 grid place-items-center text-[12px]">×</button></div>
-</div>
-</div>
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { getDatabase, ref, set } from "firebase/database";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
-<div class="sticky top-0 z-40 bg-[#151518]/95 backdrop-blur-[26px] border-b border-[#d4af37]/15">
-<div class="max-w-[1280px] mx-auto px-4 h-[56px] flex items-center justify-between">
-<div class="flex items-center gap-3" id="logoBtn"><div class="w-9 h-9 rounded-full bg-[#08080a] border border-[#d4af37]/30 grid place-items-center font-black text-[#d4af37] text-[12px]">TA</div><div><div class="font-black text-[13px]">توصيلة أمان - سعر ثابت - حقيقي 100%</div><div class="text-[10px] text-white/40">سعرنا ثابت مفيش استغلال - تتبع مباشر - Push حقيقي</div></div></div>
-<div class="flex items-center gap-2"><div id="onlineCount" class="px-3 h-7 rounded-full bg-[#22ff88]/10 border border-[#22ff88]/20 text-[#22ff88] text-[11px] font-bold">● 0 كابتن متاح</div><a href="tel:01002548338" class="px-3 h-7 rounded-full bg-[#22ff88] text-[#08080a] font-black text-[11px]">01002548338</a></div>
-</div>
-</div>
+const firebaseConfig = {
+  apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",
+  authDomain: "mata3m-masr.firebaseapp.com",
+  databaseURL: "https://mata3m-masr-default-rtdb.firebaseio.com",
+  projectId: "mata3m-masr",
+  storageBucket: "mata3m-masr.firebasestorage.app",
+  messagingSenderId: "315344044519",
+  appId: "1:315344044519:web:2766778ebdec4cf053fd42"
+};
+const appFB = initializeApp(firebaseConfig);
+const auth = getAuth(appFB);
+const db = getDatabase(appFB);
+const storage = getStorage(appFB);
+let selectedRole='', confirmationResult=null, uploadedImageUrl='';
 
-<div class="max-w-[1280px] mx-auto px-4 pt-4 pb-[90px]">
-<div id="authScreen" class="grid md:grid-cols-2 gap-4">
-<div class="rounded-[26px] bg-[#151518] border border-white/5 p-5">
-<div class="font-black text-[14px] mb-4">👤 عميل - سجل واطلب فوراً - سعر ثابت</div>
-<input id="cName" placeholder="الاسم ثلاثي" class="w-full h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px] mb-2 outline-none">
-<input id="cPhone" placeholder="رقم الموبايل 11 رقم يبدأ بـ 01" class="w-full h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px] mb-2 outline-none">
-<input id="cAddr" placeholder="العنوان" class="w-full h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px] mb-2 outline-none">
-<div class="grid grid-cols-2 gap-2 mb-2">
-<select id="cGov" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]"><option>القليوبية</option><option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>الدقهلية</option><option>الشرقية</option><option>الغربية</option><option>المنوفية</option><option>البحيرة</option><option>كفر الشيخ</option><option>دمياط</option><option>بورسعيد</option><option>الإسماعيلية</option><option>السويس</option><option>الفيوم</option><option>بني سويف</option><option>المنيا</option><option>أسيوط</option><option>سوهاج</option><option>قنا</option><option>الأقصر</option><option>أسوان</option></select>
-<input id="cCity" placeholder="المدينة - مثال: بنها" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]">
-</div>
-<input id="cRef" placeholder="كود إحالة اختياري - خصم" class="w-full h-11 rounded-full bg-[#08080a] border border-[#d4af37]/20 px-4 text-[13px] mb-3">
-<button onclick="registerClient()" class="w-full h-11 rounded-full bg-[#22ff88] text-[#08080a] font-black">🚀 تسجيل عميل - مجاني</button>
-</div>
-<div class="rounded-[26px] bg-[#151518] border border-white/5 p-5">
-<div class="font-black text-[14px] mb-4">🏍️ كابتن - انضم - توثيق حقيقي - سعر ثابت</div>
-<input id="dName" placeholder="الاسم بالكامل ثلاثي" class="w-full h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px] mb-2">
-<input id="dPhone" placeholder="رقم الموبايل 11 رقم" class="w-full h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px] mb-2">
-<div class="grid grid-cols-2 gap-2 mb-2">
-<select id="dGov" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]"><option>القليوبية</option><option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>الدقهلية</option></select>
-<input id="dCity" placeholder="المدينة - بنها" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]">
-</div>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<select id="dVehicle" onchange="toggleCar()" class="h-11 rounded-full bg-[#08080a] border border-[#d4af37]/30 px-4 text-[13px] font-bold"><option value="toktok">🛺 توكتوك - 15+5 ثابت</option><option value="moto">🏍️ مكنة - 15+5 ثابت</option><option value="delivery">📦 دليفري - 15+5 ثابت</option><option value="car_economy">🚗 اقتصادية - 20+7 ثابت</option><option value="car_comfort">🚙 مريحة - 20+10 ثابت</option><option value="car_luxury">🚗 لاكشري - 20+17 ثابت</option></select>
-<select id="dGender" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]"><option value="ولد">ولد 👨</option><option value="بنت">بنت 👩 - مطلوبة جداً</option></select>
-</div>
-<div id="carExtra" class="hidden grid grid-cols-2 gap-2 mb-2"><input id="dModel" placeholder="موديل العربية" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]"><input id="dPlate" placeholder="رقم اللوحة" class="h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px]"></div>
-<div class="text-[11px] text-white/60 mb-2">📸 صور البطاقة والرخصة - للتحقق - آمنة ومشفرة - حقيقية 100%:</div>
-<input id="dImg1" type="file" accept="image/*" class="w-full text-[11px] mb-1"><input id="dImg2" type="file" accept="image/*" class="w-full text-[11px] mb-1">
-<button onclick="registerDriver()" class="w-full h-11 rounded-full bg-[#d4af37] text-[#08080a] font-black mt-2">🏍️ تسجيل كابتن - موافقة خلال ساعات - حقيقي</button>
-</div>
-</div>
+function renderHome(){
+  document.getElementById('app').innerHTML = `
+  <div class="bg-gradient-to-b from-[#16A34A] to-[#15803D] text-white p-6 pb-10 rounded-b-[40px]">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#16A34A] font-black text-xl">م</div>
+      <div><h1 class="font-black text-xl leading-none">مطعمي</h1><p class="text-[11px] font-bold tracking-widest text-white/80 -mt-1">MATAMI</p></div>
+    </div>
+    <div class="mt-8 text-center">
+      <h2 class="text-3xl font-black leading-tight">أهلاً بيك في<br>مطعمي Matami</h2>
+      <p class="text-sm text-white/80 mt-2">اختار انت مين عشان نبدأ</p>
+    </div>
+  </div>
 
-<div id="mainApp" class="hidden">
-<div class="rounded-[26px] overflow-hidden border border-white/5 bg-[#151518] mb-4"><div id="map" style="height:420px"></div><div class="p-3 flex justify-between text-[11px]"><span id="gpsStatus" class="text-[#22ff88] font-bold">● جاري تحديد موقعك...</span><span class="text-white/40">تتبع مباشر كل ثانيتين - سعر ثابت - حقيقي</span></div></div>
-<div id="rideBox" class="rounded-[26px] bg-[#151518] border border-white/5 p-4 mb-4">
-<div class="font-black text-[13px] mb-3">📍 اطلب توصيلة - سعر ثابت مفيش استغلال - حقيقي</div>
-<input id="toAddr" placeholder="اكتب العنوان أو اضغط على الخريطة" class="w-full h-11 rounded-full bg-[#08080a] border border-white/10 px-4 text-[13px] mb-2">
-<div class="grid grid-cols-2 gap-2 mb-2">
-<select id="vType" class="h-11 rounded-full bg-[#08080a] border border-[#d4af37]/30 px-4 text-[13px] font-bold"><option value="toktok">🛺 توكتوك - 15+5 ثابت</option><option value="moto">🏍️ مكنة - 15+5 ثابت</option><option value="delivery">📦 دليفري - 15+5 ثابت</option><option value="car_economy">🚗 اقتصادية - 20+7 ثابت</option><option value="car_luxury">🚙 لاكشري - 20+17 ثابت</option></select>
-<label class="flex items-center gap-2 text-[11px]"><input id="femaleOnly" type="checkbox"> كابتن بنت فقط 👩 - مطلوبة</label>
-</div>
-<div id="priceBox" class="p-3 rounded-[16px] bg-[#08080a] border border-[#d4af37]/20 text-center font-black text-[14px] text-[#d4af37]">اختر مكان الوصول لحساب السعر الثابت الحقيقي</div>
-<button onclick="requestRide()" class="w-full h-11 rounded-full bg-[#22ff88] text-[#08080a] font-black mt-3">🚀 اطلب الآن - سعر ثابت - حقيقي</button>
-<div id="rideStatus" class="hidden mt-3 p-3 rounded-[16px] bg-[#08080a] border border-[#22ff88]/20 text-[11px]"></div>
-</div>
-<div id="driverPanel" class="hidden">
-<div id="pendingList" class="mb-3"></div>
-<div id="earningsBox" class="p-3 rounded-[16px] bg-[#151518] text-center text-[12px] mb-2">0ج - سعر ثابت - حقيقي</div>
-<div id="earningsList" class="text-[11px]"></div>
-</div>
-<div id="ownerPanel" class="hidden mt-4">
-<div id="ownerStats" class="grid grid-cols-3 gap-2 mb-3"></div>
-<div id="ownerMap" style="height:300px" class="rounded-[16px] mb-3"></div>
-<div id="ownerDrivers"></div>
-</div>
-</div>
-</div>
+  <div class="p-4 -mt-6 space-y-4">
+    <!-- واد وبنت كرتون شيك -->
+    <div onclick="selectRole('client')" class="bg-white border border-[#DCFCE7] rounded-[24px] p-4 flex items-center gap-3 shadow cursor-pointer">
+      <div class="flex -space-x-3">
+        <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=boy&backgroundColor=b6e3f4" class="w-16 h-16 rounded-full border-4 border-white bg-[#DCFCE7]">
+        <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=girl&backgroundColor=ffdfbf" class="w-16 h-16 rounded-full border-4 border-white bg-[#FFEDD5] -mr-3">
+      </div>
+      <div class="flex-1"><h3 class="font-black text-[#14532D]">عميل</h3><p class="text-xs text-slate-500">واد وبنت - اطلب أكلك</p></div>
+      <div class="w-10 h-10 bg-[#16A34A] rounded-full flex items-center justify-center text-white">→</div>
+    </div>
 
-<script>
-const firebaseConfig={apiKey:"AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",authDomain:"mata3m-masr.firebaseapp.com",databaseURL:"https://mata3m-masr-default-rtdb.firebaseio.com",projectId:"mata3m-masr",storageBucket:"mata3m-masr.firebasestorage.app",messagingSenderId:"315344044519",appId:"1:315344044519:web:2766778ebdec4cf053fd42"};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.database(); const storage=firebase.storage();
-let myId=null,myData=null,myType=null,curPos=null,ownerMap=null,ownerMarkers={},approvedDrivers={},logoClicks=0;
-function fbFetch(path){return db.ref(path).once("value").then(s=>s.val())}
-function fbSet(path,val){return db.ref(path).set(val)}
-function fbUpdate(path,val){return db.ref(path).update(val)}
-function fbRemove(path){return db.ref(path).remove()}
-function haversine(lat1,lon1,lat2,lon2){const R=6371;const dLat=(lat2-lat1)*Math.PI/180;const dLon=(lon2-lon1)*Math.PI/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
-async function compressImage(file){return new Promise(res=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");const max=800;let w=img.width,h=img.height;if(w>h){if(w>max){h*=max/w;w=max}}else{if(h>max){w*=max/h;h=max}}c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);c.toBlob(b=>{res(b)}, "image/jpeg", 0.7)};img.src=e.target.result};r.readAsDataURL(file)})}
-async function toStorageUrl(file,path){const blob=await compressImage(file);const ref=storage.ref(path);await ref.put(blob);return await ref.getDownloadURL()}
-function toggleCar(){const v=document.getElementById("dVehicle").value;document.getElementById("carExtra").classList.toggle("hidden", v==="toktok"||v==="moto"||v==="delivery")}
-async function registerClient(){
-const name=cName.value.trim(),phone=cPhone.value.trim(),addr=cAddr.value.trim(),gov=cGov.value,city=cCity.value.trim();
-if(!name||phone.length!==11||!phone.startsWith("01")){alert("اكمل البيانات - رقم 11 رقم يبدأ بـ 01");return}
-const id="client_"+Date.now();const data={id,name,phone,addr,gov,city,rating:5,createdAt:Date.now(),type:"client"};
-await fbSet("clients/"+id,data);await fbSet("clients_by_phone/"+phone,id);localStorage.setItem("tawsila_session",JSON.stringify(data));myId=id;myData=data;myType="client";startApp();
-}
-async function registerDriver(){
-const name=dName.value.trim(),phone=dPhone.value.trim(),gov=dGov.value,city=dCity.value.trim(),vehicle=dVehicle.value,gender=dGender.value;
-if(!name||phone.length!==11){alert("اكمل البيانات");return}
-const f1=dImg1.files[0],f2=dImg2.files[0];if(!f1||!f2){alert("صور البطاقة والرخصة مطلوبة - توثيق حقيقي");return}
-const id="driver_"+Date.now();
-const idCardUrl=await toStorageUrl(f1,`drivers/${id}/idCard.jpg`);
-const licenseUrl=await toStorageUrl(f2,`drivers/${id}/license.jpg`);
-const data={id,name,phone,gov,city,vehicle,gender,images:{idCard:idCardUrl,license:licenseUrl},status:"pending",rating:5,createdAt:Date.now(),type:"driver"};
-await fbSet("drivers/"+id,data);await fbSet("drivers_by_phone/"+phone,id);
-alert("✅ تم التسجيل - حسابك قيد المراجعة - الإدارة هتوافق خلال ساعات - 01002548338");localStorage.setItem("tawsila_session",JSON.stringify(data));
-}
-function startApp(){authScreen.classList.add("hidden");mainApp.classList.remove("hidden");initMap();if(myType==="driver"){driverPanel.classList.remove("hidden");startDriverListener();loadEarnings()}else{rideBox.classList.remove("hidden")}}
-let map,marker;
-function initMap(){
-if(map) return;
-map=L.map("map").setView([30.5,31],10);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-map.on("click",e=>{window.toLat=e.latlng.lat;window.toLng=e.latlng.lng;if(marker) map.removeLayer(marker);marker=L.marker(e.latlng).addTo(map);calcPrice()});
-if(navigator.geolocation){navigator.geolocation.watchPosition(p=>{curPos={lat:p.coords.latitude,lng:p.coords.longitude};gpsStatus.innerText="● موقعك مباشر - سعر ثابت - حقيقي";if(!marker){marker=L.marker([curPos.lat,curPos.lng]).addTo(map);map.setView([curPos.lat,curPos.lng],14)}if(myType==="driver"){fbSet(`live_locations/${myId}`,{lat:curPos.lat,lng:curPos.lng,name:myData.name,phone:myData.phone,vehicle:myData.vehicle,city:myData.city,status:myData.status||"approved",time:Date.now()})}},err=>{gpsStatus.innerText="● فعل GPS"}, {enableHighAccuracy:true})}
-}
-function calcPrice(){if(!curPos||!window.toLat)return;const km=haversine(curPos.lat,curPos.lng,window.toLat,window.toLng);let price=km*8*1.38;const h=new Date().getHours();const isNight=h>=22||h<5;if(isNight)price*=1.25;priceBox.innerText=Math.round(price)+"ج ثابت - "+km.toFixed(1)+"كم - مفيش استغلال - حقيقي";window.calcKm=km;window.calcPrice=Math.round(price);window.calcIsNight=isNight}
-async function requestRide(){
-if(!curPos){alert("فعل GPS");return}if(!window.toLat){alert("اختر مكان الوصول");return}
-const toAddrEl=document.getElementById("toAddr"),vType=document.getElementById("vType"),femaleOnly=document.getElementById("femaleOnly");
-const pin=Math.floor(1000+Math.random()*9000).toString();const rideId="ride_"+Date.now();
-const data={id:rideId,clientId:myId,clientName:myData.name,clientPhone:myData.phone,fromLat:curPos.lat,fromLng:curPos.lng,toLat:window.toLat,toLng:window.toLng,toAddr:toAddrEl.value,vehicleType:vType.value,femaleOnly:femaleOnly.checked,price:window.calcPrice,km:window.calcKm,isNight:window.calcIsNight,pin,gov:myData.gov,city:myData.city,status:"pending",createdAt:Date.now(),pickup:{lat:curPos.lat,lng:curPos.lng,address:myData.addr||""},dropoff:{lat:window.toLat,lng:window.toLng,address:toAddrEl.value},distance:window.calcKm};
-await fbSet("pending_rides/"+rideId,data);await fbSet("rides/"+rideId,data);
-rideStatus.classList.remove("hidden");rideStatus.innerHTML="✅ طلبك اتبعت لكل الكباتن القريبين - سعر ثابت حقيقي<br>رقم التأكيد: <b class='text-[#22ff88] text-[18px]'>"+pin+"</b>";
-const iv=setInterval(async()=>{const r=await fbFetch("rides/"+rideId);if(r&&r.status==="accepted"){rideStatus.innerHTML="🚖 كابتن قبل طلبك: <b>"+r.driverName+"</b> - "+r.driverPhone+"<br><a href='tel:"+r.driverPhone+"' class='px-4 h-10 rounded-full bg-[#22ff88] text-[#08080a] font-black grid place-items-center'>📞 اتصل</a><br>رقم التأكيد: <b>"+r.pin+"</b>";clearInterval(iv)}},2500);
-}
-async function acceptRide(rideId){const pend=await fbFetch("pending_rides/"+rideId);if(!pend){alert("الطلب اتاخد");return}await fbRemove("pending_rides/"+rideId);await fbUpdate("rides/"+rideId,{status:"accepted",driverId:myId,driverName:myData.name,driverPhone:myData.phone,acceptedAt:Date.now()});alert("✅ تم قبول الطلب - اتصل: "+pend.clientPhone);window.open("tel:"+pend.clientPhone);}
-function startDriverListener(){
-setInterval(async()=>{
-const pend=await fbFetch("pending_rides");const list=document.getElementById("pendingList");if(!list)return;let html="";
-for(const k in pend||{}){const r=pend[k];if(r.city&&myData.city&&r.city!==myData.city)continue;if(r.vehicleType&&r.vehicleType!==myData.vehicle)continue;html+=`<div class="p-3 rounded-[16px] bg-[#08080a] border border-[#22ff88]/20 mb-2"><div class="flex justify-between"><b class="text-[12px]">${r.clientName} - ${r.clientPhone}</b><span class="text-[#d4af37] font-black">${r.price}ج ثابت - ${r.km?.toFixed(1)}كم</span></div><div class="text-[11px] text-white/60">📍 ${r.toAddr}</div><button onclick="acceptRide('${k}')" class="mt-2 w-full h-9 rounded-full bg-[#22ff88] text-[#08080a] font-black text-[12px]">✅ قبول - سعر ثابت حقيقي</button></div>`}
-list.innerHTML=html||"<div class='text-[11px] text-white/40'>لا يوجد طلبات - سعر ثابت</div>";
-},3000);
-}
-logoBtn.addEventListener("click",()=>{logoClicks++;if(logoClicks>=7){const code=prompt("كود الإدارة:");if(code==="261997"){ownerPanel.classList.remove("hidden");loadOwner()}logoClicks=0}});
+    <div onclick="selectRole('restaurant')" class="bg-white border border-[#DCFCE7] rounded-[24px] p-4 flex items-center gap-4 shadow cursor-pointer">
+      <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200" class="w-16 h-16 rounded-2xl object-cover">
+      <div class="flex-1"><h3 class="font-black text-[#14532D]">صاحب مطعم</h3><p class="text-xs text-slate-500">سجل مطعمك وابدأ البيع</p></div>
+      <div class="w-10 h-10 bg-[#14532D] rounded-full flex items-center justify-center text-white">→</div>
+    </div>
 
-// ===== رقم 3 - اللي كان ناقص - سعر ثابت + عمولة 15% تلقائي + فوري باي + اجمالي الشركة - الجديد الكامل اللي مش ناقصه حاجه ولا وهمى =====
-async function completeTrip(rideId){
-  const ride = await fbFetch("rides/"+rideId);
-  if(!ride){alert("الرحلة مش موجودة");return;}
-  const price = ride.price||0;
-  const commission = Math.round(price*0.15);
-  const net = price - commission;
-  const now = Date.now();
-  await fbSet(`earnings/${ride.driverId}/${rideId}`, {rideId, price, commission, net, driverId:ride.driverId, clientId:ride.clientId, city:ride.city, time:now, fixed:true, real:true});
-  await fbSet(`owner_earnings/${rideId}`, {rideId, price, commission, net, driverName:ride.driverName, driverPhone:ride.driverPhone, city:ride.city, time:now, fixed:true});
-  await fbSet(`history/${ride.clientId}/${rideId}`, {...ride, status:"completed", completedAt:now, commission, net});
-  await fbSet(`history/${ride.driverId}/${rideId}`, {...ride, status:"completed", completedAt:now, commission, net});
-  await fbUpdate(`rides/${rideId}`, {status:"completed", commission, net, completedAt:now});
-  const totalSnap = await fbFetch("owner_total");
-  await fbSet("owner_total", {totalCommission:((totalSnap?.totalCommission||0)+commission), totalRides:((totalSnap?.totalRides||0)+1), lastUpdate:now, fixed:true});
-  alert(`✅ تم انهاء الرحلة - سعر ثابت ${price}ج - عمولتك 15% = ${commission}ج - صافي ${net}ج - اتسجل تلقائي في صفحة المالك - حقيقي`);
-  loadOwner(); loadEarnings();
+    <div onclick="selectRole('delivery')" class="bg-white border border-[#DCFCE7] rounded-[24px] p-4 flex items-center gap-4 shadow cursor-pointer">
+      <img src="https://images.unsplash.com/photo-1558981852-426c6c22a060?w=200" class="w-16 h-16 rounded-2xl object-cover">
+      <div class="flex-1"><h3 class="font-black text-[#14532D]">دليفري</h3><p class="text-xs text-slate-500">استلم طلبات قريبة منك</p></div>
+      <div class="w-10 h-10 bg-[#16A34A] rounded-full flex items-center justify-center text-white">→</div>
+    </div>
+  </div>`;
 }
-async function payCommissionViaFawry(driverId){
-  const earnings = await fbFetch(`earnings/${driverId}`);
-  if(!earnings){alert("مفيش عمولات");return;}
-  let totalCommission=0; for(const k in earnings){ totalCommission+= (earnings[k].commission||0); }
-  if(totalCommission<=0){alert("مفيش عمولة");return;}
-  const fawryRef = "TAWSILA_"+Date.now();
-  await fbSet(`fawry_payments/${driverId}/${fawryRef}`, {driverId, amount:totalCommission, ref:fawryRef, status:"pending", time:Date.now(), fixed:true});
-  if(confirm(`💰 عمولتك المستحقة ${totalCommission}ج ثابت - هتدفع عبر فوري باي؟ المرجع: ${fawryRef}`)){
-    window.open(`https://www.atfawry.com/ATFAWRYgo?chargeRequest=${fawryRef}&amount=${totalCommission}`, "_blank");
+
+function renderRegister(){
+  const roleName = selectedRole==='client'?'عميل':selectedRole==='restaurant'?'صاحب مطعم':'دليفري';
+  document.getElementById('app').innerHTML = `
+  <div class="bg-[#16A34A] text-white p-4 flex items-center gap-3">
+    <button onclick="renderHome()" class="w-9 h-9 bg-white/20 rounded-full">←</button><h2 class="font-black">تسجيل ${roleName}</h2>
+  </div>
+  <div class="p-5">
+    <div class="bg-white border rounded-2xl p-4 shadow space-y-3">
+      <input id="name" placeholder="الاسم كامل" class="w-full border rounded-xl p-3 text-sm">
+      <input id="phone" placeholder="01xxxxxxxxx" class="w-full border rounded-xl p-3 text-sm" dir="ltr">
+      <input id="address" placeholder="العنوان بالتفصيل" class="w-full border rounded-xl p-3 text-sm">
+      <input id="password" type="password" placeholder="كلمة السر" class="w-full border rounded-xl p-3 text-sm">
+      ${selectedRole==='restaurant'?`<div class="border-2 border-dashed border-[#86EFAC] rounded-xl p-4 bg-[#F0FDF4] text-center"><p class="text-xs font-bold">صورة المطعم</p><input id="restImg" type="file" class="mt-2 text-xs w-full"><div id="imgPreview" class="mt-2"></div></div>`:''}
+      <div id="otpSection" class="hidden"><input id="otpCode" placeholder="كود التأكيد 123456" class="w-full border rounded-xl p-3 text-center"><button id="verifyBtn" class="w-full bg-[#14532D] text-white py-3 rounded-xl mt-2">تأكيد الكود</button></div>
+      <button id="sendOtpBtn" class="w-full bg-[#16A34A] text-white py-4 rounded-xl font-black">ارسال كود التأكيد</button>
+      <button id="registerBtn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black hidden">تسجيل الحساب</button>
+      <p id="status" class="text-[11px] text-center text-slate-500"></p>
+    </div>
+  </div>`;
+
+  if(selectedRole==='restaurant'){
+    document.getElementById('restImg').onchange = async (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      const refS = sRef(storage, `restaurants/${Date.now()}_${file.name}`);
+      await uploadBytes(refS, file);
+      uploadedImageUrl = await getDownloadURL(refS);
+      document.getElementById('imgPreview').innerHTML = `<img src="${uploadedImageUrl}" class="w-full h-24 rounded-xl object-cover">`;
+    };
   }
+
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {size:'invisible'});
+  document.getElementById('sendOtpBtn').onclick = async ()=>{
+    const phone = document.getElementById('phone').value.trim();
+    if(!phone.startsWith('01')){ alert('رقم غلط'); return; }
+    confirmationResult = await signInWithPhoneNumber(auth, '+2'+phone, window.recaptchaVerifier);
+    document.getElementById('otpSection').classList.remove('hidden');
+    document.getElementById('registerBtn').classList.remove('hidden');
+    document.getElementById('sendOtpBtn').classList.add('hidden');
+    document.getElementById('status').innerText = 'تم ارسال الكود';
+  };
+  document.getElementById('verifyBtn').onclick = async ()=>{
+    await confirmationResult.confirm(document.getElementById('otpCode').value);
+    document.getElementById('status').innerText = 'تم التأكد من الرقم';
+  };
+  document.getElementById('registerBtn').onclick = async ()=>{
+    await set(ref(db, `users/${auth.currentUser.uid}`),{
+      role:selectedRole,
+      name:document.getElementById('name').value,
+      phone:document.getElementById('phone').value,
+      address:document.getElementById('address').value,
+      password:document.getElementById('password').value,
+      image:uploadedImageUrl, verified:true, createdAt:Date.now()
+    });
+    alert('تم التسجيل');
+    renderHome();
+  };
 }
-async function loadEarnings(){
-  if(!myId||myType!=="driver")return;
-  const earnings = await fbFetch(`earnings/${myId}`);
-  if(!earnings){document.getElementById("earningsBox").innerText="0ج - سعر ثابت - حقيقي";return;}
-  let totalCommission=0, totalNet=0, totalPrice=0; let html="";
-  for(const k in earnings){ const e=earnings[k]; totalCommission+= e.commission||0; totalNet+= e.net||0; totalPrice+= e.price||0; html+=`<div class="flex justify-between text-[11px] py-1 border-b b
+
+window.selectRole = (r)=>{ selectedRole=r; renderRegister(); };
+window.renderHome = renderHome;
+renderHome(); 
+<!-- مودال الباسورد السري -->
+<div id="secretModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[9999] p-4">
+  <div class="bg-white rounded-[24px] p-5 w-full max-w-[320px]">
+    <h3 class="font-black text-center">لوحة المالك</h3>
+    <input id="secretPass" type="password" placeholder="ادخل الباسورد" class="w-full border rounded-xl p-3 mt-4 text-center">
+    <button onclick="checkSecret()" class="w-full bg-[#14532D] text-white py-3 rounded-xl mt-3 font-black">دخول</button>
+    <button onclick="closeSecret()" class="w-full bg-slate-100 py-2 rounded-xl mt-2 text-xs">الغاء</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { getDatabase, ref, set, onValue, remove, get, update } from "firebase/database";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCFYCnn8bUqSfL619UhNyv3G6Vvkrmp7hk",
+  authDomain: "mata3m-masr.firebaseapp.com",
+  databaseURL: "https://mata3m-masr-default-rtdb.firebaseio.com",
+  projectId: "mata3m-masr",
+  storageBucket: "mata3m-masr.firebasestorage.app",
+  messagingSenderId: "315344044519",
+  appId: "1:315344044519:web:2766778ebdec4cf053fd42"
+};
+const appFB = initializeApp(firebaseConfig);
+const auth = getAuth(appFB);
+const db = getDatabase(appFB);
+const storage = getStorage(appFB);
+
+let selectedRole='', confirmationResult=null, uploadedImageUrl='';
+let secretClicks=0, secretTimer=null;
+
+function renderHome(){
+  secretClicks=0;
+  document.getElementById('app').innerHTML = `
+  <div class="bg-gradient-to-b from-[#16A34A] to-[#15803D] text-white p-6 pb-10 rounded-b-[40px]">
+    <div class="flex items-center gap-3">
+      <div id="logoBtn" onclick="secretTap()" class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#16A34A] font-black text-xl cursor-pointer select-none">م</div>
+      <div><h1 class="font-black text-xl leading-none">مطعمي</h1><p class="text-[11px] font-bold tracking-widest text-white/80 -mt-1">MATAMI</p></div>
+    </div>
+    <div class="mt-8 text-center">
+      <h2 class="text-3xl font-black leading-tight">أهلاً بيك في<br>مطعمي Matami</h2>
+      <p class="text-sm text-white/80 mt-2">اختار انت مين عشان نبدأ</p>
+    </div>
+  </div>
+  <div class="p-4 -mt-6 space-y-4">
+    <div onclick="selectRole('client')" class="bg-white border border-[#DCFCE7] rounded-[24px] p-4 flex items-center gap-3 shadow cursor-pointer">
+      <div class="flex -space-x-3">
+        <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=boy&backgroundColor=b6e3f4" class="w-16 h-16 rounded-full border-4 border-white">
+        <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=girl&backgroundColor=ffdfbf" class="w-16 h-16 rounded-full border-4 border-white -mr-3">
+      </div>
+      <div class="flex-1"><h3 class="font-black text-[#14532D]">عميل</h3><p class="text-xs text-slate-500">واد وبنت - اطلب أكلك</p></div>
+      <div class="w-10 h-10 bg-[#16A34A] rounded-full flex items-center justify-center text-white">→</div>
+    </div>
+    <div onclick="selectRole('restaurant')" class="bg-white border rounded-[24px] p-4 flex items-center gap-4 shadow cursor-pointer">
+      <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200" class="w-16 h-16 rounded-2xl object-cover">
+      <div class="flex-1"><h3 class="font-black">صاحب مطعم</h3><p class="text-xs text-slate-500">سجل مطعمك</p></div>
+      <div class="w-10 h-10 bg-[#14532D] rounded-full flex items-center justify-center text-white">→</div>
+    </div>
+    <div onclick="selectRole('delivery')" class="bg-white border rounded-[24px] p-4 flex items-center gap-4 shadow cursor-pointer">
+      <img src="https://images.unsplash.com/photo-1558981852-426c6c22a060?w=200" class="w-16 h-16 rounded-2xl object-cover">
+      <div class="flex-1"><h3 class="font-black">دليفري</h3><p class="text-xs text-slate-500">استلم طلبات</p></div>
+      <div class="w-10 h-10 bg-[#16A34A] rounded-full flex items-center justify-center text-white">→</div>
+    </div>
+  </div>`;
+}
+
+function renderRegister(){
+  const roleName = selectedRole==='client'?'عميل':selectedRole==='restaurant'?'صاحب مطعم':'دليفري';
+  document.getElementById('app').innerHTML = `
+  <div class="bg-[#16A34A] text-white p-4 flex items-center gap-3">
+    <button onclick="renderHome()" class="w-9 h-9 bg-white/20 rounded-full">←</button><h2 class="font-black">تسجيل ${roleName}</h2>
+  </div>
+  <div class="p-5 space-y-3">
+    <input id="name" placeholder="الاسم كامل" class="w-full border rounded-xl p-3 text-sm">
+    <input id="phone" placeholder="01xxxxxxxxx" class="w-full border rounded-xl p-3 text-sm" dir="ltr">
+    <input id="address" placeholder="العنوان" class="w-full border rounded-xl p-3 text-sm">
+    <input id="password" type="password" placeholder="كلمة السر" class="w-full border rounded-xl p-3 text-sm">
+    ${selectedRole==='restaurant'?`<div class="border-2 border-dashed border-[#86EFAC] rounded-xl p-4 bg-[#F0FDF4] text-center"><p class="text-xs font-bold">صورة المطعم</p><input id="restImg" type="file" class="mt-2 text-xs w-full"><div id="imgPreview"></div></div>`:''}
+    <div id="otpSection" class="hidden"><input id="otpCode" placeholder="123456" class="w-full border rounded-xl p-3 text-center"><button id="verifyBtn" class="w-full bg-[#14532D] text-white py-3 rounded-xl mt-2">تأكيد</button></div>
+    <button id="sendOtpBtn" class="w-full bg-[#16A34A] text-white py-4 rounded-xl font-black">ارسال كود التأكيد</button>
+    <button id="registerBtn" class="w-full bg-black text-white py-4 rounded-xl font-black hidden">تسجيل</button>
+    <p id="status" class="text-[11px] text-center text-slate-500"></p>
+  </div>`;
+  if(selectedRole==='restaurant'){
+    document.getElementById('restImg').onchange = async (e)=>{
+      const file=e.target.files[0]; const rs=sRef(storage, `restaurants/${Date.now()}_${file.name}`);
+      await uploadBytes(rs,file); uploadedImageUrl=await getDownloadURL(rs);
+      document.getElementById('imgPreview').innerHTML=`<img src="${uploadedImageUrl}" class="w-full h-24 rounded-xl object-cover mt-2">`;
+    };
+  }
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {size:'invisible'});
+  document.getElementById('sendOtpBtn').onclick = async ()=>{
+    const ph=document.getElementById('phone').value;
+    confirmationResult=await signInWithPhoneNumber(auth,'+2'+ph,window.recaptchaVerifier);
+    document.getElementById('otpSection').classList.remove('hidden');
+    document.getElementById('registerBtn').classList.remove('hidden');
+    document.getElementById('sendOtpBtn').classList.add('hidden');
+  };
+  document.getElementById('verifyBtn').onclick = async ()=>{
+    await confirmationResult.confirm(document.getElementById('otpCode').value);
+    document.getElementById('status').innerText='تم التأكد';
+  };
+  document.getElementById('registerBtn').onclick = async ()=>{
+    await set(ref(db, `users/${auth.currentUser.uid}`),{role:selectedRole,name:document.getElementById('name').value,phone:document.getElementById('phone').value,address:document.getElementById('address').value,password:document.getElementById('password').value,image:uploadedImageUrl,verified:true,createdAt:Date.now()});
+    alert('تم التسجيل'); renderHome();
+  };
+}
+
+// ===== لوحة المالك السرية =====
+window.secretTap = ()=>{
+  secretClicks++;
+  if(secretTimer) clearTimeout(secretTimer);
+  secretTimer=setTimeout(()=>{secretClicks=0}, 3000);
+  if(secretClicks>=7){
+    secretClicks=0;
+    document.getElementById('secretModal').classList.remove('hidden');
+    document.getElementById('secretModal').classList.add('flex');
+  }
+};
+window.closeSecret = ()=>{
+  document.getElementById('secretModal').classList.add('hidden');
+  document.getElementById('secretModal').classList.remove('flex');
+};
+window.checkSecret = ()=>{
+  if(document.getElementById('secretPass').value==='261997'){
+    closeSecret(); renderAdmin();
+  }else{ alert('باسورد غلط'); }
+};
+
+function renderAdmin(){
+  document.getElementById('app').innerHTML = `
+  <div class="bg-black text-white p-4 flex justify-between items-center">
+    <h2 class="font-black">لوحة المالك - سرية</h2>
+    <button onclick="renderHome()" class="bg-white/20 px-3 py-1 rounded-full text-xs">خروج</button>
+  </div>
+  <div class="p-3 space-y-4 bg-[#F8FAFC] min-h-screen">
+    <div class="grid grid-cols-3 gap-2">
+      <div class="bg-white rounded-xl p-3 text-center border"><p class="text-[10px]">عملاء</p><p id="cClients" class="font-black text-xl text-[#16A34A]">0</p></div>
+      <div class="bg-white rounded-xl p-3 text-center border"><p class="text-[10px]">مطاعم</p><p id="cRests" class="font-black text-xl text-[#EA580C]">0</p></div>
+      <div class="bg-white rounded-xl p-3 text-center border"><p class="text-[10px]">دليفري</p><p id="cDels" class="font-black text-xl text-[#2563EB]">0</p></div>
+    </div>
+
+    <div class="bg-white rounded-xl p-3 border">
+      <div class="flex gap-2 mb-2"><button onclick="showTab('users')" class="tabBtn bg-black text-white px-3 py-1 rounded-full text-xs">المستخدمين</button><button onclick="showTab('ads')" class="tabBtn bg-slate-100 px-3 py-1 rounded-full text-xs">الاعلانات المطلوبة</button><button onclick="showTab('commission')" class="tabBtn bg-slate-100 px-3 py-1 rounded-full text-xs">عمولة 15%</button></div>
+      <div id="tab-users"></div>
+      <div id="tab-ads" class="hidden"></div>
+      <div id="tab-commission" class="hidden"></div>
+    </div>
+  </div>`;
+
+  // احصائيات مباشرة حقيقية
+  onValue(ref(db,'users'), (snap)=>{
+    const data=snap.val()||{}; let cl=0, re=0, de=0; let html='';
+    Object.entries(data).forEach(([uid,u])=>{
+      if(u.role==='client') cl++; if(u.role==='restaurant') re++; if(u.role==='delivery') de++;
+      html+=`<div class="flex justify-between items-center border-b py-2 text-[11px]"><div><p class="font-bold">${u.name} - ${u.role}</p><p class="text-slate-500">${u.phone} - ${u.address||''}</p></div><button onclick="delUser('${uid}')" class="bg-red-600 text-white px-2 py-1 rounded-full text-[10px]">حذف</button></div>`;
+    });
+    document.getElementById('cClients').innerText=cl;
+    document.getElementById('cRests').innerText=re;
+    document.getElementById('cDels').innerText=de;
+    document.getElementById('tab-users').innerHTML=html||'لا يوجد مستخدمين';
+  });
+
+  // اعلانات مطلوبة
+  onValue(ref(db,'adRequests'), (snap)=>{
+    const data=snap.val()||{}; let html='';
+    Object.entries(data).forEach(([id,ad])=>{
+      html+=`<div class="border rounded-xl p-2 mb-2 text-[11px]"><p class="font-black">${ad.restName} - ${ad.ownerName}</p><p>${ad.phone} - ${ad.address}</p><p>نوع: ${ad.type}</p>${ad.type==='image'?`<img src="${ad.url}" class="w-full h-32 object-cover rounded-xl mt-1">`:`<video src="${ad.url}" controls class="w-full h-32 rounded-xl"></video>`}<div class="flex gap-2 mt-2"><button onclick="approveAd('${id}')" class="bg-green-600 text-white px-3 py-1 rounded-full">موافق - انشر</button><button onclick="rejectAd('${id}')" class="bg-red-600 text-white px-3 py-1 rounded-full">رفض</button></div></div>`;
+    });
+    document.getElementById('tab-ads').innerHTML=html||'لا يوجد طلبات اعلان';
+  });
+
+  // عمولة دليفري 15%
+  onValue(ref(db,'deliveries/qalyubia'), (snap)=>{
+    const data=snap.val()||{}; let html='';
+    Object.entries(data).forEach(([uid,d])=>{
+      const orders=d.orders||0; const profit=d.profit||0; const commission=(profit*0.15).toFixed(2);
+      html+=`<div class="border rounded-xl p-2 mb-2 text-[11px] bg-white"><p class="font-black">${d.name} - ${d.phone}</p><p class="text-slate-500">${d.address}</p><div class="grid grid-cols-3 gap-2 mt-2 text-center"><div class="bg-slate-50 rounded-lg p-2"><p class="text-[9px]">الاوردرات</p><p class="font-black">${orders}</p><p class="text-[8px]">بيزيد تلقائي عند انتهاء الاوردر</p></div><div class="bg-green-50 rounded-lg p-2"><p class="text-[9px]">ربحه</p><p class="font-black">${profit}ج</p></div><div class="bg-yellow-50 rounded-lg p-2"><p class="text-[9px]">عمولتي 15%</p><p class="font-black">${commission}ج</p></div></div><button onclick="delDelivery('${uid}')" class="bg-red-600 text-white px-2 py-1 rounded-full text-[10px] mt-2">حذف الدليفري</button></div>`;
+    });
+    document.getElementById('tab-commission').innerHTML=html||'لا يوجد دليفري';
+  });
+}
+
+window.showTab = (t)=>{
+  document.querySelectorAll('[id^="tab-"]').forEach(e=>e.classList.add('hidden'));
+  document.getElementById('tab-'+t).classList.remove('hidden');
+  document.querySelectorAll('.tabBtn').forEach(b=>{b.classList.remove('bg-black','text-white'); b.classList.add('bg-slate-100')});
+  event.target.classList.add('bg-black','text-white');
+};
+window.delUser = async (uid)=>{ if(confirm('متأكد تحذف؟')) await remove(ref(db, `users/${uid}`)); };
+window.delDelivery = async (uid)=>{ if(confirm('حذف الدليفري؟')){ await remove(ref(db, `deliveries/qalyubia/${uid}`)); await remove(ref(db, `users/${uid}`)); } };
+window.approveAd = async (id)=>{
+  const snap=await get(ref(db, `adRequests/${id}`)); const ad=snap.val();
+  await set(ref(db, `ads/${id}`), {...ad, approved:true, approvedAt:Date.now()});
+  await remove(ref(db, `adRequests/${id}`)); alert('تم النشر في صفحة الاعلانات فورا');
+};
+window.rejectAd = async (id)=>{ await remove(ref(db, `adRequests/${id}`)); alert('تم الرفض'); };
+
+window.selectRole = (r)=>{ selectedRole=r; renderRegister(); };
+window.renderHome = renderHome;
+renderHome();
+</script>
+</body>
+</html>
