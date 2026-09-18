@@ -1,0 +1,26 @@
+name: captain_flash
+description: كابتن فلاش - خدمة التوصيل من حولك
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.15.0
+  cloud_firestore: ^4.15.0
+  firebase_database: ^10.4.0
+  firebase_messaging: ^14.7.0
+  firebase_storage: ^11.5.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.8.1
+  geolocator: ^10.1.0
+  record: ^5.0.4
+  audioplayers: ^5.2.0
+  cupertino_icons: ^1.0.2
+
+flutter:
+  uses-material-design: true
