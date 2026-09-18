@@ -80,11 +80,25 @@ class _MapScreenState extends State<MapScreen> {
           ]),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Color(0xFF00FF88),
-        onPressed: () {},
-        label: Text('الدليفري المتاح: ${deliveryMarkers.length}', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        icon: Icon(Icons.flash_on, color: Colors.black),
+  floatingActionButton: FloatingActionButton.extended(
+  backgroundColor: Color(0xFF00FF88),
+  onPressed: () async {
+    if (deliveryMarkers.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('مفيش دليفري متاح حاليا')));
+      return;
+    }
+    final myId = FirebaseAuth.instance.currentUser!.uid;
+    final deliveryDoc = await FirebaseFirestore.instance.collection('users').where('status', isEqualTo: 'green').limit(1).get();
+    if (deliveryDoc.docs.isNotEmpty) {
+      final deliveryId = deliveryDoc.docs.first.id;
+      final deliveryLoc = LatLng(deliveryDoc.docs.first['lat'], deliveryDoc.docs.first['lng']);
+      await OrderService().createOrder(clientId: myId, deliveryId: deliveryId, clientLoc: myLocation!, deliveryLoc: deliveryLoc);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم ارسال الطلب للدليفري')));
+    }
+  },
+  label: Text('اطلب اقرب دليفري', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+  icon: Icon(Icons.flash_on, color: Colors.black),
+),
       ),
     );
   }
