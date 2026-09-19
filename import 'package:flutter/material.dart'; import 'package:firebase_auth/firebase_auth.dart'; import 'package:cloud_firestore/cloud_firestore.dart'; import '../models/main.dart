@@ -38,8 +38,11 @@ class AuthGate extends StatelessWidget {
           builder: (context, userSnap) {
             if (!userSnap.hasData) return Scaffold(body: Center(child: CircularProgressIndicator()));
             final role = userSnap.data!.data()?['role'];
-            if (role == 'delivery') return DeliveryHome();
-            return MapScreen(); // عميل
+final phone = userSnap.data!.data()?['phone'];
+// رقمك انت كمالك - غيره لرقمك
+if (phone == '01002548338' || role == 'owner') return OwnerDashboard();
+if (role == 'delivery') return DeliveryHome();
+return MapScreen();
           },
         );
       },
