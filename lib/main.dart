@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'screens/login_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  runApp(MyApp());
 }
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override Widget build(BuildContext c) => MaterialApp(home: LoginScreen(), debugShowCheckedModeBanner: false);
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'توصيلة أمان',
+      theme: ThemeData(primarySwatch: Colors.orange),
+      home: Scaffold(
+        appBar: AppBar(title: Text('توصيلة أمان - soqshpin مربوط ✅')),
+        body: Center(child: Text('مربوط بفايربيز بتاعك soqshpin', style: TextStyle(fontSize: 20))),
+      ),
+    );
+  }
 }
