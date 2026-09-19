@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "282224755647",
+    "firebase_url": "https://soqshpin-default-rtdb.firebaseio.com",
+    "project_id": "soqshpin",
+    "storage_bucket": "soqshpin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:282224755647:android:80186c39be1f8664b1570a",
+        "android_client_info": {
+          "package_name": "com.tawsila.aman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4cEVin2A3x7lcHESWCepMunngrCKGsu0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
