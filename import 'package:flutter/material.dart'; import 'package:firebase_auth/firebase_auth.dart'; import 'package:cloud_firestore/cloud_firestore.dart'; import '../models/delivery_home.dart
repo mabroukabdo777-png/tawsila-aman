@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:latlong2/latlong.dart';
 import '../../services/order_service.dart';
 import '../../services/location_service.dart';
+import '../chat_screen.dart';
 
 class DeliveryHome extends StatefulWidget {
   @override
@@ -12,7 +13,6 @@ class DeliveryHome extends StatefulWidget {
 
 class _DeliveryHomeState extends State<DeliveryHome> {
   final orderService = OrderService();
-  String? activeOrderId;
   LatLng? startPoint;
 
   @override
@@ -30,20 +30,21 @@ class _DeliveryHomeState extends State<DeliveryHome> {
             return Center(child: Text('مفيش طلبات حاليا - انت متاح 🟢', style: TextStyle(color: Colors.white, fontSize: 20)));
           }
           final order = snapshot.data!.docs.first;
-          final data = order.data();
-          activeOrderId = order.id;
+          final data = order.data() as Map<String, dynamic>;
           
           return Padding(
             padding: EdgeInsets.all(20),
             child: Column(children: [
               Text('عندك طلب جديد!', style: TextStyle(color: Colors.white, fontSize: 24)),
               SizedBox(height: 20),
+              
               if (data['status'] == 'pending')
                 ElevatedButton(
                   onPressed: () => orderService.acceptOrder(order.id),
                   style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF00FF88)),
                   child: Text('قبول الطلب', style: TextStyle(color: Colors.black)),
                 ),
+                
               if (data['status'] == 'accepted')
                 ElevatedButton(
                   onPressed: () async {
@@ -54,17 +55,26 @@ class _DeliveryHomeState extends State<DeliveryHome> {
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                   child: Text('ابدأ الرحلة - هتحمر 🔴', style: TextStyle(color: Colors.white)),
                 ),
+                
               if (data['status'] == 'started')
                 ElevatedButton(
                   onPressed: () async {
                     final result = await orderService.finishTrip(order.id);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('تم! المسافة: ${order['distanceKm']?.toStringAsFixed(1)} كم - حسابك: ${result['driverEarning']?.toStringAsFixed(0)} جنيه')),
+                      SnackBar(content: Text('تم! حسابك: ${result['driverEarning']?.toStringAsFixed(0)} جنيه')),
                     );
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   child: Text('انهاء الرحلة - حساب وترجع اخضر 🟢', style: TextStyle(color: Colors.white)),
                 ),
+
+              SizedBox(height: 10),
+              
+              ElevatedButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(orderId: order.id))),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+                child: Text('💬 افتح الشات مع العميل', style: TextStyle(color: Colors.black)),
+              ),
             ]),
           );
         },
