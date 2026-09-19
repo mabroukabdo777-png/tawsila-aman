@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/map_screen_osm.dart';
 import 'screens/delivery/delivery_home.dart';
+import 'screens/owner/owner_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
