@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مطاعم مصر - توصيل حقيقي</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff6b00">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Cairo, Tahoma}
+body{background:#f8f8f8}
+header{background:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px #0001;position:sticky;top:0;z-index:100}
+.logo{width:42px;height:42px;background:linear-gradient(135deg,#ff6b00,#ff9a00);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;cursor:pointer}
+#map{height:55vh;width:100%;z-index:1}
+.card{background:#fff;margin:12px;border-radius:16px;padding:16px;box-shadow:0 4px 12px #0001}
+input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;margin:6px 0;font-size:15px}
+button{background:#ff6b00;color:#fff;border:none;font-weight:700;cursor:pointer}
+.badge{font-size:12px;background:#fff3e0;color:#ff6b00;padding:4px 8px;border-radius:20px}
+#status{font-size:12px;color:#666;margin:6px 0}
+</style>
+</head>
+<body>
+<header>
+<div class="logo" id="logo">م</div>
+<div><span class="badge" id="gpsBadge">📍 جاري تحديد موقعك تلقائيا...</span></div>
+<div><button id="installBtn" style="width:auto;padding:6px 10px;font-size:12px;display:none">ثبت 📲</button></div>
+</header>
+<div id="map"></div>
+
+<div class="card" id="orderCard">
+<h3>اطلب الآن - توصيل حقيقي</h3>
+<p id="status">فعل الـ GPS عشان نحسب التوصيل بدقة</p>
+<input id="clientName" placeholder="اسمك">
+<input id="clientPhone" placeholder="رقم الموبايل 01xxxxxxxxx">
+<input id="clientAddress" placeholder="العنوان بالتفصيل">
+<div id="priceBox" style="background:#fff7ed;padding:10px;border-radius:10px;margin:8px 0;display:none"></div>
+<button onclick="calculateDelivery()">احسب سعر التوصيل الحقيقي</button>
+<button onclick="sendOrder()" style="background:#111">تأكيد الطلب</button>
+<p style="font-size:11px;color:#888;margin-top:8px">التسعير: 10 جنيه ثابت + 4 جنيه لكل كيلو - محسوب بـ Haversine بين المطعم وموقعك</p>
+</div>
+
+<script>
+let userLat=null, userLng=null, map, marker;
+let restaurantLat = 30.0444, restaurantLng = 31.2357;
+function initMap(){
+  map = L.map('map').setView([30.0444,31.2357], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  marker = L.marker([30.0444,31.2357]).addTo(map).bindPopup("مطعم - نقطة الانطلاق");
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+      document.getElementById('gpsBadge').innerText = `📍 موقعك: ${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+      map.setView([userLat,userLng],15);
+      L.marker([userLat,userLng]).addTo(map).bindPopup("موقعك الحالي").openPopup();
+      L.polyline([[restaurantLat,restaurantLng],[userLat,userLng]],{color:'#ff6b00',dashArray:'6,6'}).addTo(map);
+      document.getElementById('status').innerText = "تم تحديد موقعك تلقائيا بنجاح ✅";
+    }, err=>{
+      document.getElementById('gpsBadge').innerText = "⚠️ فعل الـ GPS من المتصفح";
+    }, {enableHighAccuracy:true});
+  }
+}
+initMap();
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+let lastDistance=0, lastFee=0;
+function calculateDelivery(){
+  if(!userLat){ alert("لسه بنحدد موقعك - استنى ثانية واسمح للـ GPS"); return; }
+  const dist = haversine(restaurantLat,restaurantLng,userLat,userLng);
+  lastDistance = dist;
+  lastFee = 10 + (4*dist);
+  document.getElementById('priceBox').style.display='block';
+  document.getElementById('priceBox').innerHTML = `المسافة الحقيقية: ${dist.toFixed(2)} كم<br>التوصيل: 10ج + ${dist.toFixed(2)} كم × 4ج = <b>${lastFee.toFixed(2)} جنيه</b>`;
+}
+async function sendOrder(){
+  const name=document.getElementById('clientName').value;
+  const phone=document.getElementById('clientPhone').value;
+  if(!name||!phone){ alert("اكمل البيانات"); return; }
+  if(lastFee==0) calculateDelivery();
+  const order = {client_name:name, client_phone:phone, client_lat:userLat, client_lng:userLng, distance:lastDistance, delivery_fee:lastFee, status:'new', created_at:new Date().toISOString()};
+  if(window.SUPABASE_URL && window.SUPABASE_KEY){
+    try{
+      const res = await fetch(window.SUPABASE_URL+'/rest/v1/orders',{method:'POST',headers:{'apikey':window.SUPABASE_KEY,'Authorization':'Bearer '+window.SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(order)});
+      if(res.ok){ alert("تم ارسال الطلب حقيقي للسيرفر ✅"); return; }
+    }catch(e){}
+  }
+  let orders = JSON.parse(localStorage.getItem('orders')||'[]');
+  orders.push(order);
+  localStorage.setItem('orders',JSON.stringify(orders));
+  alert("تم حفظ الطلب محليا (حط مفاتيح Supabase عشان يبقي اونلاين حقيقي) - السعر: "+lastFee.toFixed(2)+"ج");
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').style.display='block';});
+document.getElementById('installBtn').onclick=()=>{if(deferredPrompt){deferredPrompt.prompt();}};
+let pressTimer;
+document.getElementById('logo').addEventListener('touchstart',()=>{pressTimer=setTimeout(()=>{let p=prompt("باسورد المالك:"); if(p==='admin123'){location.href='admin.html'}},3000);});
+document.getElementById('logo').addEventListener('touchend',()=>clearTimeout(pressTimer));
+document.getElementById('logo').addEventListener('mousedown',()=>{pressTimer=setTimeout(()=>{let p=prompt("باسورد المالك:"); if(p==='admin123'){location.href='admin.html'}},3000);});
+document.getElementById('logo').addEventListener('mouseup',()=>clearTimeout(pressTimer));
+</script>
+<script>
+// حط مفاتيحك هنا عشان يبقي حقيقي 100%
+// window.SUPABASE_URL = "https://xxxxx.supabase.co";
+// window.SUPABASE_KEY = "eyJ...";
+</script>
+</body>
+</html>
