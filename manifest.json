@@ -1,0 +1,9 @@
+{
+  "name": "مطاعم مصر - توصيل مباشر",
+  "short_name": "مطاعم مصر",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b00",
+  "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/1046/1046784.png","sizes":"512x512","type":"image/png"}]
+}
