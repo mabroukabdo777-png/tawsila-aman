@@ -1,8 +1,0 @@
-<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>لوحة المالك</title></head><body style="font-family:Tahoma;padding:20px">
-<h2>لوحة تحكم المالك</h2>
-<div id="list"></div>
-<script>
-let orders=JSON.parse(localStorage.getItem('orders')||'[]');
-document.getElementById('list').innerHTML = orders.map(o=>`<div style="border:1px solid #ddd;padding:10px;margin:6px;border-radius:10px">👤 ${o.client_name} - ${o.client_phone}<br>📍 ${o.distance?.toFixed(2)} كم - ${o.delivery_fee?.toFixed(2)}ج<br>${o.created_at}</div>`).join('') || 'لا يوجد طلبات بعد';
-</script>
-</body></html>
