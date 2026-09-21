@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" translate="no" class="notranslate">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="UTF-8"><meta name="google" content="notranslate"><meta http-equiv="Content-Language" content="ar">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#ff6b00"><title>مطعمي - Mat3amy</title>
@@ -19,11 +40,12 @@
 <input id="userAddress" placeholder="عنوانك" style="display:none">
 <input id="restPhone" placeholder="رقم المطعم" style="display:none">
 <div id="restImageBox" style="display:none"><label style="font-size:12px;font-weight:800">📸 صورة المطعم</label><input type="file" id="restImageFile" accept="image/*"></div>
-<div id="recaptcha-container"></div><button onclick="sendOTP()">إرسال كود</button>
-<div id="otpBox" style="display:none"><input id="otpCode" placeholder="كود OTP"><button class="black" onclick="verifyOTP()">تأكيد</button></div><p id="authStatus" style="font-size:11px"></p>
+<button onclick="simpleRegister()" style="font-size:16px">🚀 تسجيل دخول</button><p id="authStatus" style="font-size:12px;text-align:center;margin-top:8px;color:#ff6b00;font-weight:700"></p>
 </div>
 <div class="card" id="clientCard" style="display:none">
-<h3>أهلا <span id="clientNameShow"></span></h3><div id="clientMeals" class="mealGrid"></div>
+<h3>أهلا <span id="clientNameShow"></span></h3>
+<input id="searchMeals" placeholder="🔍 ابحث عن مطعم أو وجبة..." oninput="filterMeals()" style="background:#fff">
+<div id="clientMeals" class="mealGrid"></div>
 <div id="cart" style="margin-top:12px"><b>🛒 سلتك - محسوب تلقائي</b><div id="cartItems">فاضية</div><div id="cartTotal" style="font-weight:900;margin-top:8px;background:#fff;padding:8px;border-radius:8px"></div><button class="black" onclick="confirmOrder()">✅ أكد الأوردر</button></div>
 <h3 style="margin-top:12px">🎉 عروض</h3><div id="clientAdsFeed" style="display:flex;gap:10px;overflow-x:auto;padding:10px 0"></div>
 <div id="clientTracking" style="display:none"><b>📍 تتبع الدليفري</b><div id="clientTrackingMap" style="height:200px;border-radius:12px;margin-top:6px"></div><div id="clientTrackingInfo" style="font-size:12px;margin-top:6px"></div></div>
@@ -42,14 +64,16 @@
 <div id="restAdTab" style="display:none"><input id="adOfferName" placeholder="اسم العرض"><input id="adPrice" type="number" placeholder="السعر"><input id="adDiscount" type="number" placeholder="خصم %"><div class="tabs"><div class="tab active" onclick="setAdType('image',this)">صورة 35ج</div><div class="tab" onclick="setAdType('video',this)">فيديو 70ج</div></div><input type="file" id="adFile" accept="image/*,video/*"><button onclick="submitAd()">اطلب اعلان</button><div id="myAds"></div></div>
 <button onclick="logout()" style="background:#eee;color:#111;margin-top:10px">خروج</button>
 </div>
-<div class="card" id="secretOwnerCard" style="display:none;border:3px solid #ff6b00"><h2>👑 المالك</h2><div class="tabs"><div class="tab active" onclick="switchOwnerTab('allOrders',this)">طلبات</div><div class="tab" onclick="switchOwnerTab('ads',this)">اعلانات</div><div class="tab" onclick="switchOwnerTab('comm',this)">عمولات</div></div><div id="ownerAllOrders"></div><div id="ownerAdsTab" style="display:none"></div><div id="ownerCommTab" style="display:none"></div><button onclick="document.getElementById('secretOwnerCard').style.display='none'" style="background:#eee;color:#111">إغلاق</button></div>
+<div class="card" id="secretOwnerCard" style="display:none;border:3px solid #ff6b00"><h2>👑 المالك - لوحة التحكم</h2><div class="tabs"><div class="tab active" onclick="switchOwnerTab('allOrders',this)">طلبات</div><div class="tab" onclick="switchOwnerTab('ads',this)">اعلانات</div><div class="tab" onclick="switchOwnerTab('deliveryRequests',this)">دليفري جديد 🔔</div><div class="tab" onclick="switchOwnerTab('comm',this)">عمولات</div></div><div id="ownerAllOrders"></div><div id="ownerAdsTab" style="display:none"></div><div id="deliveryRequestsTab" style="display:none;border:2px solid #22c55e;padding:10px;border-radius:12px;background:#f0fdf4"></div><div id="ownerCommTab" style="display:none"></div><button onclick="document.getElementById('secretOwnerCard').style.display='none'" style="background:#eee;color:#111;margin-top:10px">إغلاق</button></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, where, Timestamp, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 const firebaseConfig={apiKey:"AIzaSyB0eHMekVj3hxInK2n1HfBEjEshGp2njpg",authDomain:"soqshpin.firebaseapp.com",projectId:"soqshpin",storageBucket:"soqshpin.firebasestorage.app",messagingSenderId:"282224755647",appId:"1:282224755647:web:deb4a22bcb7274c8b1570a"};
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);const storage=getStorage(app);
+const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);const storage=getStorage(app);const messaging=getMessaging(app);let fcmToken=null;
+async function initFCM(){try{if(!('Notification' in window)) return;const perm=await Notification.requestPermission();if(perm!=='granted') return;const token=await getToken(messaging,{vapidKey:'BEl62iUYgUivxIQDssT2v5Lo-xpEd_JA45xRA6WI1YyRnK18BGa8MWu1H2X8i8w6b1vF0pX9vF3QpLk9mN0qR1s'});fcmToken=token;if(currentUser&&token){try{await setDoc(doc(db,'fcm_tokens',currentUser.uid),{token:token,uid:currentUser.uid,role:currentRole,updatedAt:serverTimestamp()},{merge:true});}catch(e){}}onMessage(messaging,(payload)=>{const t=payload.notification?.title||'🔔 طلب جديد';const b=payload.notification?.body||'فيه طلب جديد حواليك';if(Notification.permission==='granted'){new Notification(t,{body:b,icon:'./icon-192.png'});if(navigator.vibrate) navigator.vibrate([200,100,200]);}});}catch(e){console.log('FCM',e);}}
 let currentRole='client',confirmationResult=null,currentUser=null,userLat=null,userLng=null,map,userMarker,deliveryMarker,polyline,clientTrackMap,clientTrackMarker,cart=[],adType='image',currentOrderIdForTracking=null;
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(reg=>{reg.onupdatefound=()=>{const nw=reg.installing;nw.onstatechange=()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller){nw.postMessage({type:'SKIP_WAITING'});location.reload();}}};});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());}
 function initMap(){if(map) return;map=L.map('map').setView([30.0444,31.2357],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);autoGPS();startAutoLocation();}
@@ -62,56 +86,96 @@ async function requestNotificationPermission(){if(!('Notification' in window)) r
 function showOrderNotification(o){if(Notification.permission==='granted'){new Notification(`🔔 طلب جديد ${o.restaurant_name}`,{body:`${o.client_name} ${o.total_price?.toFixed(0)}ج على بعد ${o.distance?.toFixed(1)}كم`,icon:'icon-192.png'});if(navigator.vibrate) navigator.vibrate([200,100,200]);}}
 window.setRole=function(r,el){currentRole=r;document.querySelectorAll('#authCard .tab').forEach(t=>t.classList.remove('active'));if(el) el.classList.add('active');document.getElementById('userAddress').style.display=r==='client'?'block':'none';document.getElementById('restPhone').style.display=r==='restaurant'?'block':'none';document.getElementById('restImageBox').style.display=r==='restaurant'?'block':'none';if(r==='restaurant'){autoGPS();}}
 window.switchRestTab=function(t,el){document.getElementById('restOrdersTab').style.display=t==='orders'?'block':'none';document.getElementById('restMenuTab').style.display=t==='menu'?'block':'none';document.getElementById('restAdTab').style.display=t==='ad'?'block':'none';if(el){document.querySelectorAll('#ownerCard .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
-window.switchOwnerTab=function(t,el){document.getElementById('ownerAllOrders').style.display=t==='allOrders'?'block':'none';document.getElementById('ownerAdsTab').style.display=t==='ads'?'block':'none';document.getElementById('ownerCommTab').style.display=t==='comm'?'block':'none';if(el){document.querySelectorAll('#secretOwnerCard .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
+window.switchOwnerTab=function(t,el){document.getElementById('ownerAllOrders').style.display=t==='allOrders'?'block':'none';document.getElementById('ownerAdsTab').style.display=t==='ads'?'block':'none';document.getElementById('deliveryRequestsTab').style.display=t==='deliveryRequests'?'block':'none';document.getElementById('ownerCommTab').style.display=t==='comm'?'block':'none';if(el){document.querySelectorAll('#secretOwnerCard .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
 window.setAdType=function(t,el){adType=t;if(el){document.querySelectorAll('#restAdTab .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
-window.sendOTP=async function(){const phone=document.getElementById('userPhone').value.trim();const name=document.getElementById('userName').value.trim();if(!phone||!name){alert("اكتب اسمك ورقمك");return;}let formatted=phone;if(phone.startsWith('01')) formatted='+2'+phone;try{document.getElementById('authStatus').innerText='جاري...';window.recaptchaVerifier=new RecaptchaVerifier(auth,'recaptcha-container',{size:'invisible'});confirmationResult=await signInWithPhoneNumber(auth,formatted,window.recaptchaVerifier);document.getElementById('otpBox').style.display='block';document.getElementById('authStatus').innerText='✅ كود اتبعت';}catch(e){document.getElementById('authStatus').innerText=e.message;}}
-window.verifyOTP=async function(){const code=document.getElementById('otpCode').value.trim();try{const res=await confirmationResult.confirm(code);currentUser=res.user;let restImageUrl='';const imgFile=document.getElementById('restImageFile')?.files[0];if(currentRole==='restaurant'&&imgFile){try{const ref=sRef(storage,`restaurants_images/${currentUser.uid}/${Date.now()}_${imgFile.name}`);await uploadBytes(ref,imgFile);restImageUrl=await getDownloadURL(ref);}catch(e){}}let autoAddr=document.getElementById('userAddress').value||'';if(userLat&&!autoAddr){autoAddr=await reverseGeocode(userLat,userLng);}let restAutoAddr='';if(currentRole==='restaurant'&&userLat){restAutoAddr=await reverseGeocode(userLat,userLng);}await addDoc(collection(db,"users"),{uid:currentUser.uid,name:document.getElementById('userName').value,phone:document.getElementById('userPhone').value,address:autoAddr,restPhone:document.getElementById('restPhone').value||'',restImage:restImageUrl,restaurantAddress:restAutoAddr,role:currentRole,lat:userLat,lng:userLng,created_at:new Date().toISOString()});if(currentRole==='restaurant'){await setDoc(doc(db,"restaurants",currentUser.uid),{name:document.getElementById('userName').value,uid:currentUser.uid,phone:document.getElementById('restPhone').value,restImage:restImageUrl,address:restAutoAddr,lat:userLat,lng:userLng},{merge:true});}afterLogin();}catch(e){document.getElementById('authStatus').innerText='غلط: '+e.message;}}
-function afterLogin(){document.getElementById('authCard').style.display='none';document.getElementById('map').style.display='block';if(!map) initMap(); else setTimeout(()=>map.invalidateSize(),200);const name=document.getElementById('userName').value;if(currentRole==='client'){document.getElementById('clientCard').style.display='block';document.getElementById('clientNameShow').innerText=name;loadMealsForClient();loadAdsFeedForAll();listenClientOrders();}if(currentRole==='delivery'){document.getElementById('deliveryCard').style.display='block';document.getElementById('deliveryNameShow').innerText=name;listenNearbyOrders();listenDeliveryEarnings();}if(currentRole==='restaurant'){document.getElementById('ownerCard').style.display='block';document.getElementById('ownerNameShow').innerText=name;loadMyMeals();loadMyAds();listenRestaurantOrders();}}
-window.logout=async function(){await signOut(auth);location.reload();}
-window.addToCart=function(n,p,rn,rid){cart.push({name:n,price:Number(p),restName:rn,restId:rid});renderCart();}
-function renderCart(){if(cart.length===0){document.getElementById('cartItems').innerText='فاضية';document.getElementById('cartTotal').innerText='';return;}document.getElementById('cartItems').innerHTML=cart.map((c,i)=>`${c.name} - ${c.price}ج من ${c.restName} <button class="small" style="background:#ef4444" onclick="removeFromCart(${i})">x</button>`).join('<br>');updateCartTotalAuto();}
-window.removeFromCart=function(i){cart.splice(i,1);renderCart();}
-function updateCartTotalAuto(){if(cart.length===0) return;let dist=2;if(userLat) dist=haversine(userLat,userLng,30.0444,31.2357);const totalM=cart.reduce((s,c)=>s+c.price,0);const fee=13+5*dist;document.getElementById('cartTotal').innerHTML=`وجبات: ${totalM}ج<br>مسافة تلقائي: ${dist.toFixed(2)}كم<br>توصيل: ${fee.toFixed(2)}ج<br>إجمالي: <span style="color:#ff6b00">${(totalM+fee).toFixed(2)}ج</span>`;}
-window.confirmOrder=async function(){if(cart.length===0||!userLat){alert("السلة فاضية او GPS - انتظر تحديد موقعك تلقائيا");return;}const totalM=cart.reduce((s,c)=>s+c.price,0);const first=cart[0].restId;let rLat=30.0444,rLng=31.2357,rPhone='',rAddr='',rName=cart[0].restName,rImg='';try{const q=query(collection(db,"users"),where("uid","==",first));const snap=await getDocs(q);if(!snap.empty){const u=snap.docs[0].data();rLat=u.lat||rLat;rLng=u.lng||rLng;rPhone=u.restPhone||u.phone||'';rAddr=u.restaurantAddress||u.address||'';rName=u.name||rName;rImg=u.restImage||'';}const rd=await getDoc(doc(db,"restaurants",first));if(rd.exists()){rAddr=rd.data().address||rAddr;rImg=rd.data().restImage||rImg;}}catch(e){}if(!rAddr&&rLat) rAddr=await reverseGeocode(rLat,rLng);let clientAddr=document.getElementById('userAddress').value||'';if(!clientAddr&&userLat) clientAddr=await reverseGeocode(userLat,userLng);const dist=haversine(rLat,rLng,userLat,userLng);const fee=13+5*dist;const total=totalM+fee;const comm=fee*0.20;await addDoc(collection(db,"orders"),{client_name:document.getElementById('userName').value,client_phone:document.getElementById('userPhone').value,client_address:clientAddr,client_lat:userLat,client_lng:userLng,client_uid:currentUser.uid,restaurant_name:rName,restaurant_id:first,restaurant_phone:rPhone,restaurant_address:rAddr,restaurant_image:rImg,restaurant_lat:rLat,restaurant_lng:rLng,items:cart,meals_total:totalM,distance:dist,delivery_fee:fee,total_price:total,commission:comm,status:'pending',created_at:new Date().toISOString(),timestamp:serverTimestamp()});alert(`✅ اتأكد حقيقي\n🏪 ${rName}\n📍 ${rAddr}\n📏 ${dist.toFixed(2)}كم - 🛵 ${fee.toFixed(2)}ج - 💵 ${total.toFixed(2)}ج`);cart=[];renderCart();}
-async function loadMealsForClient(){let html='';try{const rs=await getDocs(collection(db,"restaurants"));for(const rDoc of rs.docs){const rid=rDoc.id;const rData=rDoc.data();const meals=await getDocs(collection(db,"restaurants",rid,"meals"));let rName=rData.name||rid;let rImg=rData.restImage||'';try{const uq=query(collection(db,"users"),where("uid","==",rid));const us=await getDocs(uq);if(!us.empty){const ud=us.docs[0].data();rName=ud.name||rName;rImg=ud.restImage||rImg||rData.restImage||'';}}catch(e){}meals.forEach(md=>{const m=md.data();if(!m.imageUrl) return;html+=`<div class="mealCard"><img src="${m.imageUrl}"><div style="padding:8px"><b>${m.name}</b><br><span style="color:#ff6b00;font-weight:900">${m.price}ج</span><br><small style="display:flex;align-items:center;gap:4px">${rImg?`<img src="${rImg}" style="width:20px;height:20px;border-radius:50%;object-fit:cover">`:''}${rName}</small><br><button class="small black" style="width:100%;margin-top:6px" onclick="addToCart('${m.name.replace(/'/g," ")}',${m.price},'${rName.replace(/'/g," ")}','${rid}')">+ سلة</button></div></div>`;});}}catch(e){}document.getElementById('clientMeals').innerHTML=html||'لا يوجد وجبات';}
-window.addMeal=async function(){if(!userLat||!userLng){alert("⏳ انتظر GPS يحدد موقع مطعمك تلقائيا...");autoGPS();startAutoLocation();return;}const n=document.getElementById('mealAddName').value;const pr=document.getElementById('mealAddPrice').value;const f=document.getElementById('mealAddImage').files[0];if(!n||!pr||!f){alert("اكمل");return;}try{const ref=sRef(storage,`meals/${currentUser.uid}/${Date.now()}_${f.name}`);await uploadBytes(ref,f);const url=await getDownloadURL(ref);await addDoc(collection(db,"restaurants",currentUser.uid,"meals"),{name:n,price:Number(pr),imageUrl:url,createdAt:serverTimestamp()});await setDoc(doc(db,"restaurants",currentUser.uid),{name:document.getElementById('userName').value,uid:currentUser.uid},{merge:true});alert("✅ الوجبة اتعرضت بموقع حقيقي");loadMyMeals();}catch(e){alert(e.message);}}
-async function loadMyMeals(){const q=query(collection(db,"restaurants",currentUser.uid,"meals"),orderBy("createdAt","desc"));onSnapshot(q,s=>{document.getElementById('myMeals').innerHTML=s.docs.map(d=>{const m=d.data();return `<div class="mealCard"><img src="${m.imageUrl}"><div style="padding:8px"><b>${m.name}</b><br>${m.price}ج</div></div>`}).join('')||'لا يوجد';});}
-function listenClientOrders(){if(!currentUser) return;const q=query(collection(db,"orders"),where("client_uid","==",currentUser.uid),orderBy("timestamp","desc"));onSnapshot(q,s=>{s.docs.forEach(d=>{const o=d.data();if(o.status==='taken'){currentOrderIdForTracking=d.id;document.getElementById('clientTracking').style.display='block';listenCourierForClient(d.id);}});});}
-function listenCourierForClient(orderId){const q=query(collection(db,"courier_locations"),where("orderId","==",orderId),orderBy("timestamp","desc"));onSnapshot(q,s=>{if(s.empty) return;const last=s.docs[0].data();if(!clientTrackMap){clientTrackMap=L.map('clientTrackingMap').setView([last.lat,last.lng],14);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(clientTrackMap);}if(clientTrackMarker) clientTrackMap.removeLayer(clientTrackMarker);clientTrackMarker=L.marker([last.lat,last.lng],{icon:L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',iconSize:[32,32]})}).addTo(clientTrackMap);clientTrackMap.setView([last.lat,last.lng],14);const dist=userLat?haversine(userLat,userLng,last.lat,last.lng):0;document.getElementById('clientTrackingInfo').innerText=`🛵 الدليفري على بعد ${dist.toFixed(2)}كم جايلك مباشر`;});}
-function listenNearbyOrders(){requestNotificationPermission();const q=query(collection(db,"orders"),orderBy("timestamp","desc"));let first=true;onSnapshot(q,s=>{s.docChanges().forEach(ch=>{if(ch.type==='added'&&!first){const o=ch.doc.data();if(o.status==='pending'){let d=999;if(userLat&&o.client_lat) d=haversine(userLat,userLng,o.client_lat,o.client_lng);if(d<=15) showOrderNotification(o);}}});let h='';s.docs.forEach(d=>{const o=d.data();if(o.status!=='pending') return;let dc=999;if(userLat&&o.client_lat) dc=haversine(userLat,userLng,o.client_lat,o.client_lng);if(dc>15) return;h+=`<div style="border:2px solid #22c55e;padding:10px;border-radius:12px;margin:8px 0;background:#fff"><b>🔔 عميل حقيقي ${dc.toFixed(2)}كم</b><br>🍔 ${o.restaurant_name}<br>📍 ${o.restaurant_address||''}<br>👤 ${o.client_name}<br>💰 ${o.total_price?.toFixed(0)}ج<br><button class="small black" onclick="takeOrder('${d.id}')">⚡ اخطف حقيقي</button></div>`;});document.getElementById('nearbyOrders').innerHTML=h||'مفيش طلبات - GPS مفتوح';first=false;});}
-window.takeOrder=async function(id){try{const ref=doc(db,"orders",id);const snap=await getDoc(ref);if(!snap.exists()||snap.data().status!=='pending'){alert("حد خطفه");return;}await updateDoc(ref,{status:'taken',delivery_uid:currentUser.uid,delivery_name:document.getElementById('userName').value,delivery_phone:document.getElementById('userPhone').value,taken_at:serverTimestamp()});document.getElementById('myTakenOrder').style.display='block';const o=snap.data();document.getElementById('myTakenOrder').innerHTML=`✅ خطفت<br>🏪 ${o.restaurant_name} - ${o.restaurant_phone}<br>📍 ${o.restaurant_address}<br>👤 ${o.client_name} - ${o.client_phone}<br>📍 ${o.client_address}<br><button class="green" style="margin-top:8px" onclick="showReceipt('${id}')">📄 دوس استلام - الشيك</button><button class="small black" style="margin-top:6px" onclick="startTrackingForOrder('${id}')">📡 ابدأ تتبع للعميل</button>`;if(map&&o.client_lat){if(deliveryMarker) map.removeLayer(deliveryMarker);deliveryMarker=L.marker([o.client_lat,o.client_lng]).addTo(map).bindPopup("العميل هنا").openPopup();if(polyline) map.removeLayer(polyline);if(userLat) polyline=L.polyline([[userLat,userLng],[o.client_lat,o.client_lng]],{color:'#ff6b00'}).addTo(map);map.setView([o.client_lat,o.client_lng],14);}}catch(e){alert(e.message);}}
-window.startTrackingForOrder=async function(orderId){navigator.geolocation.watchPosition(async p=>{const {latitude,longitude}=p.coords;if(userMarker) userMarker.setLatLng([latitude,longitude]);await addDoc(collection(db,"courier_locations"),{orderId:orderId,delivery_uid:currentUser.uid,lat:latitude,lng:longitude,timestamp:serverTimestamp()});},null,{enableHighAccuracy:true});alert("📡 تتبع شغال");}
-window.showReceipt=async function(id){const snap=await getDoc(doc(db,"orders",id));if(!snap.exists()) return;const o=snap.data();const receipt=`🧾 مطعمي - Mat3amy
-🏪 مطعم: ${o.restaurant_name}
-📞 ${o.restaurant_phone}
-📍 ${o.restaurant_address}
----
-👤 عميل: ${o.client_name}
-📞 ${o.client_phone}
-📍 ${o.client_address}
----
-📦 ${(o.items||[]).map(i=>i.name+' '+i.price+'ج').join('\n')}
-💰 طلبات: ${o.meals_total}ج
-📏 مسافة: ${o.distance?.toFixed(2)}كم
-🛵 توصيل: ${o.delivery_fee?.toFixed(2)}ج
-💵 إجمالي: ${o.total_price?.toFixed(2)}ج
-💼 عمولة: ${o.commission?.toFixed(2)}ج
----
-🛵 دليفري: ${o.delivery_name}`;document.getElementById('receiptArea').style.display='block';document.getElementById('receiptArea').innerHTML=`<div class="receipt">${receipt}</div><button class="black" onclick="completeOrder('${id}')">✅ تأكيد</button>`;}
-window.completeOrder=async function(id){const r=prompt('⭐ قيم العميل 1-5:');if(r){try{await addDoc(collection(db,'ratings'),{orderId:id,rating:Number(r),createdAt:serverTimestamp()});}catch(e){}}await updateDoc(doc(db,'orders',id),{status:'delivered',delivered_at:serverTimestamp()});alert('✅ تم - تقييم حقيقي');document.getElementById('receiptArea').innerHTML='';document.getElementById('myTakenOrder').innerHTML='';}
-function listenDeliveryEarnings(){const q=query(collection(db,"orders"),where("delivery_uid","==",currentUser.uid),where("status","==","delivered"));onSnapshot(q,s=>{let comm=0,earn=0;let trips=s.size;s.forEach(d=>{const o=d.data();comm+=o.commission||0;earn+=o.delivery_fee||0;});document.getElementById('deliveryEarningsBox').innerHTML=`💰 أرباحك: ${earn.toFixed(2)}ج - عمولتي: ${comm.toFixed(2)}ج - رحلات: ${trips}`;});}
-function listenRestaurantOrders(){const q=query(collection(db,"orders"),where("restaurant_id","==",currentUser.uid),orderBy("timestamp","desc"));onSnapshot(q,s=>{document.getElementById('ownerOrders').innerHTML=s.docs.map(d=>{const o=d.data();return `<div style="border:1px solid #eee;padding:8px;border-radius:10px;margin:6px 0">${o.client_name} - ${o.client_phone}<br>${o.client_address}<br>${o.total_price?.toFixed(2)}ج - ${o.status}</div>`}).join('')||'مفيش';});}
-window.submitAd=async function(){const off=document.getElementById('adOfferName').value;const pr=document.getElementById('adPrice').value;const dis=document.getElementById('adDiscount').value;const f=document.getElementById('adFile').files[0];if(!off||!pr||!dis||!f) return;try{const ref=sRef(storage,`ads/${currentUser.uid}/${Date.now()}_${f.name}`);await uploadBytes(ref,f);const url=await getDownloadURL(ref);const cost=adType==='image'?35:70;const exp=Timestamp.fromDate(new Date(Date.now()+15*24*60*60*1000));await addDoc(collection(db,"ads"),{restaurantId:currentUser.uid,restaurantName:document.getElementById('userName').value,offerName:off,price:Number(pr),discount:Number(dis),type:adType,mediaUrl:url,adCost:cost,status:"pending",expiry:exp,createdAt:serverTimestamp()});alert("✅");loadMyAds();}catch(e){alert(e.message);}}
-async function loadMyAds(){const q=query(collection(db,"ads"),orderBy("createdAt","desc"));onSnapshot(q,s=>{const my=s.docs.filter(d=>d.data().restaurantId===currentUser.uid);document.getElementById('myAds').innerHTML=my.map(d=>{const a=d.data();const exp=a.expiry&&a.expiry.toDate()<new Date();return `<div style="border:1px solid #eee;padding:8px;border-radius:10px;margin:6px 0;opacity:${exp?0.5:1}"><b>${a.offerName}</b> - ${a.status} ${exp?'(منتهي)':''}</div>`}).join('')||'لا يوجد';});}
-async function loadAdsFeedForAll(){const q=query(collection(db,'ads'),orderBy('createdAt','desc'));onSnapshot(q,async s=>{const now=new Date();let ok=[];for(const d of s.docs){const a=d.data();if(a.status!=='approved') continue;if(a.expiry){try{if(a.expiry.toDate()<now){try{await deleteDoc(doc(db,'ads',d.id));}catch(e){}continue;}}catch(e){}}ok.push(d);}document.getElementById('clientAdsFeed').innerHTML=ok.map(d=>{const a=d.data();const media=a.type==='video'?`<video src="${a.mediaUrl}" style="width:160px;height:160px;border-radius:12px" controls muted playsinline></video>`:`<img src="${a.mediaUrl}" style="width:160px;height:160px;border-radius:12px;object-fit:cover">`;return `<div style="min-width:170px;border:1px solid #eee;border-radius:12px;padding:8px;background:#fff">${media}<br><b>${a.offerName}</b><br>${a.price}ج خصم ${a.discount||0}%<br><button class="small black" onclick="addToCart('${a.offerName.replace(/'/g,' ')}',${a.price},'${a.restaurantName.replace(/'/g,' ')}','${a.restaurantId}')">+ سلة</button></div>`}).join('')||'لا يوجد عروض';});}
-let logoTaps=0;const logo=document.getElementById('logoBtn');let lock=false;function handleLogoTap(){if(lock) return;lock=true;setTimeout(()=>lock=false,300);logoTaps++;if(logoTaps>=7){logoTaps=0;const p=prompt("كلمة السر:");if(p==='261997'){document.getElementById('secretOwnerCard').style.display='block';loadOwnerAds();loadOwnerComms();loadAllOrdersOwner();}}}logo.addEventListener('click',handleLogoTap);
-function loadOwnerAds(){const q=query(collection(db,"ads"),orderBy("createdAt","desc"));onSnapshot(q,s=>{const now=new Date();document.getElementById('ownerAdsTab').innerHTML=s.docs.map(d=>{const a=d.data();let exp=false;try{if(a.expiry&&a.expiry.toDate()<now) exp=true;}catch(e){}return `<div style="border:1px solid #ff6b00;padding:8px;border-radius:10px;margin:6px 0;opacity:${exp?0.5:1}">${a.restaurantName} - ${a.offerName} - ${a.adCost}ج - ${a.status} ${exp?'(منتهي)':''}<br><button class="small" style="background:#22c55e" onclick="approveAd('${d.id}')">موافقة</button> <button class="small" style="background:#ef4444" onclick="rejectAd('${d.id}')">رفض</button></div>`}).join('')||'لا يوجد';});}
-window.approveAd=async function(id){await updateDoc(doc(db,"ads",id),{status:"approved"});alert("تم");};window.rejectAd=async function(id){await updateDoc(doc(db,"ads",id),{status:"rejected"});alert("تم الرفض");};
-function loadOwnerComms(){const q=query(collection(db,"orders"),where("status","==","delivered"),orderBy("timestamp","desc"));onSnapshot(q,s=>{let map={};s.forEach(d=>{const o=d.data();if(!o.delivery_uid) return;if(!map[o.delivery_uid]) map[o.delivery_uid]={name:o.delivery_name||o.delivery_uid,commission:0,earnings:0,trips:0};map[o.delivery_uid].commission+=o.commission||0;map[o.delivery_uid].earnings+=o.delivery_fee||0;map[o.delivery_uid].trips++;});let html='';Object.keys(map).forEach(uid=>{const c=map[uid];html+=`<div style="border:1px solid #ddd;padding:8px;border-radius:10px;margin:6px 0"><b>${c.name}</b><br>أرباحه: ${c.earnings.toFixed(2)}ج - عمولتي: ${c.commission.toFixed(2)}ج - ${c.trips}</div>`;});document.getElementById('ownerCommTab').innerHTML=html||'لا يوجد';});}
-function loadAllOrdersOwner(){const q=query(collection(db,"orders"),orderBy("timestamp","desc"));onSnapshot(q,s=>{document.getElementById('ownerAllOrders').innerHTML=s.docs.map(d=>{const o=d.data();return `<div style="border:1px solid #eee;padding:8px;border-radius:10px;margin:6px 0">${o.restaurant_name} → ${o.client_name} - ${o.total_price?.toFixed(2)}ج - ${o.status}</div>`}).join('')||'لا يوجد';});}
-let deferredPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtnSmall').style.display='block';});document.getElementById('installBtnSmall').onclick=async ()=>{if(deferredPrompt){deferredPrompt.prompt();const ch=await deferredPrompt.userChoice;if(ch.outcome==='accepted') document.getElementById('installBtnSmall').style.display='none';deferredPrompt=null;}else{alert("افتح ⋮ ثم إضافة إلى الشاشة الرئيسية");}};
-onAuthStateChanged(auth,u=>{if(u){currentUser=u;}});
-(function(){function autoActivate(){startAutoLocation();loadAdsFeedForAll();}window.addEventListener('load',()=>{autoActivate();});setTimeout(autoActivate,1000);setTimeout(autoActivate,3000);})();
-</script>
-</body>
-</html>
+window.simpleRegister=async function(){
+  const name=document.getElementById('userName').value.trim();
+  const phone=document.getElementById('userPhone').value.trim();
+  if(!name||!phone){alert("اكتب اسمك ورقمك");return;}
+  document.getElementById('authStatus').innerText='⏳ جاري التسجيل...';
+  try{
+    if(!currentUser){
+      const cred=await signInAnonymously(auth);
+      currentUser=cred.user;
+    }
+    let restImageUrl='';
+    const imgFile=document.getElementById('restImageFile')?.files[0];
+    if(currentRole==='restaurant' && imgFile){
+      try{
+        const ref=sRef(storage,`restaurants_images/${currentUser.uid}/${Date.now()}_${imgFile.name}`);
+        await uploadBytes(ref,imgFile);
+        restImageUrl=await getDownloadURL(ref);
+      }catch(e){}
+    }
+    let autoAddr=document.getElementById('userAddress').value||'';
+    if(userLat && !autoAddr){ autoAddr=await reverseGeocode(userLat,userLng); }
+    let restAutoAddr='';
+    if(currentRole==='restaurant' && userLat){ restAutoAddr=await reverseGeocode(userLat,userLng); }
+
+    if(currentRole==='delivery'){
+      // تسجيل دليفري جديد - في انتظار الموافقة
+      const deliveryData={
+        uid:currentUser.uid,
+        name:name,
+        phone:phone,
+        address:autoAddr,
+        lat:userLat,
+        lng:userLng,
+        role:'delivery',
+        status:'pending',
+        created_at:new Date().toISOString(),
+        timestamp:serverTimestamp()
+      };
+      await addDoc(collection(db,'delivery_requests'), deliveryData);
+      await addDoc(collection(db,'users'), {...deliveryData, restImage:restImageUrl});
+      document.getElementById('authCard').innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:60px">⏳</div><h2 style="color:#ff6b00">في انتظار القبول</h2><p style="margin-top:10px;line-height:1.8">أهلا ${name}<br>تم استلام طلبك كدليفري<br>📞 ${phone}<br>📍 ${autoAddr}<br><br>سوف يتواصل معك موظفنا خلال 5 دقائق<br>لتوثيق رقمك والتأكد من العمولة</p><div style="margin-top:15px;background:#fff3e0;padding:10px;border-radius:10px">✅ طلبك وصل للمالك حالا</div></div>`;
+      // إشعار للمالك
+      try{
+        await addDoc(collection(db,'notifications'),{
+          type:'new_delivery',
+          name:name,
+          phone:phone,
+          address:autoAddr,
+          uid:currentUser.uid,
+          createdAt:serverTimestamp()
+        });
+      }catch(e){}
+      return;
+    }
+
+    // عميل أو مطعم - دخول مباشر
+    await addDoc(collection(db,'users'),{
+      uid:currentUser.uid,
+      name:name,
+      phone:phone,
+      address:autoAddr,
+      restPhone:document.getElementById('restPhone').value||'',
+      restImage:restImageUrl,
+      restaurantAddress:restAutoAddr,
+      role:currentRole,
+      lat:userLat,
+      lng:userLng,
+      status:'approved',
+      created_at:new Date().toISOString()
+    });
+    if(currentRole==='restaurant'){
+      await setDoc(doc(db,'restaurants',currentUser.uid),{
+        name:name,
+        uid:currentUser.uid,
+        phone:document.getElementById('restPhone').value||phone,
+        restImage:restImageUrl,
+        address:restAutoAddr,
+        lat:userLat,
+        lng:userLng
+      },{merge:true});
+    }
+    afterLogin();
+  }catch(e){
+    document.getElementById('authStatus').innerText='خطأ: '+e.message;
+  }
+}
+
+
+let autoAddr=document.getElementById('userAddress').value||'';if(userLat&&!autoAddr){autoAddr=await reverseGeocode(userLat,userLng);}let restAutoAddr='';if(currentRole==='restaurant'&&userLat){restAutoAddr=await reverseGeocode(userLat,userLng);}await addDoc(collection(db,"users"),{uid:currentUser.uid,name:document.getElementById('userName').value,phone:document.getElementById('userPhone').value,address:autoAddr,restPhone:document.getElementById('restPhone').value||'',restImage:restImageUrl,restaurantAddress:restAutoAddr,role:currentRole,lat:userLat,lng:userLng,created_at:new Date().toISOString()});if(currentRole==='restaurant'){await setDoc(doc(db,"restaurants",currentUser.uid),{name:document.getElementById('userName').value,uid:currentUser.uid,phone:document.getElementById('restPhone').value,restImage:restImageUrl,address:restAutoAddr,lat:userLat,lng:userLng},{merge:true});}afterLogin();}catch(e){document.getElementById('authStatus').innerText='غلط: '+e.message;}}
+async function afterLogin(){document.getElementById('authCard').style.display='none';document.getElementById('map').style.display='block';if(!map) initMap(); else setTimeout(()=>map.invalidateSize(),200);const name=document.getElementById('userName').value;initFCM();if(currentRole==='client'){document.getElementById('clientCard').style.display='block';document.getElementById('clientNameShow').innerText=name;loadMealsForClient();loadAdsFeedForAll();listenClientOrders();}if(currentRole==='delivery'){// check if approved
+try{const q=query(collection(db,'users'),where('uid','==',currentUser.uid));const snap=await getDocs(q);if(!snap.empty){const u=snap.docs[0].data();if(u.status==='pending'){document.getElementById('authCard').style.display='block';document.getElementById('authCard').innerHTML=`<div style='text-align:center;padding:20px'><h2>⏳ في انتظار الموافقة</h2><p>طلبك لسه متوافقش عليه<br>سيتواصل معك موظفنا خلال 5 دقائق</p></div>`;return;}}}catch(e){}document.getElementById('deliveryCard').style.display='block';document.getElementById('deliveryNameShow').innerText=name;listenNearbyOrders();listenDeliveryEarnings();}if(currentRole==='restaurant'){document.getElementById('ownerCard').style.display='block';document.getElementById('ownerNameShow').innerText=name;loadMyMeal
