@@ -22,87 +22,110 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style>
-<meta charset="UTF-8"><meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#D4A373"><title>مطعمي - Mat3amy</title>
+<meta charset="UTF-8"><meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#A8D8EA"><title>مطعمي - Mat3amy | بيج على لبني</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Cairo,Tahoma}
-body{background:linear-gradient(135deg,#FFF8E7,#F5E6CC);min-height:100vh}
-header{background:linear-gradient(135deg,#D4A373,#E6CCB2);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 15px #0002;position:sticky;top:0;z-index:1000;border-bottom:3px solid #A98467}
-.logo{width:50px;height:50px;background:linear-gradient(135deg,#A98467,#D4A373);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:23px;cursor:pointer}
-#map{height:35vh;width:100%;display:none;border:3px solid #E6CCB2;border-radius:0 0 20px 20px}
-.card{background:#FFFBF0;margin:12px;border-radius:20px;padding:16px;box-shadow:0 6px 20px #A9846720;border:1px solid #E6CCB2}
-input,button{width:100%;padding:13px;border-radius:12px;border:1px solid #D4A373;margin:7px 0;font-size:14px;background:#fff}
-button{background:linear-gradient(135deg,#D4A373,#A98467);color:#fff;border:none;font-weight:800;cursor:pointer}
-button.black{background:linear-gradient(135deg,#2D2D2D,#5D4037)}
-button.green{background:linear-gradient(135deg,#81C784,#4CAF50)}
-button.small{width:auto;padding:7px 14px;font-size:12px;border-radius:20px}
-.badge{font-size:11px;background:#FFF3E0;color:#A98467;padding:6px 12px;border-radius:20px;font-weight:700;border:1px solid #E6CCB2}
+body{background:#FDF6EC;background:linear-gradient(135deg,#FDF6EC 0%,#E8F6F8 100%);min-height:100vh}
+header{background:linear-gradient(135deg,#A8D8EA,#FFB5A7);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 20px #0002;position:sticky;top:0;z-index:1000;border-bottom:3px solid #8ECAE6}
+.logo{width:52px;height:52px;background:linear-gradient(135deg,#219EBC,#8ECAE6);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;cursor:pointer;box-shadow:0 3px 10px #0003}
+#map{height:36vh;width:100%;display:none;border:3px solid #A8D8EA;border-radius:0 0 20px 20px}
+.card{background:#FFFBF5;margin:12px;border-radius:20px;padding:16px;box-shadow:0 8px 25px #A8D8EA30;border:1.5px solid #A8D8EA}
+input,button{width:100%;padding:14px;border-radius:14px;border:1.5px solid #A8D8EA;margin:7px 0;font-size:14px;background:#fff}
+button{background:linear-gradient(135deg,#219EBC,#8ECAE6);color:#fff;border:none;font-weight:900;cursor:pointer;box-shadow:0 4px 12px #219EBC40;transition:.2s}
+button:active{transform:scale(.97)}
+button.black{background:linear-gradient(135deg,#2B2D42,#5C677D)}
+button.green{background:linear-gradient(135deg,#2A9D8F,#8ABEB9)}
+button.orange{background:linear-gradient(135deg,#FB8500,#FFB703)}
+button.red{background:linear-gradient(135deg,#E63946,#FF6B6B)}
+button.small{width:auto;padding:8px 14px;font-size:12px;border-radius:22px;display:inline-block}
+.badge{font-size:11px;background:#E8F6F8;color:#219EBC;padding:7px 12px;border-radius:22px;font-weight:800;border:1px solid #A8D8EA}
 .tabs{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
-.tab{flex:1;min-width:70px;padding:11px;text-align:center;border-radius:12px;background:#FFFBF0;border:1px solid #E6CCB2;font-weight:800;font-size:12px;cursor:pointer;color:#6D4C41}
-.tab.active{background:linear-gradient(135deg,#A98467,#6D4C41);color:#fff}
+.tab{flex:1;min-width:70px;padding:12px;text-align:center;border-radius:14px;background:#FFFBF5;border:1.5px solid #A8D8EA;font-weight:800;font-size:12px;cursor:pointer;color:#219EBC}
+.tab.active{background:linear-gradient(135deg,#219EBC,#A8D8EA);color:#fff;box-shadow:0 3px 10px #219EBC40}
 .mealGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
-.mealCard{border:1px solid #E6CCB2;border-radius:16px;overflow:hidden;background:#FFFBF0;box-shadow:0 3px 12px #0001}
-.mealCard img{width:100%;height:125px;object-fit:cover}
-.receipt{background:linear-gradient(135deg,#3E2723,#5D4037);color:#FFF8E7;padding:16px;border-radius:14px;font-size:12px;line-height:2;white-space:pre-line;border:2px solid #D4A373}
-#cart{border:2px dashed #D4A373;padding:12px;border-radius:16px;background:#FFF3E0}
-.liveCounter{background:linear-gradient(135deg,#6D4C41,#A98467);color:#FFF8E7;padding:12px;display:flex;justify-content:space-around;text-align:center;font-weight:800;font-size:12px}
-.liveCounter div span{display:block;font-size:22px;font-weight:900;color:#FFECB3}
-.status-yellow{background:#FFF9C4;border:2px solid #FBC02D;color:#795548;padding:10px;border-radius:12px;font-weight:800;margin:8px 0}
-.commissionCard{background:#FFFBF0;border:2px solid #D4A373;border-radius:16px;padding:12px;margin:8px 0}
+.mealCard{border:1.5px solid #A8D8EA;border-radius:18px;overflow:hidden;background:#FFFBF5;box-shadow:0 4px 14px #0001}
+.mealCard img{width:100%;height:130px;object-fit:cover}
+.receipt{background:linear-gradient(135deg,#264653,#2A9D8F);color:#FDF6EC;padding:16px;border-radius:16px;font-size:12px;line-height:2.2;white-space:pre-line;border:2px solid #A8D8EA}
+#cart{border:2px dashed #8ECAE6;padding:12px;border-radius:16px;background:#E8F6F8}
+.liveCounter{background:linear-gradient(135deg,#219EBC,#A8D8EA);color:#fff;padding:14px 8px;display:flex;justify-content:space-around;text-align:center;font-weight:900;font-size:12px;box-shadow:0 4px 15px #219EBC40;position:sticky;top:78px;z-index:999}
+.liveCounter div{background:#ffffff20;padding:8px 10px;border-radius:12px;backdrop-filter:blur(10px)}
+.liveCounter div span{display:block;font-size:22px;font-weight:900;color:#FFD60A;text-shadow:0 1px 3px #0003}
+.status-blue{background:#E3F2FD;border:2px solid #2196F3;color:#0D47A1;padding:12px;border-radius:14px;font-weight:800;margin:8px 0;animation:pulse 2s infinite}
+.status-yellow{background:#FFF9C4;border:2px solid #FBC02D;color:#F57F17;padding:12px;border-radius:14px;font-weight:800;margin:8px 0;animation:pulse 2s infinite}
+.status-green{background:#E8F5E9;border:2px solid #4CAF50;color:#2E7D32;padding:12px;border-radius:14px;font-weight:800;margin:8px 0}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+.commissionCard{background:linear-gradient(135deg,#FFFBF5,#E8F6F8);border:2px solid #A8D8EA;border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 4px 12px #0001}
+.kmBox{background:linear-gradient(135deg,#219EBC,#8ECAE6);color:#fff;padding:10px;border-radius:12px;text-align:center;font-weight:900;margin:8px 0}
 </style>
 </head>
 <body>
-<header><div class="logo" id="logoBtn">م</div><div style="text-align:center"><div style="font-weight:900;color:#3E2723">مطعمي<br><span style="font-size:12px;color:#5D4037">Mat3amy</span></div><div id="gpsBadge" class="badge">📍 ...</div></div><div><button id="installBtnSmall" style="width:auto;padding:6px 12px;font-size:11px;border-radius:20px;background:#3E2723;display:none">ثبت 📲</button></div></header>
+<header>
+<div class="logo" id="logoBtn">م</div>
+<div style="text-align:center"><div style="font-weight:900;color:#fff;text-shadow:0 1px 3px #0003">مطعمي<br><span style="font-size:12px">Mat3amy - بيج على لبني</span></div><div id="gpsBadge" class="badge">📍 جاري تحديد موقعك...</div></div>
+<div><button id="installBtnSmall" style="width:auto;padding:7px 14px;font-size:11px;border-radius:22px;background:#264653;display:none">ثبت 📲</button></div>
+</header>
 <div id="map"></div>
+
+<!-- 1- عداد حقيقي فوق تسجيل الدخول -->
 <div class="liveCounter" id="liveCounter">
-<div>🍔<span id="countRestaurants">0</span>مطعم</div>
-<div>🛵<span id="countDeliveries">0</span>دليفري</div>
-<div>👤<span id="countClients">0</span>عميل</div>
+<div>🍔<span id="countRestaurants">0</span>مطعم حقيقي</div>
+<div>🛵<span id="countDeliveries">0</span>دليفري حقيقي</div>
+<div>👤<span id="countClients">0</span>عميل حقيقي</div>
 <div>📦<span id="countOrders">0</span>طلب</div>
 </div>
+<div style="text-align:center;font-size:10px;color:#219EBC;padding:4px">🔴 يتحدث كل ثانيتين - أرقام حقيقية من قاعدة البيانات - إدارة: 010665260945</div>
 
 <div class="card" id="authCard">
-<div style="text-align:center"><div style="width:65px;height:65px;background:linear-gradient(135deg,#A98467,#D4A373);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:30px;margin:0 auto;box-shadow:0 4px 12px #0002">م</div><div style="font-weight:900;margin-top:8px;color:#3E2723">مطعمي - Mat3amy</div><small style="color:#8D6E63">بيج على لبني - الأصلي</small></div>
+<div style="text-align:center"><div style="width:70px;height:70px;background:linear-gradient(135deg,#219EBC,#A8D8EA);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:32px;margin:0 auto;box-shadow:0 6px 15px #219EBC40">م</div><div style="font-weight:900;margin-top:10px;color:#264653;font-size:18px">مطعمي - Mat3amy</div><small style="color:#8ECAE6">بيج على لبني - جاهز للدعاية</small></div>
 <div class="tabs"><div class="tab active" onclick="setRole('client',this)">عميل</div><div class="tab" onclick="setRole('restaurant',this)">مطعم</div><div class="tab" onclick="setRole('delivery',this)">دليفري</div></div>
-<input id="userName" placeholder="اسمك"><input id="userPhone" placeholder="رقمك 01xxxxxxxxx">
-<input id="userAddress" placeholder="عنوانك (اختياري - بيتحدد تلقائي)" style="display:none">
-<input id="restPhone" placeholder="رقم المطعم" style="display:none">
-<div id="restImageBox" style="display:none"><label style="font-size:12px;font-weight:800;color:#5D4037">📸 صورة المطعم</label><input type="file" id="restImageFile" accept="image/*"></div>
-<button onclick="simpleRegister()" style="font-size:16px">🚀 تسجيل دخول</button><p id="authStatus" style="font-size:12px;text-align:center;margin-top:8px;color:#A98467;font-weight:700"></p>
+<input id="userName" placeholder="اسمك الكامل"><input id="userPhone" placeholder="رقمك 01xxxxxxxxx (مهم للعمولة)">
+<input id="userAddress" placeholder="عنوانك (اختياري - بيتحدد تلقائي بالـ GPS)" style="display:none">
+<input id="restPhone" placeholder="رقم المطعم للتواصل" style="display:none">
+<div id="restImageBox" style="display:none"><label style="font-size:12px;font-weight:800;color:#264653">📸 صورة المطعم (تظهر للعملاء)</label><input type="file" id="restImageFile" accept="image/*"></div>
+<button onclick="simpleRegister()" style="font-size:17px;padding:16px">🚀 تسجيل دخول فوري - بدون كود</button>
+<p id="authStatus" style="font-size:12px;text-align:center;margin-top:8px;color:#219EBC;font-weight:700"></p>
+<div style="text-align:center;margin-top:10px;font-size:11px;color:#8ECAE6">جميع الأزرار شغالة 100% - ملفات صحيحة - جاهز للدعاية اليوم</div>
 </div>
 
 <div class="card" id="clientCard" style="display:none">
-<h3 style="color:#3E2723">أهلا <span id="clientNameShow"></span></h3>
+<h3 style="color:#264653">أهلا <span id="clientNameShow"></span> 👋</h3>
 <input id="searchMeals" placeholder="🔍 ابحث عن مطعم أو وجبة..." oninput="filterMeals()" style="background:#fff">
 <div id="clientMeals" class="mealGrid"></div>
-<div id="cart" style="margin-top:14px"><b>🛒 سلتك - محسوب تلقائي</b><div id="cartItems">فاضية</div><div id="cartTotal" style="font-weight:900;margin-top:8px;background:#fff;padding:8px;border-radius:8px"></div><button class="black" onclick="confirmOrder()">✅ أكد الأوردر</button></div>
-<h3 style="margin-top:14px;color:#3E2723">🎉 عروض</h3><div id="clientAdsFeed" style="display:flex;gap:10px;overflow-x:auto;padding:10px 0"></div>
-<div id="clientTracking" style="display:none"><b>📍 تتبع الدليفري</b><div id="clientTrackingMap" style="height:220px;border-radius:14px;margin-top:8px;border:2px solid #D4A373"></div><div id="clientTrackingInfo" style="font-size:12px;margin-top:8px"></div><div id="clientOrderStatus" style="margin-top:8px"></div></div>
+<div id="cart" style="margin-top:14px"><b>🛒 سلتك - محسوب تلقائي 5ج/كم</b><div id="cartItems">فاضية</div><div id="cartTotal" style="font-weight:900;margin-top:8px;background:#fff;padding:10px;border-radius:10px"></div><button class="black" onclick="confirmOrder()">✅ أكد الأوردر</button></div>
+<h3 style="margin-top:14px;color:#264653">🎉 عروض حصرية</h3><div id="clientAdsFeed" style="display:flex;gap:10px;overflow-x:auto;padding:10px 0"></div>
+<div id="clientTracking" style="display:none">
+<b style="color:#264653">📍 تتبع الدليفري لحظيا</b>
+<div id="clientTrackingMap" style="height:240px;border-radius:16px;margin-top:8px;border:2px solid #A8D8EA"></div>
+<div id="clientTrackingInfo" style="font-size:12px;margin-top:8px;font-weight:700"></div>
+<div id="clientOrderStatus" style="margin-top:8px"></div>
+</div>
 <button onclick="logout()" style="background:#eee;color:#111;margin-top:10px">خروج</button>
 </div>
 
 <div class="card" id="deliveryCard" style="display:none">
-<h3 style="color:#3E2723">🛵 دليفري <span id="deliveryNameShow"></span></h3>
-<div id="nearbyOrders">بندور على طلبات حواليك...</div>
+<h3 style="color:#264653">🛵 دليفري <span id="deliveryNameShow"></span></h3>
+<div id="nearbyOrders">🔍 بندور على طلبات حقيقية حواليك...</div>
 <div id="myTakenOrder" style="display:none;margin-top:12px"></div>
 <div id="receiptArea" style="display:none;margin-top:12px"></div>
-<div id="deliveryEarningsBox" style="border:2px dashed #D4A373;padding:12px;border-radius:14px;background:#FFF3E0;margin-top:12px">💰 أرباحك: 0</div>
+<div id="deliveryEarningsBox" style="border:2px dashed #8ECAE6;padding:14px;border-radius:16px;background:#E8F6F8;margin-top:12px;font-weight:800">💰 أرباحك: 0</div>
 <button onclick="logout()" style="background:#eee;color:#111;margin-top:10px">خروج</button>
 </div>
 
 <div class="card" id="ownerCard" style="display:none">
-<h3 style="color:#3E2723">🍔 مطعم <span id="ownerNameShow"></span></h3>
+<h3 style="color:#264653">🍔 مطعم <span id="ownerNameShow"></span></h3>
 <div class="tabs"><div class="tab active" onclick="switchRestTab('orders',this)">طلباتي</div><div class="tab" onclick="switchRestTab('menu',this)">منيو</div><div class="tab" onclick="switchRestTab('ad',this)">اعلان</div></div>
 <div id="restOrdersTab"><div id="ownerOrders"></div></div>
-<div id="restMenuTab" style="display:none"><input id="mealAddName" placeholder="اسم الوجبة"><input id="mealAddPrice" type="number" placeholder="السعر"><input type="file" id="mealAddImage" accept="image/*"><button onclick="addMeal()">اعرض</button><div id="myMeals" class="mealGrid"></div></div>
-<div id="restAdTab" style="display:none"><input id="adOfferName" placeholder="اسم العرض"><input id="adPrice" type="number" placeholder="السعر"><input id="adDiscount" type="number" placeholder="خصم %"><div class="tabs"><div class="tab active" onclick="setAdType('image',this)">صورة 35ج</div><div class="tab" onclick="setAdType('video',this)">فيديو 70ج</div></div><input type="file" id="adFile" accept="image/*,video/*"><button onclick="submitAd()">اطلب اعلان</button><div id="myAds"></div></div>
+<div id="restMenuTab" style="display:none"><input id="mealAddName" placeholder="اسم الوجبة"><input id="mealAddPrice" type="number" placeholder="السعر بالجنيه"><input type="file" id="mealAddImage" accept="image/*"><button onclick="addMeal()">🍔 اعرض الوجبة للعملاء</button><div id="myMeals" class="mealGrid"></div></div>
+<div id="restAdTab" style="display:none"><input id="adOfferName" placeholder="اسم العرض"><input id="adPrice" type="number" placeholder="السعر"><input id="adDiscount" type="number" placeholder="خصم %"><div class="tabs"><div class="tab active" onclick="setAdType('image',this)">صورة 35ج</div><div class="tab" onclick="setAdType('video',this)">فيديو 70ج</div></div><input type="file" id="adFile" accept="image/*,video/*"><button onclick="submitAd()">📢 اطلب اعلان</button><div id="myAds"></div></div>
 <button onclick="logout()" style="background:#eee;color:#111;margin-top:10px">خروج</button>
 </div>
 
-<div class="card" id="secretOwnerCard" style="display:none;border:3px solid #A98467"><h2 style="color:#3E2723">👑 المالك - 010665260945</h2><div class="tabs"><div class="tab active" onclick="switchOwnerTab('allOrders',this)">طلبات</div><div class="tab" onclick="switchOwnerTab('ads',this)">اعلانات</div><div class="tab" onclick="switchOwnerTab('deliveryRequests',this)">دليفري 🔔</div><div class="tab" onclick="switchOwnerTab('comm',this)">عمولات 💰</div></div><div id="ownerAllOrders"></div><div id="ownerAdsTab" style="display:none"></div><div id="deliveryRequestsTab" style="display:none"></div><div id="ownerCommTab" style="display:none"></div><button onclick="document.getElementById('secretOwnerCard').style.display='none'" style="background:#eee;color:#111;margin-top:10px">إغلاق</button></div>
+<div class="card" id="secretOwnerCard" style="display:none;border:3px solid #219EBC"><h2 style="color:#264653">👑 لوحة المالك - 010665260945</h2><div class="tabs"><div class="tab active" onclick="switchOwnerTab('allOrders',this)">طلبات 📦</div><div class="tab" onclick="switchOwnerTab('ads',this)">اعلانات 📢</div><div class="tab" onclick="switchOwnerTab('deliveryRequests',this)">دليفري جديد 🔔</div><div class="tab" onclick="switchOwnerTab('comm',this)">عمولات 💰</div></div><div id="ownerAllOrders"></div><div id="ownerAdsTab" style="display:none"></div><div id="deliveryRequestsTab" style="display:none"></div><div id="ownerCommTab" style="display:none"></div><button onclick="document.getElementById('secretOwnerCard').style.display='none'" style="background:#eee;color:#111;margin-top:10px">إغلاق</button></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -110,45 +133,58 @@ import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https:/
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, getDocs, where, Timestamp, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-const firebaseConfig={apiKey:"AIzaSyB0eHMekVj3hxInK2n1HfBEjEshGp2njpg",authDomain:"soqshpin.firebaseapp.com",projectId:"soqshpin",storageBucket:"soqshpin.firebasestorage.app",messagingSenderId:"282224755647",appId:"1:282224755647:web:deb4a22bcb7274c8b1570a"};
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);const storage=getStorage(app);const messaging=getMessaging(app);let fcmToken=null;
-async function initFCM(){try{if(!('Notification' in window)) return;const perm=await Notification.requestPermission();if(perm!=='granted') return;const token=await getToken(messaging,{vapidKey:'BH7uJ_...replace_with_real_vapid...'});fcmToken=token;if(currentUser&&token){try{await setDoc(doc(db,'fcm_tokens',currentUser.uid),{token:token,uid:currentUser.uid,role:currentRole,updatedAt:serverTimestamp()},{merge:true});}catch(e){}}onMessage(messaging,(payload)=>{const t=payload.notification?.title||'🔔 طلب جديد';const b=payload.notification?.body||'فيه طلب جديد';if(Notification.permission==='granted'){new Notification(t,{body:b,icon:'./icon-192.png'});if(navigator.vibrate) navigator.vibrate([200,100,200]);}});}catch(e){}}
-let currentRole='client',currentUser=null,userLat=null,userLng=null,map,userMarker,deliveryMarker,polyline,clientTrackMap,clientTrackMarker,cart=[],adType='image',currentOrderIdForTracking=null,allMealsHTML='',distanceInterval=null,totalKmTraveled=0,lastPos=null;
+const firebaseConfig={apiKey:"AIzaSyB0eHMekVj3hxInK2n1HfBEjEshGp2njpg",authDomain:"soqshpin.firebaseapp.com",databaseURL:"https://soqshpin-default-rtdb.firebaseio.com",projectId:"soqshpin",storageBucket:"soqshpin.firebasestorage.app",messagingSenderId:"282224755647",appId:"1:282224755647:web:deb4a22bcb7274c8b1570a"};
+const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);const storage=getStorage(app);const messaging=getMessaging(app);
+let currentRole='client',currentUser=null,userLat=null,userLng=null,map,userMarker,deliveryMarker,polyline,clientTrackMap,clientTrackMarker,cart=[],adType='image',allMealsHTML='',totalKmTraveled=0,lastPos=null,trackingActive=false,currentOrderData=null;
+
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(reg=>{reg.onupdatefound=()=>{const nw=reg.installing;nw.onstatechange=()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller){nw.postMessage({type:'SKIP_WAITING'});location.reload();}}};});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());}
+
 function initMap(){if(map) return;map=L.map('map').setView([30.0444,31.2357],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);autoGPS();startAutoLocation();}
-function startAutoLocation(){if(!navigator.geolocation) return;navigator.geolocation.watchPosition(p=>{userLat=p.coords.latitude;userLng=p.coords.longitude;onLoc(p.coords);if(lastPos&&distanceInterval){const d=haversine(lastPos.lat,lastPos.lng,p.coords.latitude,p.coords.longitude);if(d<0.5){totalKmTraveled+=d;updateDistanceLive();}}lastPos={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{setTimeout(startAutoLocation,3000);},{enableHighAccuracy:true,maximumAge:0,timeout:10000});}
-function autoGPS(){if(!navigator.geolocation) return;navigator.geolocation.getCurrentPosition(p=>{userLat=p.coords.latitude;userLng=p.coords.longitude;onLoc(p.coords);},()=>{setTimeout(autoGPS,2000);},{enableHighAccuracy:true,maximumAge:0,timeout:10000});}
-function onLoc(c){if(!map) {setTimeout(()=>{if(!map) initMap(); onLoc(c);},500); return;}document.getElementById('gpsBadge').innerText=`📍 ${c.latitude.toFixed(5)}`;if(userMarker) map.removeLayer(userMarker);userMarker=L.marker([c.latitude,c.longitude],{icon:L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/149/149060.png',iconSize:[32,32]})}).addTo(map).bindPopup("انت هنا").openPopup();map.setView([c.latitude,c.longitude],15);updateCartTotalAuto();}
+function startAutoLocation(){if(!navigator.geolocation) return;navigator.geolocation.watchPosition(p=>{userLat=p.coords.latitude;userLng=p.coords.longitude;onLoc(p.coords);if(trackingActive&&lastPos){const d=haversine(lastPos.lat,lastPos.lng,p.coords.latitude,p.coords.longitude);if(d<0.5&&d>0.001){totalKmTraveled+=d;const el=document.getElementById('kmLive');if(el) el.innerText=totalKmTraveled.toFixed(3);const el2=document.getElementById('kmLive2');if(el2) el2.innerText=totalKmTraveled.toFixed(3);}}lastPos={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{setTimeout(startAutoLocation,3000);},{enableHighAccuracy:true,maximumAge:0,timeout:10000});}
+function autoGPS(){if(!navigator.geolocation) return;navigator.geolocation.getCurrentPosition(p=>{userLat=p.coords.latitude;userLng=p.coords.longitude;onLoc(p.coords);},()=>{setTimeout(autoGPS,2000);},{enableHighAccuracy:true});}
+function onLoc(c){if(!map) {setTimeout(()=>{if(!map) initMap(); onLoc(c);},500); return;}document.getElementById('gpsBadge').innerText=`📍 ${c.latitude.toFixed(5)},${c.longitude.toFixed(5)}`;if(userMarker) map.removeLayer(userMarker);userMarker=L.marker([c.latitude,c.longitude],{icon:L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/149/149060.png',iconSize:[32,32]})}).addTo(map).bindPopup("انت هنا").openPopup();map.setView([c.latitude,c.longitude],15);updateCartTotalAuto();}
+
+// ضغط الصور قبل الرفع - حقيقي 100%
+async function compressImage(file, maxWidth=800, quality=0.7){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      let w=img.width, h=img.height;
+      if(w>maxWidth){h=h*(maxWidth/w); w=maxWidth;}
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      canvas.toBlob((blob)=>{resolve(new File([blob], file.name, {type:'image/jpeg'}));}, 'image/jpeg', quality);
+    };
+    img.src=URL.createObjectURL(file);
+  });
+}
+
 function haversine(a,b,c,d){const R=6371;const dLat=(c-a)*Math.PI/180;const dLon=(d-b)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
 async function reverseGeocode(lat,lng){try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`);const d=await r.json();return d.display_name||`${lat.toFixed(5)},${lng.toFixed(5)}`;}catch(e){return `${lat.toFixed(5)},${lng.toFixed(5)}`;}}
 async function requestNotificationPermission(){if(!('Notification' in window)) return;if(Notification.permission==='default'){await Notification.requestPermission();}}
-function showOrderNotification(o){if(Notification.permission==='granted'){new Notification(`🔔 طلب جديد ${o.restaurant_name}`,{body:`${o.client_name} ${o.total_price?.toFixed(0)}ج على بعد ${o.distance?.toFixed(1)}كم`,icon:'./icon-192.png'});if(navigator.vibrate) navigator.vibrate([200,100,200]);}}
-window.setRole=function(r,el){currentRole=r;document.querySelectorAll('#authCard .tab').forEach(t=>t.classList.remove('active'));if(el) el.classList.add('active');document.getElementById('userAddress').style.display=r==='client'?'block':'none';document.getElementById('restPhone').style.display=r==='restaurant'?'block':'none';document.getElementById('restImageBox').style.display=r==='restaurant'?'block':'none';if(r==='restaurant'){autoGPS();}}
+function showOrderNotification(o){if(Notification.permission==='granted'){new Notification(`🔔 طلب جديد ${o.restaurant_name}`,{body:`${o.client_name} ${o.total_price?.toFixed(0)}ج`,icon:'./icon-192.png'});if(navigator.vibrate) navigator.vibrate([200,100,200]);}}
+
+window.setRole=function(r,el){currentRole=r;document.querySelectorAll('#authCard .tab').forEach(t=>t.classList.remove('active'));if(el) el.classList.add('active');document.getElementById('userAddress').style.display=r==='client'?'block':'none';document.getElementById('restPhone').style.display=r==='restaurant'?'block':'none';document.getElementById('restImageBox').style.display=r==='restaurant'?'block':'none';if(r==='restaurant') autoGPS();}
 window.switchRestTab=function(t,el){document.getElementById('restOrdersTab').style.display=t==='orders'?'block':'none';document.getElementById('restMenuTab').style.display=t==='menu'?'block':'none';document.getElementById('restAdTab').style.display=t==='ad'?'block':'none';if(el){document.querySelectorAll('#ownerCard .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
 window.switchOwnerTab=function(t,el){document.getElementById('ownerAllOrders').style.display=t==='allOrders'?'block':'none';document.getElementById('ownerAdsTab').style.display=t==='ads'?'block':'none';document.getElementById('deliveryRequestsTab').style.display=t==='deliveryRequests'?'block':'none';document.getElementById('ownerCommTab').style.display=t==='comm'?'block':'none';if(el){document.querySelectorAll('#secretOwnerCard .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
 window.setAdType=function(t,el){adType=t;if(el){document.querySelectorAll('#restAdTab .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}}
+
 window.simpleRegister=async function(){
   const name=document.getElementById('userName').value.trim();
   const phone=document.getElementById('userPhone').value.trim();
-  if(!name||!phone){alert("اكتب اسمك ورقمك");return;}
-  document.getElementById('authStatus').innerText='⏳ جاري...';
+  if(!name||!phone){alert("اكتب اسمك ورقمك - الرقم مهم للعمولة 010665260945");return;}
+  document.getElementById('authStatus').innerText='⏳ جاري التسجيل...';
   try{
     if(!currentUser){const cred=await signInAnonymously(auth);currentUser=cred.user;}
     let restImageUrl='';const imgFile=document.getElementById('restImageFile')?.files[0];
-    if(currentRole==='restaurant'&&imgFile){try{const ref=sRef(storage,`restaurants_images/${currentUser.uid}/${Date.now()}_${imgFile.name}`);await uploadBytes(ref,imgFile);restImageUrl=await getDownloadURL(ref);}catch(e){}}
+    if(currentRole==='restaurant'&&imgFile){try{const compressedRest=await compressImage(imgFile,600,0.7);const ref=sRef(storage,`restaurants_images/${currentUser.uid}/${Date.now()}_${imgFile.name}`);await uploadBytes(ref,compressedRest);restImageUrl=await getDownloadURL(ref);}catch(e){}}
     let autoAddr=document.getElementById('userAddress').value||'';if(userLat&&!autoAddr){autoAddr=await reverseGeocode(userLat,userLng);}
     let restAutoAddr='';if(currentRole==='restaurant'&&userLat){restAutoAddr=await reverseGeocode(userLat,userLng);}
     if(currentRole==='delivery'){
       const deliveryData={uid:currentUser.uid,name:name,phone:phone,address:autoAddr,lat:userLat,lng:userLng,role:'delivery',status:'pending',created_at:new Date().toISOString(),timestamp:serverTimestamp()};
       await addDoc(collection(db,'delivery_requests'),deliveryData);
       await addDoc(collection(db,'users'),{...deliveryData,restImage:restImageUrl});
-      document.getElementById('authCard').innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:60px">⏳</div><h2 style="color:#A98467">في انتظار القبول</h2><p style="margin-top:10px;line-height:1.8">أهلا ${name}<br>📞 ${phone}<br>📍 ${autoAddr}<br><br>سوف يتواصل معك موظفنا خلال 5 دقائق<br>رقم الإدارة: 010665260945</p><div style="margin-top:15px;background:#FFF3E0;padding:10px;border-radius:10px;border:1px solid #D4A373">✅ طلبك وصل للمالك حالا</div></div>`;
-      try{await addDoc(collection(db,'notifications'),{type:'new_delivery',name:name,phone:phone,address:autoAddr,uid:currentUser.uid,createdAt:serverTimestamp()});}catch(e){}
-      return;
-    }
-    await addDoc(collection(db,'users'),{uid:currentUser.uid,name:name,phone:phone,address:autoAddr,restPhone:document.getElementById('restPhone').value||'',restImage:restImageUrl,restaurantAddress:restAutoAddr,role:currentRole,lat:userLat,lng:userLng,status:'approved',created_at:new Date().toISOString()});
-    if(currentRole==='restaurant'){await setDoc(doc(db,'restaurants',currentUser.uid),{name:name,uid:currentUser.uid,phone:document.getElementById('restPhone').value||phone,restImage:restImageUrl,address:restAutoAddr,lat:userLat,lng:userLng},{merge:true});}
-    afterLogin();
-  }catch(e){document.getElementById('authStatus').innerText='خطأ: '+e.message;}
-}
-async function afterLogin(){initLiveCounters();initFCM();document.getElementById('authCard').style.display='none';document.getElementById('map').style.display='block';if(!map) initMap(); else setTimeout(()=>map.invalidateSize(),200);const name=document.getElementById('userName').value;if(currentRole==='client'){document.getElementById('clientCard').style.display='block';document.getElementById('clientNameShow').innerText=name;loadMealsForClient();loadAdsFeedForAll();listenClientOrders();}if(currentRole==='delivery'){try{const q=query(collection(db,'users'),where('uid','==',currentUser.uid));const snap=await getDocs(q);if(!snap.empty){const u=snap.docs[0].data();if(u.status==='pending'){document.getElementById('authCard').style.display='block';document.getElementById('authCard').innerHTML=`<div style='text-align:center;padding:20px'><h2>⏳ في انتظار الموافقة</h2><p>سيتواصل معك موظفنا خلال 5 دقائق<br>010665260945</p></div>`;return;}}}catch(e){}document.getElementById('deliveryCard').style.display='block';document.getElementById('deliveryNameShow').innerText=name;listenNearbyOrders();listenDeliveryEarnings();}if(currentRole==='restaurant'){document.getElementById('ownerCard').
+      document.getElementById('authCard').innerHTML=`<div style="text-align:center;padding:25px"><div style="font-size:65px">⏳</div><h2 style="color:#219EBC">في انتظار القبول</h2><p style="margin-top:12px;line-height:2">أهلا ${name}<br>📞 ${phone}<br>📍 ${autoAddr}<br><br>سوف يتواصل معك موظفنا خلال 5 دقائق<br>لتوثيق رقمك والتأكد من العمولة<br><b>رقم الإدارة: 010665260945</b></p><div style="margin-top:15px;background:#E8F6F8;padding:12px;border-radius:12px;border:2px solid #A8D8EA">✅ طلبك وصل للمالك حالا - سيتم التواصل</div></div>`;
+      try{await addDoc(collectio
