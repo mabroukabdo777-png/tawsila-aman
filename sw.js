@@ -1,9 +1,0 @@
-const CACHE_NAME='mat3amy-v6-beige-blue';
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
-const firebaseConfig={apiKey:"AIzaSyB0eHMekVj3hxInK2n1HfBEjEshGp2njpg",authDomain:"soqshpin.firebaseapp.com",databaseURL:"https://soqshpin-default-rtdb.firebaseio.com",projectId:"soqshpin",storageBucket:"soqshpin.firebasestorage.app",messagingSenderId:"282224755647",appId:"1:282224755647:web:deb4a22bcb7274c8b1570a"};
-try{firebase.initializeApp(firebaseConfig);const messaging=firebase.messaging();messaging.onBackgroundMessage((payload)=>{self.registration.showNotification(payload.notification.title,{body:payload.notification.body,icon:'./icon-192.png',vibrate:[200,100,200]});});}catch(e){}
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(['./','./index.html','./manifest.json','./privacy.html','./terms.html','./data-deletion.html','./icon-192.png','./icon-512.png'])));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.map(x=>{if(x!==CACHE_NAME) return caches.delete(x);})))) ; self.clients.claim();});
-self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});
-self.addEventListener('message'
