@@ -1,0 +1,24 @@
+{
+  "name": "حيات - Hayat",
+  "short_name": "حيات",
+  "description": "BE YOUR OWN GLOW ✨ - مرايات جمال سحرية",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#060d1f",
+  "theme_color": "#0a3d9c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
