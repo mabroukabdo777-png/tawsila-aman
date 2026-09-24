@@ -1,0 +1,57 @@
+{
+  "rules": {
+    "owners": {
+      ".read": true,
+      ".write": true
+    },
+    "users": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "role",
+        "status",
+        "phone",
+        "debt",
+        "blocked",
+        "lat",
+        "lng",
+        "avgRating"
+      ]
+    },
+    "orders": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "customerId",
+        "driverId",
+        "status",
+        "type",
+        "restaurantId",
+        "createdAt",
+        "driverLat",
+        "driverLng"
+      ]
+    },
+    "meals": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "restaurantId"
+      ]
+    },
+    "ratings": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "driverId",
+        "restaurantId",
+        "customerId",
+        "createdAt"
+      ]
+    },
+    "payments": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
