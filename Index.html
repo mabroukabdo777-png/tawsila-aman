@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#FFD600">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<title>Super Flash</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>*{font-family:Cairo,sans-serif}body{background:#0a0a0a;color:#fff}.glass{background:rgba(255,255,255,.06);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)}.yellow{background:#FFD600;color:#000}.mini{height:240px;width:100%;border-radius:16px;z-index:1}</style>
+<script type="importmap">{"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js","firebase/database":"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js","firebase/messaging":"https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js"}}</script>
+</head>
+<body class="flex justify-center min-h-screen">
+<div class="w-full max-w-[440px] bg-[#101010] min-h-screen relative border-x border-white/5">
+<div class="sticky top-0 z-[500] bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 p-4 flex justify-between items-center">
+<div class="flex items-center gap-3"><div id="logo" class="w-10 h-10 bg-[#FFD600] rounded-xl flex items-center justify-center text-black font-black text-xl cursor-pointer select-none">⚡</div><div><div class="font-black leading-none">Super Flash</div><div class="text-[10px] opacity-50 mt-1">سريع • آمن • لايف</div></div></div>
+<div class="flex items-center gap-2"><button onclick="window.requestNotif()" class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-sm">🔔</button><div class="flex items-center gap-2 text-[11px] bg-white/10 px-3 py-1.5 rounded-full"><div id="dot" class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div><span>لايف</span></div></div>
+</div>
+<div id="app" class="p-4 pb-28"></div>
+<div id="installBanner" class="fixed bottom-0 left-0 right-0 z-[1000] hidden"><div class="mx-auto max-w-[440px] bg-[#FFD600] text-black p-4 flex justify-between items-center rounded-t-[20px]"><div class="flex gap-3 items-center"><div class="w-11 h-11 bg-black rounded-xl flex items-center justify-center">⚡</div><div><div class="font-black text-sm">ثبت التطبيق</div><div class="text-[11px] opacity-70">سريع و خفيف</div></div></div><button id="installBtn" class="bg-black text-[#FFD600] font-black px-6 py-2.5 rounded-xl text-sm">تثبيت</button></div></div>
+<div id="adminModal" class="fixed inset-0 bg-black/80 backdrop-blur hidden z-[2000] flex items-center justify-center p-6"><div class="glass p-6 rounded-[24px] w-full max-w-sm"><h3 class="font-black">دخول المالك</h3><input id="passIn" type="password" placeholder="••••••••" class="w-full mt-4 bg-white/10 border border-white/20 rounded-xl p-3 text-center outline-none"><div class="flex gap-2 mt-4"><button id="enterAdmin" class="flex-1 yellow font-black py-3 rounded-xl">دخول</button><button id="closeAdmin" class="flex-1 bg-white/10 py-3 rounded-xl">إلغاء</button></div><p id="passErr" class="hidden text-red-400 text-sm mt-2 text-center">غلط</p></div></div>
+</div>
+<script type="module">
+import {initializeApp} from "firebase/app";
+import {getDatabase,ref,set,push,onValue,update} from "firebase/database";
+import {getMessaging,getToken} from "firebase/messaging";
+const firebaseConfig={apiKey:"AIzaSyB8N4JFuAKT7qvIa6E6qhVxoQwYTv_IZCA",authDomain:"super-flash-b05d8.firebaseapp.com",databaseURL:"https://super-flash-b05d8-default-rtdb.firebaseio.com",projectId:"super-flash-b05d8",storageBucket:"super-flash-b05d8.firebasestorage.app",messagingSenderId:"102354982378",appId:"1:102354982378:web:7f94dad6b685fa95004e93"};
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const messaging=getMessaging(app);
+onValue(ref(db,'.info/connected'),s=>{const d=document.getElementById('dot'); if(d) d.className='w-2 h-2 rounded-full '+(s.val()?'bg-green-400 animate-pulse':'bg-red-500');});
+function haversine(lat1,lon1,lat2,lon2){const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180; const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function calcPrice(km){ return Math.min(Math.max(Math.round(10+km*5),10),300); }
+function calcCommission(p){ return Math.round(p*0.15); }
+function calcRealDebtFromOrders(driverId, orders, clearedAt){const f=orders.filter(o=>o.driverId===driverId && (o.status==='accepted'||o.status==='on_the_way'||o.status==='delivered') && (!clearedAt || o.createdAt>clearedAt)); return {total:f.reduce((s,o)=>s+(o.commission||calcCommission(o.price||0)),0), count:f.length};}
+async function getRoute(lat1,lon1,lat2,lon2){try{const url='https://router.project-osrm.org/route/v1/driving/'+lon1+','+lat1+';'+lon2+','+lat2+'?overview=full&geometries=geojson'; const r=await fetch(url); const d=await r.json(); if(d.routes&&d.routes[0]) return {coords:d.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]), dist:d.routes[0].distance/1000};}catch(e){} return null;}
+async function uploadImage(file){return new Promise((res)=>{const rd=new FileReader(); rd.onload=(e)=>{const img=new Image(); img.onload=()=>{const cv=document.createElement('canvas'); let w=img.width,h=img.height; if(w>900){h=h*(900/w); w=900;} cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); res(cv.toDataURL('image/jpeg',0.65));}; img.src=e.target.result;}; rd.readAsDataURL(file);});}
+let currentUser=null;
+try{ let saved = localStorage.getItem('sf_user') || localStorage.getItem('sf_user_backup') || sessionStorage.getItem('sf_user'); if(saved){ currentUser=JSON.parse(saved); } }catch(e){ currentUser=null; }
+let myLat=null,myLng=null,selectedLat=null,selectedLng=null,currentDist=0,currentPrice=10,driverMap=null,miniMap=null,currentRouteLine=null,watchId=null,trackingMap=null,trackingMarker=null,driverMarker=null;
+async function hashPass(s){const enc=new TextEncoder().encode(s); const buf=await crypto.subtle.digest('SHA-256',enc); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function checkOwnerPass(input){if(['01002548338','01065260945','1234'].includes(input)) return true; try{const snap=await new Promise(r=>{onValue(ref(db,'owners'),s=>r(s),{onlyOnce:true});}); const o=snap.val()||{}; for(const k in o){ if(o[k].phone===input) return true; try{if(await hashPass(input)===o[k].hash) return true;}catch(e){} } }catch(e){} return false;}
+function save(u){ try{ const str=JSON.stringify(u); localStorage.setItem('sf_user',str); localStorage.setItem('sf_user_backup',str); localStorage.setItem('sf_user_phone',u.phone||''); sessionStorage.setItem('sf_user',str); currentUser=u; }catch(e){ currentUser=u; } }
+window.requestNotif=async()=>{try{const perm=await Notification.requestPermission(); if(perm==='granted'){const token=await getToken(messaging,{vapidKey:'BN4JFuAKT7qvIa6E6qhVxoQwYTv_IZCA'}); if(token) await set(ref(db,'fcmTokens/'+(currentUser?.id||'anon')),{token,at:Date.now()}); alert('✅ تم تفعيل الإشعارات');}}catch(e){}};
+function render(){if(!currentUser) return renderLanding(); if(currentUser.role==='customer') return renderCustomer(); if(currentUser.role==='delivery'){if(currentUser.status==='pending') return renderWaiting(); if(currentUser.status==='rejected') return renderRejected(); return renderDriver();}}
+
+function renderLanding(){
+  try{ let saved = localStorage.getItem('sf_user') || localStorage.getItem('sf_user_backup'); if(saved){ const u=JSON.parse(saved); if(u && u.id){ currentUser=u; return render(); } } }catch(e){}
+  document.getElementById('app').innerHTML=`
+  <div class="text-center py-8">
+    <div class="w-24 h-24 bg-[#FFD600] rounded-[28px] flex items-center justify-center mx-auto text-5xl">⚡</div>
+    <h1 class="font-black text-3xl mt-6">Super Flash</h1>
+    <div class="mt-8 space-y-4">
+      <div class="glass p-4 rounded-[20px] border border-white/10">
+        <div class="flex items-center gap-2 mb-3"><span class="text-xl">🛒</span><span class="font-black text-sm">عميل - اطلب الآن</span></div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="window.renderRegister('customer')" class="yellow font-black py-3 rounded-xl text-sm">دخول جديد</button>
+          <button onclick="window.renderLogin('customer')" class="bg-white/10 font-black py-3 rounded-xl text-sm border border-white/10">دخول على طول</button>
+        </div>
+      </div>
+      <div class="glass p-4 rounded-[20px] border border-[#FFD600]/20 bg-[#FFD600]/5">
+        <div class="flex items-center gap-2 mb-3"><span class="text-xl">🛵</span><span class="font-black text-sm">دليفري - انضم</span></div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="window.renderRegister('delivery')" class="bg-white text-black font-black py-3 rounded-xl text-sm">دخول جديد</button>
+          <button onclick="window.renderLogin('delivery')" class="yellow font-black py-3 rounded-xl text-sm">دخول على طول</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  let clicks=0; setTimeout(()=>{const logo=document.getElementById('logo'); if(logo) logo.onclick=()=>{clicks++; if(clicks>=5){clicks=0; document.getElementById('adminModal').classList.remove('hidden');} setTimeout(()=>clicks=0,2000);};},100);
+  document.getElementById('enterAdmin').onclick=async()=>{const p=document.getElementById('passIn').value.trim(); if(await checkOwnerPass(p)){document.getElementById('adminModal').classList.add('hidden'); renderAdmin();} else{document.getElementById('passErr').classList.remove('hidden');}};
+  document.getElementById('closeAdmin').onclick=()=>document.getElementById('adminModal').classList.add('hidden');
+}
+window.renderRegister=(role)=>{
+  document.getElementById('app').innerHTML=`
+  <div class="glass p-6 rounded-[24px] mt-4">
+    <h2 class="font-black text-lg">${role==='customer'?'دخول جديد - عميل 🛒':'دخول جديد - دليفري 🛵'}</h2>
+    <input id="rName" placeholder="اسمك" class="w-full mt-5 bg-black/30 border border-white/10 rounded-xl p-3.5 text-sm outline-none">
+    <input id="rPhone" placeholder="رقم الموبايل" class="w-full mt-3 bg-black/30 border border-white/10 rounded-xl p-3.5 text-sm outline-none">
+    <input id="rPass" type="password" placeholder="الباسورد" class="w-full mt-3 bg-black/30 border border-white/10 rounded-xl p-3.5 text-sm outline-none">
+    <button onclick="window.doRegister('${role}')" class="w-full mt-5 yellow font-black py-3.5 rounded-xl text-sm">تسجيل جديد ✅</button>
+    <button onclick="window.renderLogin('${role}')" class="w-full mt-2 bg-white/10 py-3 rounded-xl text-sm border border-white/10">عندك حساب؟ دخول على طول</button>
+    <button onclick="window.renderLanding()" class="w-full mt-2 bg-transparent py-2 rounded-xl text-xs opacity-50">رجوع</button>
+  </div>`;
+};
+window.renderLogin=(role)=>{
+  document.getElementById('app').innerHTML=`
+  <div class="glass p-6 rounded-[24px] mt-4">
+    <h2 class="font-black text-lg">${role==='customer'?'دخول على طول - عميل':'دخول على طول - دليفري'} 🔑</h2>
+    <input id="lPhone" placeholder="رقم الموبايل" class="w-full mt-5 bg-black/30 border border-white/10 rounded-xl p-3.5 text-sm outline-none">
+    <input id="lPass" type="password" placeholder="الباسورد" class="w-full mt-3 bg-black/30 border border-white/10 rounded-xl p-3.5 text-sm outline-none">
+    <button onclick="window.doLogin('${role}')" class="w-full mt-5 yellow font-black py-3.5 rounded-xl text-sm">دخول على طول ✅</button>
+    <button onclick="window.renderRegister('${role}')" class="w-full mt-2 bg-white/10 py-3 rounded-xl text-sm">ماعندكش حساب؟ دخول جديد</button>
+    <button onclick="window.renderLanding()" class="w-full mt-2 bg-transparent py-2 rounded-xl text-xs opacity-50">رجوع</button>
+  </div>`;
+};
+window.doRegister=async(role)=>{
+  const name=document.getElementById('rName')?.value.trim(); const phone=document.getElementById('rPhone')?.value.trim(); const pass=document.getElementById('rPass')?.value.trim();
+  if(!name||!phone||!pass){alert('اكمل البيانات'); return;}
+  try{ const snap=await new Promise(res=>{onValue(ref(db,'users'),s=>res(s),{onlyOnce:true});}); const all=Object.values(snap.val()||{}); const exists=all.find(u=>u.phone===phone); if(exists){ alert('الرقم ده مسجل قبل كده - دوس دخول على طول'); return window.renderLogin(role); } }catch(e){}
+  const id='user_'+Date.now(); const user={id,name,phone,pass,role,status:role==='customer'?'approved':'pending',debt:0,createdAt:Date.now(),lastLogin:Date.now()};
+  await set(ref(db,'users/'+id),user); save(user);
+  alert('✅ تم التسجيل');
+  if(role==='customer') renderCustomer(); else {alert('تم - في انتظار موافقة المالك'); renderWaiting();}
+};
+window.doLogin=async(role)=>{
+  const phone=document.getElementById('lPhone')?.value.trim(); const pass=document.getElementById('lPass')?.value.trim();
+  if(!phone||!pass){alert('اكتب الرقم والباسورد'); return;}
+  try{
+    const snap=await new Promise(res=>{onValue(ref(db,'users'),s=>res(s),{onlyOnce:true});});
+    const all=Object.values(snap.val()||{});
+    const user=all.find(u=>u.phone===phone && u.pass===pass);
+    if(!user){ alert('رقم او باسورد غلط'); return; }
+    await update(ref(db,'users/'+user.id),{lastLogin:Date.now()});
+    save({...user,lastLogin:Date.now()});
+    alert('✅ تم الدخول'); render();
+  }catch(e){ alert('خطأ: '+(e.message||e)); }
+};
+function renderWaiting(){document.getElementById('app').innerHTML=`<div class="text-center py-20"><div class="text-5xl">⏳</div><h2 class="font-black mt-4">في انتظار موافقة المالك</h2><button onclick="window.logout()" class="mt-6 bg-white/10 px-6 py-2 rounded-xl text-xs">خروج</button></div>`;}
+function renderRejected(){document.getElementById('app').innerHTML=`<div class="text-center py-20"><div class="text-5xl">❌</div><h2 class="font-black mt-4">تم رفض حسابك</h2><button onclick="window.logout()" class="mt-6 bg-white/10 px-6 py-2 rounded-xl text-xs">خروج</button></div>`;}
+
+// CUSTOMER - FULL TRACKING
+function renderCustomer(){
+  document.getElementById('app').innerHTML=`
+  <div class="flex justify-between mb-4"><h2 class="font-black">اطلب الآن ⚡</h2><button onclick="window.logout()" class="bg-white/10 px-3 py-1.5 rounded-full text-xs">خروج</button></div>
+  <div id="activeTracking"></div>
+  <div class="glass p-4 rounded-[20px] mb-4">
+    <div id="locText" class="text-[11px] bg-black/30 p-2 rounded-xl">📍 جاري تحديد موقعك...</div>
+    <div id="miniMap" class="mini mt-3 border border-white/10"></div>
+    <div class="flex gap-2 mt-3"><div class="flex-1 glass p-2 rounded-xl text-center"><div class="text-[10px] opacity-50">المسافة</div><div id="distReal" class="font-black text-sm">--</div></div><div class="flex-1 glass p-2 rounded-xl text-center"><div class="text-[10px] opacity-50">السعر تلقائي</div><div id="priceReal" class="font-black text-sm text-[#FFD600]">10ج</div></div></div>
+    <textarea id="ot" placeholder="عاوز ايه؟ اكتب طلبك" class="w-full mt-3 bg-black/30 border border-white/10 rounded-xl p-3 text-sm h-[80px] outline-none"></textarea>
+    <div class="mt-3 p-3 bg-white/[0.03] rounded-xl border border-white/5"><div class="flex justify-between items-center"><span class="text-[11px]">📷 صورة المنتج</span><span class="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded-full">اختياري</span></div><input type="file" id="orderImg" accept="image/*" class="w-full mt-2 text-xs bg-black/20 rounded-lg p-2"></div>
+    <button id="priceBtn" onclick="window.placeOrder()" class="w-full mt-4 yellow font-black py-3.5 rounded-xl text-sm">اطلب الآن - 10ج</button>
+  </div>
+  <div id="myOrders"></div>`;
+  setTimeout(()=>initCustomerMap(),300); loadMyOrders(); loadCustomerActiveTracking(); autoActivateLocation();
+}
+function initCustomerMap(){try{miniMap=L.map('miniMap').setView([26.8206,30.8025],5.5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(miniMap); miniMap.on('click',e=>{selectedLat=e.latlng.lat; selectedLng=e.latlng.lng; if(window.cMarker) miniMap.removeLayer(window.cMarker); window.cMarker=L.marker([selectedLat,selectedLng],{draggable:true}).addTo(miniMap); updateDistPrice();});}catch(e){}}
+function updateDistPrice(){if(myLat&&selectedLat){const d=haversine(myLat,myLng,selectedLat,selectedLng); currentDist=d; currentPrice=calcPrice(d); const dr=document.getElementById('distReal'); if(dr) dr.textContent=d.toFixed(1)+' كم'; const pr=document.getElementById('priceReal'); if(pr) pr.textContent=currentPrice+'ج'; const btn=document.getElementById('priceBtn'); if(btn) btn.textContent=`اطلب الآن - ${currentPrice}ج - ${d.toFixed(1)} كم - تلقائي`;}}
+function autoActivateLocation(){ const setFallback=()=>{ if(!myLat){ myLat=30.4698; myLng=31.1969; selectedLat=myLat; selectedLng=myLng; const lt=document.getElementById('locText'); if(lt) lt.textContent='📍 موقع افتراضي - طوخ'; updateDistPrice(); } }; if(!navigator.geolocation){ setFallback(); return; } navigator.geolocation.getCurrentPosition(pos=>{ myLat=pos.coords.latitude; myLng=pos.coords.longitude; selectedLat=myLat; selectedLng=myLng; const lt=document.getElementById('locText'); if(lt) lt.textContent='📍 '+myLat.toFixed(5)+','+myLng.toFixed(5)+' ✓'; if(miniMap){miniMap.setView([myLat,myLng],15); if(window.cMarker) miniMap.removeLayer(window.cMarker); window.cMarker=L.marker([myLat,myLng],{draggable:true}).addTo(miniMap);} updateDistPrice(); }, ()=>setFallback()); setTimeout(setFallback,3000); }
+window.placeOrder=async()=>{
+  try{
+    const text=document.getElementById('ot')?.value.trim(); if(!text){ alert('اكتب عاوز ايه'); return; }
+    let lat=selectedLat||myLat||30.4698; let lng=selectedLng||myLng||31.1969;
+    let photo=null; try{ const f=document.getElementById('orderImg')?.files[0]; if(f) photo=await uploadImage(f); }catch(e){}
+    const order={customerId:currentUser.id,customerName:currentUser.name,customerPhone:currentUser.phone,text,address:`${lat.toFixed(4)},${lng.toFixed(4)}`,lat,lng,distance:currentDist||0,price:currentPrice||10,commission:calcCommission(currentPrice||10),status:'searching',photo,hasPhoto:!!photo,createdAt:Date.now(),driverId:null,driverLat:null,driverLng:null};
+    const newRef=push(ref(db,'orders')); await set(newRef,order);
+    await push(ref(db,'notifications'),{type:'new_order',price:order.price,text:text.slice(0,40),customerName:currentUser.name,at:Date.now()});
+    alert(`✅ تم إرسال الطلب - ${order.price}ج`); document.getElementById('ot').value='';
+  }catch(e){ alert(e.message); }
+};
+function loadMyOrders(){onValue(ref(db,'orders'),s=>{const vals=s.val()||{}; const all=Object.values(vals).filter(o=>o.customerId===currentUser.id && o.status==='delivered').sort((a,b)=>b.createdAt-a.createdAt).slice(0,5); const el=document.getElementById('myOrders'); if(!el) return; el.innerHTML='<h3 class="font-black text-sm mb-2">طلباتي السابقة</h3>'+all.map(o=>`<div class="glass p-3 rounded-xl mb-2"><div class="font-bold text-sm">${o.text.slice(0,30)}</div><div class="text-[11px] opacity-50">${o.price}ج - ${o.driverName||''} - تم التوصيل</div></div>`).join('')||'<div class="text-center opacity-20 text-xs">لا يوجد</div>';});}
+function loadCustomerActiveTracking(){
+  onValue(ref(db,'orders'),s=>{
+    const vals=s.val()||{}; const active=Object.entries(vals).filter(([k,v])=>v.customerId===currentUser.id && (v.status==='searching'||v.status==='accepted'||v.status==='on_the_way')).sort((a,b)=>b[1].createdAt-a[1].createdAt)[0];
+    const container=document.getElementById('activeTracking'); if(!container) return;
+    if(!active){ container.innerHTML=''; return; }
+    const [key,order]=active;
+    if(order.status==='searching'){
+      container.innerHTML=`<div class="glass p-4 rounded-[20px] mb-4 border border-yellow-500/30 bg-yellow-500/10"><div class="flex gap-2 items-center"><div class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div><span class="font-black text-sm">جاري البحث عن دليفري 0-7 كيلو...</span></div><div class="text-xs mt-2">📦 ${order.text} - ${order.price}ج - ${order.distance.toFixed(1)}كم - تسعير تلقائي</div></div>`; return;
+    }
+    const isOnWay=order.status==='on_the_way';
+    container.innerHTML=`
+      <div class="glass p-4 rounded-[20px] mb-4 border ${isOnWay?'border-green-500/40 bg-green-500/10':'border-[#FFD600]/40 bg-[#FFD600]/10'}">
+        <div class="flex justify-between"><div class="flex gap-2 items-center"><div class="w-3 h-3 ${isOnWay?'bg-green-400':'bg-[#FFD600]'} rounded-full animate-pulse"></div><span class="font-black text-sm">${isOnWay?'🛵 الدليفري في الطريق - تتبع مباشر':'✅ تم قبول طلبك'}</span></div><span class="text-[10px] bg-black/30 px-2 py-1 rounded-full">${order.price}ج</span></div>
+        <div class="mt-3 bg-black/40 p-3 rounded-xl"><div class="font-bold text-sm">👤 ${order.driverName} - 📞 <a href="tel:${order.driverPhone}" class="text-[#FFD600] underline">${order.driverPhone}</a></div><div class="text-xs mt-1">📦 ${order.text}</div><div class="text-[10px] opacity-50 mt-1">${order.distance.toFixed(1)}كم - ${order.price}ج</div></div>
+        <div id="customerTrackingMap" class="h-[250px] rounded-xl border border-white/10 mt-3"></div>
+        <a href="tel:${order.driverPhone}" class="block w-full mt-3 bg-green-500 text-black font-black py-3 rounded-xl text-xs text-center">📞 اتصل بالدليفري</a>
+        <div class="text-[10px] opacity-40 text-center mt-2">🔴 شايفه مباشر وهو بيتحرك على الخريطة</div>
+      </div>`;
+    setTimeout(()=>{ try{ if(trackingMap){trackingMap.remove();} trackingMap=L.map('customerTrackingMap').setView([order.lat,order.lng],14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(trackingMap); L.marker([order.lat,order.lng]).addTo(trackingMap).bindPopup('مكانك'); if(order.driverLat){ trackingMarker=L.marker([order.driverLat,order.driverLng],{icon:L.divIcon({html:'🛵',className:'text-2xl'})}).addTo(trackingMap); getRoute(order.driverLat,order.driverLng,order.lat,order.lng).then(r=>{ if(r) L.polyline(r.coords,{color:'#FFD600',weight:5}).addTo(trackingMap); }); } }catch(e){} },400);
+    onValue(ref(db,'orders/'+key), snap=>{
+      const o=snap.val(); if(!o) return;
+      if(o.driverLat && trackingMarker){ trackingMarker.setLatLng([o.driverLat,o.driverLng]); trackingMap.panTo([o.driverLat,o.driverLng]); }
+      if(o.status==='delivered'){ container.innerHTML=`<div class="glass p-4 rounded-[20px] mb-4 border border-green-500/30 bg-green-500/10 text-center"><div class="text-2xl">✅</div><div class="font-black mt-2">تم التوصيل بنجاح - ${o.price}ج</div></div>`; }
+    });
+  });
+}
+
+// DRIVER - FULL FLOW 0-7km + START + LIVE TRACKING + CUSTOMER DETAILS
+function renderDriver(){
+  onValue(ref(db,'orders'), s=>{
+    const vals=s.val()||{}; const all=Object.values(vals).filter(o=>o.driverId===currentUser.id);
+    const real=calcRealDebtFromOrders(currentUser.id, all, currentUser.debtClearedAt||0);
+    if(real.total>=150){
+      save({...currentUser,debt:real.total,status:'blocked'});
+      return renderBlockedPayment(real.total);
+    }
+    const activeEntry=Object.entries(vals).find(([k,v])=>v.driverId===currentUser.id && (v.status==='accepted'||v.status==='on_the_way'));
+    if(activeEntry){ renderDriverActive(activeEntry[0],activeEntry[1]); } else { renderDriverFree(); }
+  }, {onlyOnce:true});
+}
+function renderDriverFree(){
+  document.getElementById('app').innerHTML=`
+  <div class="flex justify-between mb-4"><h2 class="font-black">دليفري - ${currentUser.name}</h2><button onclick="window.logout()" class="bg-white/10 px-3 py-1.5 rounded-full text-xs">خروج</button></div>
+  <div class="grid grid-cols-3 gap-2 mb-4"><div class="glass p-3 rounded-xl text-center"><div class="font-black text-[#FFD600]" id="dDebt">0ج</div><div class="text-[10px] opacity-50">مديونية</div></div><div class="glass p-3 rounded-xl text-center"><div class="font-black" id="dOrders">0</div><div class="text-[10px] opacity-50">طلباتي</div></div><div class="glass p-3 rounded-xl text-center"><div class="font-black">🟢 0-7 كيلو</div><div class="text-[10px] opacity-50">نطاقك</div></div></div>
+  <div id="driverMap" class="h-[300px] rounded-[20px] overflow-hidden border border-white/10 mb-4"></div>
+  <div id="nearOrders"><div class="text-center opacity-30 text-xs py-6">جاري البحث عن طلبات قريبة 0-7 كيلو...</div></div>`;
+  setTimeout(()=>initDriverMap(),300);
+}
+function renderDriverActive(key,order){
+  const isAccepted=order.status==='accepted';
+  document.getElementById('app').innerHTML=`
+  <div class="glass p-4 rounded-[20px] mb-4 border ${isAccepted?'border-[#FFD600]/40 bg-[#FFD600]/10':'border-green-500/40 bg-green-500/10'}">
+    <div class="flex justify-between"><h2 class="font-black text-sm">${isAccepted?'✅ قبلت الطلب - تفاصيل العميل':'🛵 توصيل - العميل شايفك لايف'}</h2><button onclick="window.logout()" class="bg-black/30 px-3 py-1 rounded-full text-[10px]">خروج</button></div>
+    <div class="mt-3 bg-black/60 p-4 rounded-xl border border-white/10">
+      <div class="font-black">👤 اسم العميل: ${order.customerName}</div>
+      <div class="mt-2 text-sm">📞 رقم العميل: <a href="tel:${order.customerPhone}" class="text-[#FFD600] font-black underline text-lg">${order.customerPhone}</a> <a href="tel:${order.customerPhone}" class="bg-green-500 text-black px-3 py-1 rounded-full text-xs mr-2">اتصل</a></div>
+      <div class="mt-3">📦 الحاجة اللي طالبها: <b class="text-[#FFD600]">${order.text}</b></div>
+      <div class="mt-2 text-[11px] opacity-70">📍 العنوان: ${order.address}</div>
+      <div class="grid grid-cols-3 gap-2 mt-3">
+        <div class="bg-white/10 p-2 rounded-xl text-center"><div class="text-[9px] opacity-50">المسافة تلقائي</div><div class="font-black">${order.distance.toFixed(1)} كم</div></div>
+        <div class="bg-[#FFD600] text-black p-2 rounded-xl text-center"><div class="text-[9px]">السعر تلقائي</div><div class="font-black">${order.price}ج</div></div>
+        <div class="bg-red-500/20 p-2 rounded-xl text-center"><div class="text-[9px]">عمولة</div><div class="font-black">${order.commission}ج</div></div>
+      </div>
+      ${order.photo?`<img src="${order.photo}" class="w-full h-32 object-cover rounded-xl mt-3">`:''}
+    </div>
+    <div id="driverActiveMap" class="h-[260px] rounded-xl border border-white/10 mt-3"></div>
+    <div class="mt-4">
+      ${isAccepted?`<button onclick="window.startDelivery('${key}')" class="w-full yellow font-black py-4 rounded-xl text-sm">🚀 أبدأ - العميل هيشوفك مباشر بيتحرك</button>`:`<button onclick="window.completeDelivery('${key}')" class="w-full bg-green-500 text-black font-black py-4 rounded-xl">✅ وصلت وتم التسليم - ${order.price}ج</button>`}
+      <button onclick="window.cancelDriverOrder('${key}')" class="w-full mt-2 bg-white/10 py-2 rounded-xl text-xs opacity-50">إلغاء</button>
+    </div>
+  </div>`;
+  setTimeout(()=>{ initDriverActiveMap(order); startDriverLocationWatch(key); },400);
+}
+function initDriverMap(){
+  try{
+    driverMap=L.map('driverMap').setView([30.4698,31.1969],12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(driverMap);
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{myLat=pos.coords.latitude; myLng=pos.coords.longitude; driverMap.setView([myLat,myLng],14); loadNearOrders();}, ()=>loadNearOrders());
+      if(watchId) navigator.geolocation.clearWatch(watchId);
+      watchId=navigator.geolocation.watchPosition(pos=>{myLat=pos.coords.latitude; myLng=pos.coords.longitude; loadNearOrders();});
+    } else loadNearOrders();
+    loadDriverStats();
+  }catch(e){}
+}
+function initDriverActiveMap(order){
+  try{
+    driverMap=L.map('driverActiveMap').setView([order.lat,order.lng],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(driverMap);
+    L.marker([order.lat,order.lng]).addTo(driverMap).bindPopup(order.customerName);
+    if(myLat) L.marker([myLat,myLng]).addTo(driverMap);
+  }catch(e){}
+}
+function startDriverLocationWatch(orderKey){
+  if(!navigator.geolocation) return;
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  watchId=navigator.geolocation.watchPosition(async pos=>{
+    myLat=pos.coords.latitude; myLng=pos.coords.longitude;
+    try{ await update(ref(db,'orders/'+orderKey),{driverLat:myLat,driverLng:myLng,lastUpdate:Date.now()}); }catch(e){}
+  }, null, {enableHighAccuracy:true, maximumAge:3000});
+}
+function loadDriverStats(){onValue(ref(db,'orders'),s=>{const all=Object.values(s.val()||{}).filter(o=>o.driverId===currentUser.id); const el=document.getElementById('dOrders'); if(el) el.textContent=all.length; const real=calcRealDebtFromOrders(currentUser.id, all, currentUser.debtClearedAt||0); const dEl=document.getElementById('dDebt'); if(dEl) dEl.textContent=real.total+'ج';});}
+function loadNearOrders(){
+  if(!myLat){ myLat=30.4698; myLng=31.1969; }
+  onValue(ref(db,'orders'),s=>{
+    const vals=s.val()||{}; const all=Object.values(vals).filter(o=>o.status==='searching').map(o=>{const d=haversine(myLat,myLng,o.lat,o.lng); return {...o,dist:d,realPrice:calcPrice(d),realComm:calcCommission(calcPrice(d))};}).filter(o=>o.dist<=7).sort((a,b)=>a.dist-b.dist);
+    const keys=Object.keys(vals); const el=document.getElementById('nearOrders'); if(!el) return;
+    if(all.length===0){ el.innerHTML='<div class="text-center opacity-30 text-xs py-8">مفيش طلبات 0-7 كيلو حاليا</div>'; return; }
+    el.innerHTML='<h3 class="font-black text-sm mb-2">طلبات قريبة 0-7 كيلو: '+all.length+'</h3>'+all.map(o=>{
+      const key=keys.find(k=>vals[k].createdAt===o.createdAt && vals[k].customerId===o.customerId);
+      return `<div class="glass p-4 rounded-2xl mb-3"><div class="flex justify-between"><div class="font-bold text-sm">📦 ${o.text.slice(0,40)}</div><div class="bg-[#FFD600] text-black px-2 py-1 rounded-full text-xs font-black">${o.dist.toFixed(1)} كم</div></div><div class="text-xs opacity-60 mt-1">${o.customerName} - ${o.price}ج - تسعير تلقائي ${o.realPrice}ج</div><div class="flex gap-2 mt-3"><button onclick="window.acceptOrder('${key}')" class="flex-1 yellow font-black py-2.5 rounded-xl text-xs">قبول ويشوف تفاصيل العميل</button></div></div>`;
+    }).join('');
+  });
+}
+window.acceptOrder=async(id)=>{
+  const snap=await new Promise(r=>{onValue(ref(db,'users/'+currentUser.id),s=>r(s),{onlyOnce:true});});
+  const u=snap.val(); const oSnap=await new Promise(r=>{onValue(ref(db,'orders'),s=>r(s),{onlyOnce:true});});
+  const allOrders=Object.values(oSnap.val()||{}); const real=calcRealDebtFromOrders(currentUser.id, allOrders, u.debtClearedAt||0);
+  if(real.total>=150){ save({...currentUser,debt:real.total,status:'blocked'}); return renderBlockedPayment(real.total); }
+  const hasActive=allOrders.find(o=>o.driverId===currentUser.id && (o.status==='accepted'||o.status==='on_the_way')); if(hasActive){ alert('عندك طلب شغال - خلصه الأول'); return; }
+  const order=oSnap.val()[id]; if(!order || order.status!=='searching'){ alert('الطلب اتاخد'); return; }
+  const dist=haversine(myLat,myLng,order.lat,order.lng); const realPrice=calcPrice(dist); const comm=calcCommission(realPrice);
+  await update(ref(db,'orders/'+id),{status:'accepted',driverId:currentUser.id,driverName:currentUser.name,driverPhone:currentUser.phone,driverLat:myLat,driverLng:myLng,price:realPrice,distance:dist,commission:comm,acceptedAt:Date.now()});
+  await update(ref(db,'users/'+currentUser.id),{debt:real.total+comm}); save({...currentUser,debt:real.total+comm}); renderDriver();
+};
+window.startDelivery=async(id)=>{ await update(ref(db,'orders/'+id),{status:'on_the_way',startedAt:Date.now()}); alert('🚀 بدأت - العميل شايفك لايف بيتحرك'); renderDriver(); };
+window.completeDelivery=async(id)=>{ if(!confirm('سلمت الأوردر؟')) return; await update(ref(db,'orders/'+id),{status:'delivered',deliveredAt:Date.now()}); if(watchId){ navigator.geolocation.clearWatch(watchId); watchId=null; } alert('✅ تم التسليم'); renderDriver(); };
+window.cancelDriverOrder=async(id)=>{ if(!confirm('تلغي؟')) return; await update(ref(db,'orders/'+id),{status:'searching',driverId:null,driverName:null}); if(watchId){ navigator.geolocation.clearWatch(watchId); watchId=null; } renderDriverFree(); };
+
+// BLOCKED 150 - NEW SIMPLE FOR OWNER
+function renderBlockedPayment(debt){
+  document.getElementById('app').innerHTML=`
+  <div class="text-center py-6"><div class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto text-3xl">⛔</div><h2 class="font-black text-xl mt-4 text-red-400">يرجى سداد فاتورة العمولة</h2><p class="text-sm mt-2">عدادك وصل <b class="text-[#FFD600] text-xl">${debt}ج</b></p><p class="text-xs opacity-60">تم إيقاف العمل تلقائيا</p></div>
+  <div class="glass p-5 rounded-[20px] border border-red-500/30 bg-red-500/10 mt-4">
+    <h3 class="font-black text-sm">💳 فودافون كاش - 01002548338</h3>
+    <div class="bg-black/50 p-3 rounded-xl mt-3 text-center"><div class="font-black text-xl text-[#FFD600]">01002548338</div><div class="text-[10px] opacity-50">حول ${debt}ج</div></div>
+    <div class="mt-4 space-y-3">
+      <input id="payName" placeholder="اكتب اسمك" value="${currentUser.name}" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm">
+      <input id="payPhone" placeholder="رقمك" value="${currentUser.phone}" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm">
+      <input type="file" id="payImg" accept="image/*" class="w-full text-xs bg-black/30 border border-white/10 rounded-xl p-3">
+      <button onclick="window.sendPaymentWithDetails()" class="w-full yellow font-black py-3.5 rounded-xl text-sm">📤 إرسال صورة التحويل + اسمك ورقمك</button>
+      <a href="https://wa.me/201002548338?text=انا ${encodeURIComponent(currentUser.name)} - ${currentUser.phone} - مديونية ${debt}ج - حولت على 01002548338" target="_blank" class="block w-full bg-green-500 text-black text-center font-black py-3.5 rounded-xl text-sm">💬 ابعت سكرين على الواتس - 01002548338</a>
+    </div>
+  </div>
+  <button onclick="window.logout()" class="w-full mt-4 bg-white/10 py-3 rounded-xl text-xs">خروج</button>`;
+}
+window.sendPaymentWithDetails=async()=>{
+  const name=document.getElementById('payName')?.value.trim()||currentUser.name;
+  const phone=document.getElementById('payPhone')?.value.trim()||currentUser.phone;
+  const file=document.getElementById('payImg')?.files[0];
+  if(!file){ alert('اختر صورة السكرين'); return; }
+  const b64=await uploadImage(file);
+  await push(ref(db,'payments'),{driverId:currentUser.id,driverName:name,driverPhone:phone,amount:currentUser.debt||150,photo:b64,status:'pending',at:Date.now()});
+  await push(ref(db,'notifications'),{type:'payment_receipt',driverName:name,amount:currentUser.debt,driverPhone:phone,at:Date.now()});
+  alert('✅ تم الإرسال - سيتم مراجعته وتصفير عدادك - ابعت واتس 01002548338');
+};
+
+// ADMIN - NEW EASY - عداد مكتمل لوحدهم + زرار حظر + زرار تصفير
+function renderAdmin(){
+  document.getElementById('app').innerHTML=`<div class="flex justify-between mb-4"><h2 class="font-black">لوحة المالك 👑</h2><button onclick="window.renderLanding()" class="bg-white/10 px-3 py-1.5 rounded-full text-xs">خروج</button></div>
+  <div class="grid grid-cols-4 gap-2 mb-4"><div class="glass p-3 rounded-xl text-center"><div class="font-black" id="totalOrders">0</div><div class="text-[10px] opacity-50">طلبات</div></div><div class="glass p-3 rounded-xl text-center"><div class="font-black text-[#FFD600]" id="totalDrivers">0</div><div class="text-[10px] opacity-50">دليفري</div></div><div class="glass p-3 rounded-xl text-center border border-blue-500/20 bg-blue-500/5"><div class="font-black text-blue-400 text-lg" id="totalCustomers">0</div><div class="text-[10px] opacity-50">عملاء</div></div><div class="glass p-3 rounded-xl text-center border border-red-500/30 bg-red-500/10"><div class="font-black text-red-400 text-lg" id="totalBlocked">0</div><div class="text-[10px] opacity-50">عداد مكتمل</div></div></div>
+  <div id="adminMap" class="h-[300px] rounded-[20px] overflow-hidden border border-white/10 mb-4"></div>
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-1"><button id="t1" onclick="window.atab('pending')" class="flex-1 yellow font-black py-2.5 rounded-xl text-xs">توثيق دليفري</button><button id="t2" onclick="window.atab('full')" class="flex-1 bg-red-500 text-black font-black py-2.5 rounded-xl text-xs">⛔ عداد مكتمل 150ج</button><button id="t3" onclick="window.atab('debts')" class="flex-1 bg-white/10 py-2.5 rounded-xl text-xs">ديون</button><button id="t4" onclick="window.atab('orders')" class="flex-1 bg-white/10 py-2.5 rounded-xl text-xs">لايف</button><button id="t5" onclick="window.atab('customers')" class="flex-1 bg-white/10 py-2.5 rounded-xl text-xs">عملاء</button><button id="t6" onclick="window.atab('payments')" class="flex-1 bg-white/10 py-2.5 rounded-xl text-xs">إيصالات</button></div><div id="ac"></div>`;
+  setTimeout(()=>{const map=L.map('adminMap').setView([26.8206,30.8025],5.5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map); onValue(ref(db,'orders'),s=>{const el=document.getElementById('totalOrders'); if(el) el.textContent=Object.values(s.val()||{}).length;}); onValue(ref(db,'users'),s=>{const all=Object.values(s.val()||{}); const d=all.filter(u=>u.role==='delivery'); const c=all.filter(u=>u.role==='customer'); document.getElementById('totalDrivers').textContent=d.length; document.getElementById('totalCustomers').textContent=c.length;}); onValue(ref(db,'users'),s=>{ const vals=Object.values(s.val()||{}).filter(u=>u.role==='delivery'); onValue(ref(db,'orders'),os=>{ const allOrders=Object.values(os.val()||{}); let blocked=0; vals.forEach(u=>{ const real=calcRealDebtFromOrders(u.id, allOrders, u.debtClearedAt||0); if(real.total>=150) blocked++; }); const el=document.getElementById('totalBlocked'); if(el) el.textContent=blocked; }); });},300);
+  window.atab=(t)=>{
+    ['t1','t2','t3','t4','t5','t6'].forEach(id=>{const el=document.getElementById(id); if(el) el.className='flex-1 bg-white/10 py-2.5 rounded-xl text-xs';});
+    const mId={'pending':'t1','full':'t2','debts':'t3','orders':'t4','customers':'t5','payments':'t6'}[t]; if(mId){const el=document.getElementById(mId); if(el) el.className='flex-1 yellow font-black py-2.5 rounded-xl text-xs'; if(t==='full') el.className='flex-1 bg-red-500 text-black font-black py-2.5 rounded-xl text-xs';}
+    if(t==='pending'){onValue(ref(db,'users'),s=>{const all=Object.values(s.val()||{}).filter(u=>u.role==='delivery'&&u.status==='pending'); document.getElementById('ac').innerHTML=all.map(u=>`<div class="glass p-4 rounded-2xl mb-2"><div class="font-bold text-sm">🛵 ${u.name}</div><div class="text-xs opacity-50">📞 ${u.phone}</div><div class="flex gap-2 mt-3"><button onclick="window.approve('${u.id}')" class="flex-1 bg-green-500 text-black font-black py-2 rounded-xl text-xs">✅ قبول وتوثيق</button><button onclick="window.reject('${u.id}')" class="flex-1 bg-white/10 py-2 rounded-xl text-xs">❌ رفض</button></div></div>`).join('')||'<div class="text-center opacity-30 py-8 text-sm">لا يوجد</div>';});}
+    if(t==='full'){
+      // العداد مكتمل لوحدهم - 150ج - مع زرار حظر وتصفير
+      onValue(ref(db,'orders'),os=>{
+        const allOrders=Object.values(os.val()||{});
+        onValue(ref(db,'users'),s=>{
+          let drivers=Object.values(s.val()||{}).filter(u=>u.role==='delivery');
+          let fullDrivers=drivers.map(u=>{const real=calcRealDebtFromOrders(u.id, allOrders, u.debtClearedAt||0); return {...u,realDebt:real.total,orderCount:real.count};}).filter(u=>u.realDebt>=150).sort((a,b)=>b.realDebt-a.realDebt);
+          document.getElementById('ac').innerHTML=`
+          <div class="glass p-3 rounded-xl mb-3 bg-red-500/10 border border-red-500/20"><div class="text-xs">⛔ دليفري العداد مكتمل 150ج: <b class="text-red-400 text-lg">${fullDrivers.length}</b> - دول لوحدهم</div><div class="text-[10px] opacity-50 mt-1">انت ترن عليهم برا التطبيق - وبعدين تصفرلهم بزرار تشغيل</div></div>
+          `+fullDrivers.map(u=>`
+          <div class="glass p-4 rounded-2xl mb-3 border border-red-500/30 bg-red-500/10">
+            <div class="flex justify-between items-start">
+              <div><div class="font-black text-sm">🛵 ${u.name} - ⛔ عداد مكتمل</div><div class="text-xs mt-1">📞 <a href="tel:${u.phone}" class="text-[#FFD600] underline">${u.phone}</a></div><div class="text-xs mt-1 text-red-400 font-bold">💰 ${u.realDebt}ج - ${u.orderCount} طلب - موقوف</div><div class="text-[10px] opacity-40">${new Date(u.createdAt).toLocaleString('ar-EG')}</div></div>
+              <div class="bg-red-500 text-white text-[10px] px-2 py-1 rounded-full font-black">150ج+</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-3">
+              <button onclick="window.blockDriver('${u.id}')" class="bg-red-500 text-white font-black py-2.5 rounded-xl text-xs">⛔ حظر</button>
+              <a href="tel:${u.phone}" class="bg-blue-500 text-white font-black py-2.5 rounded-xl text-xs text-center">📞 رن</a>
+              <button onclick="window.clearD('${u.id}')" class="bg-green-500 text-black font-black py-2.5 rounded-xl text-xs">✅ تصفير وتشغيل</button>
+            </div>
+            <div class="flex gap-2 mt-2">
+              <a href="https://wa.me/${u.phone.replace('0','20')}?text=مديونيتك ${u.realDebt}ج - حول على 01002548338" target="_blank" class="flex-1 bg-white/10 py-2 rounded-xl text-[11px] text-center">💬 واتس</a>
+              <button onclick="window.showDriverOrders('${u.id}')" class="flex-1 bg-white/10 py-2 rounded-xl text-[11px]">📦 طلباته</button>
+            </div>
+          </div>`).join('')||'<div class="text-center opacity-30 py-8"><div class="text-2xl">✅</div><div class="text-xs mt-2">مفيش حد عداده مكتمل - كله شغال</div></div>';
+        });
+      });
+    }
+    if(t==='debts'){onValue(ref(db,'orders'),os=>{const allOrders=Object.values(os.val()||{}); onValue(ref(db,'users'),s=>{let drivers=Object.values(s.val()||{}).filter(u=>u.role==='delivery'); let debtDrivers=drivers.map(u=>{const real=calcRealDebtFromOrders(u.id, allOrders, u.debtClearedAt||0); return {...u,realDebt:real.total};}).filter(u=>u.realDebt>0 && u.realDebt<150).sort((a,b)=>b.realDebt-a.realDebt); document.getElementById('ac').innerHTML=`<div class="glass p-3 rounded-xl mb-3 text-xs">ديون أقل من 150ج: <b class="text-[#FFD600]">${debtDrivers.reduce((a,b)=>a+b.realDebt,0)}ج</b> - ${debtDrivers.length} دليفري</div>`+debtDrivers.map(u=>`<div class="glass p-3 rounded-xl mb-2"><div class="font-bold text-sm">${u.name} - <span class="text-[#FFD600]">${u.realDebt}ج</span></div><div class="text-xs opacity-50">${u.phone}</div></div>`).join('')||'<div class="text-center opacity-30 py-4 text-xs">لا يوجد</div>';});});}
+    if(t==='payments'){onValue(ref(db,'payments'),s=>{const all=Object.values(s.val()||{}).sort((a,b)=>b.at-a.at); document.getElementById('ac').innerHTML=`<div class="glass p-3 rounded-xl mb-3 text-xs">إيصالات: <b>${all.length}</b> - كاش 01002548338</div>`+all.map(p=>`<div class="glass p-3 rounded-xl mb-2"><div class="font-bold text-sm">💰 ${p.driverName} - ${p.amount}ج - ${p.status}</div><div class="text-xs opacity-50">📞 ${p.driverPhone}</div>${p.photo?`<img src="${p.photo}" class="w-full h-32 object-cover rounded-xl mt-2">`:''}<div class="flex gap-2 mt-2"><button onclick="window.clearD('${p.driverId}')" class="flex-1 bg-green-500 text-black font-black py-2 rounded-xl text-xs">✅ تصفير وتشغيل</button><a href="tel:${p.driverPhone}" class="flex-1 bg-blue-500 text-white py-2 rounded-xl text-xs text-center">📞 رن</a></div></div>`).join('')||'<div class="text-center opacity-30 py-4">لا يوجد</div>';});}
+    if(t==='orders'){onValue(ref(db,'orders'),s=>{const all=Object.values(s.val()||{}).sort((a,b)=>b.createdAt-a.createdAt).slice(0,50); document.getElementById('ac').innerHTML=`<div class="glass p-3 rounded-xl mb-3 text-xs">إجمالي: <b>${Object.values(s.val()||{}).length}</b></div>`+all.map(o=>`<div class="glass p-3 rounded-xl mb-2"><div class="flex justify-between"><div class="font-bold text-xs">${o.text.slice(0,40)}</div><span class="text-[10px] px-2 py-1 rounded-full bg-white/10">${o.status}</span></div><div class="text-[11px] opacity-50">${o.customerName} - ${o.price}ج - ${o.driverName||'--'} - ${o.distance.toFixed(1)}كم</div></div>`).join('');});}
+    if(t==='customers'){onValue(ref(db,'users'),s=>{const customers=Object.values(s.val()||{}).filter(u=>u.role==='customer'); onValue(ref(db,'orders'),os=>{const orders=Object.values(os.val()||{}); document.getElementById('ac').innerHTML=`<div class="glass p-3 rounded-xl mb-3 text-xs">عملاء: <b class="text-blue-400">${customers.length}</b></div>`+customers.map(u=>`<div class="glass p-3 rounded-xl mb-2"><div class="font-bold text-sm">👤 ${u.name} - ${orders.filter(o=>o.customerId===u.id).length} طلب</div><div class="text-xs opacity-50">${u.phone}</div></div>`).join('');});});}
+  };
+  window.atab('pending');
+}
+window.approve=async(id)=>{await update(ref(db,'users/'+id),{status:'approved'}); alert('✅ تم توثيق الدليفري');};
+window.reject=async(id)=>{await update(ref(db,'users/'+id),{status:'rejected'});};
+window.blockDriver=async(id)=>{await update(ref(db,'users/'+id),{status:'blocked'}); alert('⛔ تم حظر الدليفري - مش هيعرف يشتغل');};
+window.clearD=async(id)=>{await update(ref(db,'users/'+id),{debt:0,debtClearedAt:Date.now(),status:'approved'}); alert('✅ تم تصفير العمولة وتشغيل الدليفري - يقدر يشتغل تاني');};
+window.showDriverOrders=(driverId)=>{onValue(ref(db,'orders'),s=>{const all=Object.values(s.val()||{}).filter(o=>o.driverId===driverId); alert(`طلباته: ${all.length} - إجمالي: ${all.reduce((a,b)=>a+(b.price||0),0)}ج - عمولة: ${all.reduce((a,b)=>a+(b.commission||0),0)}ج`);},{onlyOnce:true});};
+
+window.logout=()=>{
+  if(watchId){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  if(!confirm('متأكد عاوز تخرج؟')) return;
+  localStorage.clear(); sessionStorage.clear(); currentUser=null; alert('تم الخروج'); renderLanding();
+};
+window.renderLanding=renderLanding;
+window.render=render;
+try{render();}catch(e){document.getElementById('app').innerHTML='<div class="text-center py-20"><div class="text-4xl">⚡</div><h2 class="font-black mt-4">Super Flash</h2><p class="text-xs opacity-30">'+e.message+'</p><button onclick="localStorage.clear(); location.reload()" class="mt-6 bg-[#FFD600] text-black px-6 py-2 rounded-xl font-black text-sm">إعادة تشغيل</button></div>';}
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js');});}
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.remove('hidden');});
+document.getElementById('installBtn').onclick=async()=>{if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; document.getElementById('installBanner').classList.add('hidden');};
+</script>
+</body>
+</html>
