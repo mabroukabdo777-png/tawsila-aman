@@ -1,0 +1,87 @@
+{
+  "rules": {
+    "owners": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "phone"
+      ]
+    },
+    "users": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "role",
+        "status",
+        "phone",
+        "debt"
+      ],
+      "$uid": {
+        ".validate": "newData.hasChildren(['id','name','phone','role']) && (newData.child('debt').val() == null || newData.child('debt').val() >= 0)"
+      }
+    },
+    "orders": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "customerId",
+        "driverId",
+        "status",
+        "createdAt",
+        "lat",
+        "lng"
+      ],
+      "$orderId": {
+        ".validate": "newData.hasChildren(['customerId','text','lat','lng']) && newData.child('price').val() >= 10 && newData.child('price').val() <= 300"
+      }
+    },
+    "payments": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "driverId",
+        "at",
+        "status"
+      ]
+    },
+    "commissions": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "driverId",
+        "orderId",
+        "at"
+      ]
+    },
+    "ratings": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "driverId",
+        "customerId",
+        "orderId",
+        "createdAt"
+      ]
+    },
+    "notifications": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "at",
+        "type",
+        "driverId"
+      ]
+    },
+    "fcmTokens": {
+      ".read": true,
+      ".write": true
+    },
+    "chats": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "at"
+      ]
+    }
+  }
+}
