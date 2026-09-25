@@ -1,0 +1,73 @@
+{
+  "name": "Super Flash - شركة توصيل مصر كلها",
+  "short_name": "Super Flash",
+  "description": "شركة توصيل طلبات ومطاعم في كل مصر - من اسكندرية لأسوان - عمولة 15%",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone"
+  ],
+  "background_color": "#0a0a0a",
+  "theme_color": "#FFD600",
+  "orientation": "any",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": [
+    "food",
+    "business",
+    "shopping"
+  ],
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "اطلب الآن",
+      "short_name": "اطلب",
+      "description": "اطلب توصيلة بسرعة",
+      "url": "./?action=order",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "مطاعم قريبة",
+      "short_name": "مطاعم",
+      "description": "مطاعم 0-10 كيلو",
+      "url": "./?action=restaurants",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "لوحة المالك",
+      "short_name": "المالك",
+      "description": "دخول المالك 261997",
+      "url": "./?action=admin",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
