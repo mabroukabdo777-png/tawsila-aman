@@ -1,0 +1,70 @@
+{
+  "rules": {
+    "owners": {
+      ".read": true,
+      ".write": true
+    },
+    "counters": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "orderNumber"
+      ]
+    },
+    "users": {
+      ".read": true,
+      ".indexOn": [
+        "role",
+        "status",
+        "phone",
+        "debt",
+        "blocked",
+        "lat",
+        "lng",
+        "avgRating",
+        "city",
+        "isOpen"
+      ],
+      "$uid": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['id','name','phone','role']) && newData.child('id').val() === $uid"
+      }
+    },
+    "orders": {
+      ".read": true,
+      ".indexOn": [
+        "customerId",
+        "driverId",
+        "status",
+        "type",
+        "restaurantId",
+        "createdAt",
+        "driverLat",
+        "driverLng",
+        "orderNumber",
+        "city"
+      ],
+      "$oid": {
+        ".write": true,
+        ".validate": "newData.hasChild('customerId')"
+      }
+    },
+    "meals": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "restaurantId"
+      ]
+    },
+    "ratings": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "driverId",
+        "restaurantId",
+        "customerId",
+        "createdAt"
+      ]
+    }
+  }
+}
